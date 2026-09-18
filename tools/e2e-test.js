@@ -1,8 +1,9 @@
-/* 站点端到端回归测试（jsdom）
+/* 站点端到端回归测试（jsdom）· 27 项
  * 用法：
- *   NODE_PATH=~/.workbuddy/binaries/node/workspace/node_modules node tools/e2e-test.js            # 测线上
- *   NODE_PATH=... node tools/e2e-test.js index.html                                              # 测本地改动
- * 覆盖：首屏渲染 / 中英切换 / 搜索 / 分类加载 / 筛选器 / 下载条 / 运行时错误
+ *   NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *     "C:/Users/chenhua/.workbuddy/binaries/node/versions/22.22.2-3/node.exe" tools/e2e-test.js        # 测线上
+ *     ... tools/e2e-test.js index.html                                                                # 测本地改动
+ * 覆盖：首屏渲染 / 中英切换 / 搜索 / 分类加载 / 筛选器 / 多维分面（作曲家·地域·来源）/
+ *       下载条 / 声波条 / 播放器控件 / 运行时错误
  * 依赖：jsdom（npm i jsdom --registry=https://registry.npmmirror.com）
  */
 // 端到端交互回归：分类加载 / 双语切换 / 搜索 / 筛选器 / 下载条
@@ -111,6 +112,39 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   ok('声波可视化条已生成', q('#viz i') === 14, q('#viz i') + ' 根');
   ok('播放器控件齐全', ['play', 'prev', 'next', 'loop', 'prog', 'vol'].every(id => !!d.getElementById(id)));
   ok('来源数已改为 16', /16 \u4e2a\u6765\u6e90|16 source/.test(HTML) && !/18 \u4e2a\u6765\u6e90\u6570\u636e\u96c6/.test(HTML));
+
+  console.log('\n【7】多维筛选（作曲家 / 地域 / 来源）');
+  // 挑一个既有地域又有作曲家的分类：爱尔兰传统
+  const target = [...d.querySelectorAll('.cat:not(.sk)')].find(e => /爱尔兰传统|Irish/.test(e.textContent));
+  if (!target) {
+    console.log('  – 未找到目标分类，跳过');
+  } else {
+    click(target);
+    await wait(7000);
+    const nReg = q('#region option'), nSrc = q('#source option'), nComp = q('#compList option');
+    ok('来源下拉已填充', nSrc > 1, nSrc + ' 项');
+    ok('地域下拉已填充（分面文件可用）', nReg > 1, nReg + ' 项');
+    ok('作曲家建议已填充', nComp > 0, nComp + ' 条');
+    if (nReg > 1) {
+      const reg = d.getElementById('region');
+      reg.value = reg.options[1].value;
+      reg.dispatchEvent(new w.Event('change', { bubbles: true }));
+      await wait(6000);
+      const rows = q('#list li.row');
+      ok('按地域筛选后有结果', rows > 0, rows + ' 行 · ' + reg.value);
+      ok('状态栏显示命中数', /命中|matched/i.test(d.getElementById('status').textContent),
+         d.getElementById('status').textContent.slice(0, 80));
+    }
+    const comp = d.getElementById('composer');
+    comp.value = 'traditional';
+    comp.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(6000);
+    console.log('     作曲家筛选 →', q('#list li.row'), '行');
+    click(d.getElementById('clear'));
+    await wait(5000);
+    ok('「清空筛选」恢复列表', q('#list li.row') > 0 && d.getElementById('region').value === '' &&
+       d.getElementById('composer').value === '');
+  }
 
   console.log('\n【6】运行时错误');
   ok('无脚本错误', errs.length === 0, errs.slice(0, 4).join(' | '));
