@@ -1,0 +1,49 @@
+name: Deploy lib site
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download & assemble from Release v1.0
+        run: |
+          mkdir -p site
+          for z in meta main piano-special; do
+            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/v1.0/midicn-lib-v1.0-$z.zip"
+            unzip -q $z.zip -d site
+            rm $z.zip
+          done
+          mv site/midicn-lib-v1.0/* site/
+          rmdir site/midicn-lib-v1.0
+          cp index.html site/
+          cp -r vendor site/vendor
+          ls site | head -6
+          find site -name '*.mid' | wc -l
+      - name: Generate shards (按需加载分片)
+        run: |
+          cd site
+          python3 ../tools/gen_shards.py
+          ls -la data | head -8
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

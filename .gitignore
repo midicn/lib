@@ -1,0 +1,7 @@
+.git/
+.git-corrupt/
+.git-abandoned/
+.git-broken/
+meta/
+data/
+*.zip
