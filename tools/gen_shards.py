@@ -59,8 +59,8 @@ def main() -> int:
         by_cat[cat].append(slim(t))
         by_source[t["id"].split("-")[0]] += 1
 
-    # 分类分片（类内再按 1000 条切片，点击分类后秒开）
-    CHUNK = 1000
+    # 分类分片（类内按 500 条切片——首屏更快）
+    CHUNK = 500
     summary_cats = []
     for cat, items in sorted(by_cat.items(), key=lambda kv: -len(kv[1])):
         n_chunks = max(1, (len(items) + CHUNK - 1) // CHUNK)

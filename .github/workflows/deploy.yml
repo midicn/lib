@@ -32,6 +32,8 @@ jobs:
           rmdir site/midicn-lib-*
           cp index.html site/
           cp -r vendor site/vendor
+          cp manifest.json site/ 2>/dev/null || true
+          cp sw.js site/ 2>/dev/null || true
           ls site | head -6
           find site -name '*.mid' | wc -l
       - name: Generate shards (按需加载分片)
