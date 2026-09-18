@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <script src="vendor/Tone.js"></script>
 <script src="vendor/Midi.js"></script>
+<script src="soundfont/engine/js-synthesizer.min.js"></script>
 <style>
 :root{
   color-scheme:dark;
@@ -180,6 +181,7 @@ footer{max-width:1240px;margin:2rem auto 0;padding:1.1rem 1rem 0;border-top:1px 
       </select>
       <span class="spacer"></span>
       <input type="range" id="vol" min="0" max="100" value="78" title="音量">
+      <span class="pill" id="sfbadge">合成音源</span>
       <span class="pill" id="tag"></span>
     </div>
   </div>
@@ -231,6 +233,7 @@ function ticker(){
 }
 function stop(){
   clearInterval(uiTimer);
+  if(sfSynth){ try{ sfSynth.stop(); }catch(e){} }
   if(part){ try{part.stop();part.dispose();}catch(e){} part=null; }
   try{ Tone.Transport.stop(); Tone.Transport.cancel(); }catch(e){}
   if(ready){ syn.releaseAll(); bass.releaseAll(); perc.releaseAll(); }
@@ -238,9 +241,42 @@ function stop(){
 }
 function onEnded(){ if(looping && curIdx>=0 && flat[curIdx]) play(flat[curIdx], curIdx); else stop(); }
 
+/* ── SoundFont 引擎（FluidSynth WASM · GeneralUser GS） ──
+   分级加载：先用合成器立即出声 → SF2 就绪后自动切换到采样音源（含 GM 乐器还原） */
+let sfSynth=null, sfReady=false, sfLoading=false, sfFailed=false;
+async function ensureSoundFont(){
+  if(sfReady||sfLoading||sfFailed) return;
+  sfLoading=true; setSfBadge('音源加载中');
+  try{
+    const AC = Tone.getContext().rawContext;
+    sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
+    await sfSynth.init(AC);
+    const sf = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
+    await sfSynth.loadSFont(sf);
+    sfReady=true; setSfBadge('采样音源');
+  }catch(e){ sfFailed=true; setSfBadge('合成音源'); }
+  sfLoading=false;
+}
+function setSfBadge(txt){ const el=$('sfbadge'); if(el) el.textContent=txt; }
+
 async function play(t, idx){
   stop();
   if(idx!==undefined) curIdx=idx;
+  /* SF2 就绪 → 直接用 FluidSynth 播放（自动还原 GM 乐器） */
+  if(sfReady){
+    try{
+      await Tone.start();
+      const ab = await (await fetch(t.f)).arrayBuffer();
+      sfSynth.stop();
+      await sfSynth.playNewMIDI(ab);
+      playing=true; $('play').textContent='⏸';
+      const sec = Math.round(sfSynth.getMIDIPlayerDuration?.() || curTotal || 0) || 0;
+      $('np').textContent = (t.t || t.id) + (t.cn ? ' · '+t.cn : '') + ' · 采样音源播放中';
+      setSfBadge('采样音源');
+      return;
+    }catch(e){ /* 失败则回退到合成器 */ }
+  }
+  ensureSoundFont();
   document.querySelectorAll('.row.on').forEach(e=>e.classList.remove('on'));
   const li=document.querySelector('.row[data-id="'+t.id+'"]'); if(li) li.classList.add('on');
   $('np').textContent = '加载 ' + (t.t || t.id) + ' …';
@@ -391,6 +427,7 @@ $('sort').onchange = (e) => {
   flat.sort((a,b)=> String(a[k]||'~').localeCompare(String(b[k]||'~')));
   rendered=0; renderNext(true);
 };
+document.addEventListener('pointerdown', () => ensureSoundFont(), {once:true});
 document.addEventListener('keydown', (e) => {
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){ if(e.key==='Escape') e.target.blur(); return; }
   if(e.key===' '){ e.preventDefault(); $('play').click(); }

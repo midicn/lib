@@ -1,6 +1,6 @@
 /* midicn-lib Service Worker · 缓存策略 */
 const V = 'midicn-v3';
-const CORE = ['./', './index.html', './manifest.json', './vendor/Tone.js', './vendor/Midi.js'];
+const CORE = ['./', './index.html', './manifest.json', './vendor/Tone.js', './vendor/Midi.js', './soundfont/engine/js-synthesizer.min.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

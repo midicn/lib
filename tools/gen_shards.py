@@ -34,7 +34,13 @@ KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f")
 
 
 def slim(t: dict) -> dict:
-    return {k: t.get(k) for k in KEEP if t.get(k) not in (None, "")}
+    out = {k: t.get(k) for k in KEEP if t.get(k) not in (None, "")}
+    midi = t.get("midi") or {}
+    if midi.get("duration_sec"):
+        out["du"] = int(midi["duration_sec"])
+    if midi.get("note_count"):
+        out["nn"] = midi["note_count"]
+    return out
 
 
 def main() -> int:
