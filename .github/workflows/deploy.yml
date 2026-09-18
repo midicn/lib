@@ -10,6 +10,8 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: true
+env:
+  RELEASE_TAG: v1.2
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,7 +24,7 @@ jobs:
         run: |
           mkdir -p site
           for z in meta main piano-special study; do
-            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/v1.1/midicn-lib-v1.1-$z.zip"
+            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/$RELEASE_TAG/midicn-lib-$RELEASE_TAG-$z.zip"
             unzip -q $z.zip -d site
             rm $z.zip
           done
