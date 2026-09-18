@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#12100E">
+<meta name="theme-color" content="#070706">
 <title>数据来源 · midicn-lib</title>
 <meta name="description" content="midicn-lib 考察的全部数据源：已收录 18 个来源数据集，以及未收录源的原因与自取指引。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2312100E'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <header><div class="hbar">
-  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#12100E"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#070706"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
   <nav class="nav">
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+    <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" class="on" data-zh="数据来源" data-en="Sources">数据来源</a>
     <a href="licenses.html" data-zh="许可与法律" data-en="License">许可与法律</a>
     <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
@@ -159,6 +160,7 @@ $('theme').onclick = () => { const c = document.documentElement.dataset.theme ==
 let LANG = localStorage.getItem('midicn-lang') || 'zh';
 function applyLang(){
   document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
+  document.documentElement.dataset.lang = LANG;
   document.querySelectorAll('[data-lang]').forEach(el => el.hidden = el.dataset.lang !== LANG);
   document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
   $('lang').textContent = LANG === 'zh' ? 'EN' : '中';

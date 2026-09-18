@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /meta/MD5SUMS.txt
+
+Sitemap: https://lib.midicn.com/sitemap.xml

@@ -1,19 +1,33 @@
 {
- "name": "midicn-lib · MIDI 音乐库",
- "short_name": "MIDI 库",
- "description": "92,649 首 MIDI 在线试听（18 个来源数据集）",
+ "name": "midicn-lib · MIDI 音乐库 / MIDI Music Library",
+ "short_name": "midicn-lib",
+ "description": "92,649 首 MIDI 在线试听与打包下载（18 个来源数据集，逐曲标注许可）| 92,649 MIDI tracks — stream online or download (18 source datasets, per-track licenses)",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "background_color": "#08080F",
- "theme_color": "#08080F",
+ "background_color": "#070706",
+ "theme_color": "#070706",
  "lang": "zh-CN",
  "icons": [
   {
-   "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230A0A14'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%236C5CE7' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%236C5CE7' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23F4C95D'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23F4C95D'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23F4C95D'/%3E%3C/svg%3E",
+   "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E",
    "sizes": "any",
    "type": "image/svg+xml",
    "purpose": "any maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "数据下载 / Download",
+   "url": "./download.html"
+  },
+  {
+   "name": "数据来源 / Sources",
+   "url": "./sources.html"
+  },
+  {
+   "name": "许可与法律 / License",
+   "url": "./licenses.html"
   }
  ]
 }

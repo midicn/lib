@@ -91,6 +91,46 @@ td b{font-weight:500}
 .note{font-size:12px;color:var(--dim2);border-left:2px solid var(--bd);padding-left:.75rem;margin:.8rem 0}
 footer{position:relative;z-index:1;max-width:1000px;margin:2.5rem auto 0;padding:1.2rem 1.1rem 0;
   border-top:1px solid var(--bd);font-size:11.5px;color:var(--dim2);line-height:1.8}
+
+/* 下载包卡片（下载页 + 主页下载区共用） */
+.pkgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(216px,1fr));gap:.85rem;margin:1rem 0 1.4rem}
+.pkg{background:var(--surface);border:1px solid var(--bd);border-radius:var(--r);padding:.95rem 1rem;
+  backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:.45rem;transition:.22s;position:relative;overflow:hidden}
+.pkg:hover{transform:translateY(-3px);border-color:var(--bd-hi);box-shadow:0 14px 34px -16px var(--halo1)}
+.pkg::after{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--p1),var(--accent),transparent);opacity:.7}
+.pkg .pn{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.pkg .pm{font-size:11.5px;color:var(--dim);display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.pkg .pm b{color:var(--accent);font-weight:600}
+.pkg .pd{font-size:12px;color:var(--dim2);line-height:1.55;flex:1}
+.dlbtn{align-self:flex-start;margin-top:.2rem;display:inline-flex;align-items:center;gap:.35rem;
+  font-size:12px;font-weight:500;padding:.4rem .8rem;border-radius:999px;border:1px solid var(--bd-hi);
+  background:linear-gradient(100deg,var(--p1),var(--accent));color:#150D06!important;transition:.2s}
+.dlbtn:hover{filter:brightness(1.08);transform:translateX(2px);color:#150D06!important}
+.dlbtn svg{width:13px;height:13px;fill:currentColor}
+:root[data-theme=light] .dlbtn{color:#fff!important}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;
+  background:rgba(255,255,255,.06);padding:.1rem .36rem;border-radius:5px;color:var(--p3)}
+pre{background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:var(--rs);padding:.85rem 1rem;
+  overflow-x:auto;font-size:12px;line-height:1.7;color:var(--p3);margin:.6rem 0 1rem}
+pre code{background:none;padding:0}
+:root[data-theme=light] pre{background:rgba(80,50,20,.05)}
+.steps{counter-reset:s;list-style:none;margin-left:0}
+.steps li{counter-increment:s;position:relative;padding-left:1.9rem;margin-bottom:.6rem;color:var(--tx);font-size:13.5px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:.05rem;width:19px;height:19px;border-radius:50%;
+  display:grid;place-items:center;font-size:11px;font-weight:600;color:#150D06;
+  background:linear-gradient(135deg,var(--p1),var(--accent))}
+
+/* 下载条（主页紧凑版） */
+.dls{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 1rem;
+  padding:.6rem .75rem;border:1px solid var(--bd);border-radius:var(--r);
+  background:var(--surface);backdrop-filter:blur(14px)}
+.dltitle{font-size:11.5px;color:var(--dim2);letter-spacing:.02em;margin-right:.15rem;white-space:nowrap}
+.dlchip{font-size:11.5px;padding:.28rem .62rem;border-radius:999px;border:1px solid var(--bd);
+  background:rgba(255,255,255,.04);color:var(--dim)!important;white-space:nowrap;transition:.2s}
+.dlchip b{color:var(--p2);font-weight:600;margin-right:.28rem}
+.dlchip:hover{border-color:var(--bd-hi);color:var(--tx)!important;transform:translateY(-1px)}
+.dlchip:hover b{color:var(--accent)}
+.dlmore{font-size:11.5px;margin-left:auto;white-space:nowrap;color:var(--accent)!important}
 @media(max-width:640px){
   .hbar{gap:.5rem}.nav{gap:.75rem;font-size:12px}
   table{font-size:11.5px}th,td{padding:.4rem .35rem}

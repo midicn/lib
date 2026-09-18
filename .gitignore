@@ -5,3 +5,6 @@
 meta/
 data/
 *.zip
+_backup_*.html
+_check.py
+_c.js
