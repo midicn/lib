@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#070706">
 <title>midicn-lib · MIDI 音乐库</title>
-<meta name="description" content="92,649 首 MIDI 在线试听：爱尔兰传统、世界民谣、古典钢琴、游戏音乐等 18 个来源数据集，统一整理、质量验证、许可分区。">
+<meta name="description" content="92,649 首 MIDI 在线试听：爱尔兰传统、世界民谣、古典钢琴、游戏音乐等 16 个来源数据集，统一整理、质量验证、许可分区。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="assets/style.css">
@@ -167,7 +167,7 @@ header .nav{margin-left:0}
 
 <footer>
   <span data-zh="音色引擎：FluidSynth (WASM) + GeneralUser GS 采样音源（作者授权自由使用，含商用）· 实时合成回退。" data-en="Sound engine: FluidSynth (WASM) + GeneralUser GS SoundFont (licensed for unrestricted use, incl. commercial) with live-synthesis fallback.">音色引擎：FluidSynth (WASM) + GeneralUser GS 采样音源（作者授权自由使用，含商用）· 实时合成回退。</span><br>
-  <span data-zh="音乐内容来自 18 个公开数据集，逐曲标注许可。" data-en="Music content comes from 18 public datasets, license-annotated per track.">音乐内容来自 18 个公开数据集，逐曲标注许可。</span>
+  <span data-zh="音乐内容来自 16 个公开数据集，逐曲标注许可。" data-en="Music content comes from 16 public datasets, license-annotated per track.">音乐内容来自 16 个公开数据集，逐曲标注许可。</span>
   <a href="licenses.html" data-zh="许可与法律" data-en="License &amp; Legal">许可与法律</a> ·
   <a href="sources.html" data-zh="数据来源" data-en="Data Sources">数据来源</a><br>
   <span data-zh="键盘：空格 播放/暂停 · ←/→ 上一首/下一首 · / 搜索 · Esc 停止" data-en="Keyboard: Space play/pause · ←/→ prev/next · / search · Esc stop">键盘：空格 播放/暂停 · ←/→ 上一首/下一首 · / 搜索 · Esc 停止</span>
@@ -202,7 +202,7 @@ header .nav{margin-left:0}
 const $ = id => document.getElementById(id);
 const PAGE = 80;
 let SUMMARY=null, curCat=null, chunkIdx=0, buf=[], flat=[], rendered=0, curIdx=-1;
-let SEARCH=null, searchReady=false, playing=false, looping=false, curTotal=1;
+let SEARCH=null, searchReady=false, playing=false, looping=false, curTotal=1, booted=false;
 
 /* ── 国际化 ── */
 const I18N = {
@@ -348,25 +348,38 @@ const ICONS = {
 function skeleton(n){ const box=$('cats'); for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='cat sk'; box.appendChild(d); } }
 function skList(n){ $('list').innerHTML='<li class="sk"></li>'.repeat(n); }
 
+/* 首页静态骨架 + 汇总数据的两段式渲染：
+   fetch 汇总 → renderHead()（统计/分类/筛选器），语言切换时只重放 renderHead()，不再重复请求。 */
 async function boot(){
+  if(booted) return;
   skeleton(8); skList(6);
   $('np').textContent = '—';
-  try{ SUMMARY = await (await fetch('data/summary.json')).json(); }
-  catch(e){ $('heroSub').textContent = 'Load failed: ' + e.message; return; }
+  if(!SUMMARY){
+    try{ SUMMARY = await (await fetch('data/summary.json')).json(); }
+    catch(e){ $('heroSub').textContent = 'Load failed: ' + e.message; return; }
+  }
+  booted = true;
+  renderHead();
+  $('status').textContent = t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
+  $('list').innerHTML='';
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+function renderHead(){
+  if(!SUMMARY) return;
+  const cats = SUMMARY.categories || [];
   const nsrc = Object.keys(SUMMARY.sources||{}).length;
   $('heroSub').textContent = t('hero').replace('{n}', SUMMARY.total.toLocaleString()).replace('{s}', nsrc);
   $('stats').innerHTML =
     '<div class="stat"><b>'+SUMMARY.total.toLocaleString()+'</b><span>'+t('tracksUnit')+'</span></div>'+
     '<div class="stat"><b>'+nsrc+'</b><span>'+t('sourcesUnit')+'</span></div>'+
     '<div class="stat"><b>'+(SUMMARY.zones?(SUMMARY.zones.main||0).toLocaleString():'—')+'</b><span>'+t('commercialUnit')+'</span></div>'+
-    '<div class="stat"><b>'+(SUMMARY.categories?SUMMARY.categories.length:'—')+'</b><span>'+t('catsUnit')+'</span></div>';
+    '<div class="stat"><b>'+cats.length+'</b><span>'+t('catsUnit')+'</span></div>';
   $('cats').innerHTML=''; renderCats();
-  const per=[...new Set(SUMMARY.categories.flatMap(c=>c.periods))];
-  const sel=$('period'); sel.innerHTML='<option value="">'+(LANG==='zh'?'全部时期':'All periods')+'</option>';
+  const per=[...new Set(cats.flatMap(c=>c.periods||[]))].filter(Boolean);
+  const sel=$('period'), keep=sel.value;
+  sel.innerHTML='<option value="">'+(LANG==='zh'?'全部时期':'All periods')+'</option>';
   per.sort().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
-  $('status').textContent = t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
-  $('list').innerHTML='';
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if(keep) sel.value=keep;
 }
 function renderCats(){
   SUMMARY.categories.forEach((c,i)=>{
@@ -464,8 +477,12 @@ function applyLang(){
   document.title = LANG === 'zh' ? 'midicn-lib · MIDI 音乐库' : 'midicn-lib · MIDI Music Library';
   document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
   document.querySelectorAll('[data-ph-zh]').forEach(el => el.placeholder = LANG === 'zh' ? el.dataset.phZh : el.dataset.phEn);
-  // 动态区域重建
-  if(SUMMARY){ boot(); } else { $('np').textContent='—'; }
+  if(!booted) return;                     // 首屏未加载时由 boot() 负责，别在这里抢跑
+  renderHead();                           // 分类名 / 统计标签 / 时期下拉
+  $('status').textContent = curCat
+    ? catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+' / '+curCat.count.toLocaleString()
+    : t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
+  if(flat.length){ rendered=0; renderNext(true); }   // 重画当前列表（行内标签随语言变）
 }
 $('lang').onclick=()=>{ LANG = LANG==='zh'?'en':'zh'; localStorage.setItem('midicn-lang',LANG);
   $('lang').textContent = LANG==='zh'?'EN':'中'; applyLang(); };
@@ -481,6 +498,7 @@ document.addEventListener('keydown',(e)=>{
   else if(e.key==='Escape'){ stop(); }
 });
 applyLang();
+boot();          /* 首屏加载汇总数据 —— 必须无条件调用（SUMMARY 初值为 null） */
 </script>
 </body>
 </html>
