@@ -43,6 +43,13 @@ header .nav{margin-left:0}
 .cat span{font-size:11.5px;color:var(--dim)}
 .bar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;padding:.6rem .75rem;
   background:var(--surface);border:1px solid var(--bd);border-radius:var(--r);backdrop-filter:blur(14px)}
+.bar select,.bar input[type=search]{padding:.34rem .5rem;border-radius:8px;border:1px solid var(--bd);
+  background:var(--surface-hi);color:var(--tx);font-size:12.5px;outline:none;font-family:inherit;
+  max-width:190px;transition:.15s}
+.bar select:focus,.bar input:focus{border-color:var(--bd-hi);box-shadow:0 0 0 3px var(--halo2)}
+.bar select:disabled,.bar input:disabled{opacity:.4;cursor:not-allowed}
+#composer{width:132px}
+.bar ::placeholder{color:var(--dim2)}
 .chk{display:flex;align-items:center;gap:.34rem;font-size:12.5px;color:var(--dim);cursor:pointer;user-select:none}
 .chk input{accent-color:var(--p1);width:14px;height:14px;cursor:pointer}
 #status{font-size:12.5px;color:var(--dim);margin:.55rem .2rem .6rem}
@@ -156,7 +163,12 @@ header .nav{margin-left:0}
       <option value="c" data-zh="按作曲家" data-en="By composer">按作曲家</option>
       <option value="p" data-zh="按时期" data-en="By period">按时期</option>
     </select>
+    <input id="composer" type="search" list="compList" placeholder="作曲家" data-ph-zh="作曲家" data-ph-en="Composer">
+    <datalist id="compList"></datalist>
+    <select id="region"><option value="">—</option></select>
+    <select id="source"><option value="">—</option></select>
     <label class="chk"><input type="checkbox" id="mainOnly"> <span data-zh="只看可商用" data-en="Commercial only">只看可商用</span></label>
+    <button class="btn" id="clear" style="font-size:11.5px;padding:.3rem .6rem" data-zh="清空筛选" data-en="Clear">清空筛选</button>
     <span class="spacer"></span>
     <button class="btn primary" id="rand" data-zh="🎲 随机试听" data-en="🎲 Shuffle">🎲 随机试听</button>
   </div>
@@ -203,19 +215,20 @@ const $ = id => document.getElementById(id);
 const PAGE = 80;
 let SUMMARY=null, curCat=null, chunkIdx=0, buf=[], flat=[], rendered=0, curIdx=-1;
 let SEARCH=null, searchReady=false, playing=false, looping=false, curTotal=1, booted=false;
+let FACETS=null, autoLoaded=0;      /* 分面（作曲家/地域）与「自动续载分片」计数 */
 
 /* ── 国际化 ── */
 const I18N = {
   zh:{ load:'加载', playing:'采样音源', synth:'合成音源', loadingSF:'音源加载中', noTitle:'(无题)',
        hint:'点击分类开始浏览，或直接搜索', total:'共', tracks:'首', loaded:'已加载',
-       searching:'首次搜索：加载全库索引…', found:'搜索「', hit:'」命中', entries:'条',
+       searching:'首次搜索：加载全库索引…', found:'搜索「', hit:'」命中', entries:'条', matched:'命中',
        shuffling:'随机试听：', failed:'播放失败：', noNotes:'该曲无音符',
        tracksUnit:'曲目', sourcesUnit:'来源', commercialUnit:'可商用', catsUnit:'分类',
        commercial:'可商用', study:'研究学习', nc:'非商用',
        hero:'收录 {n} 首 · {s} 个来源数据集 · 统一整理 / 质量验证 / 许可分区 · GM 采样音源' },
   en:{ load:'Loading', playing:'SoundFont', synth:'Synth', loadingSF:'Loading soundfont', noTitle:'(untitled)',
        hint:'Pick a category or search', total:'', tracks:'tracks', loaded:'loaded',
-       searching:'First search: loading index…', found:'"', hit:'" matched', entries:'',
+       searching:'First search: loading index…', found:'"', hit:'" matched', entries:'', matched:'matched',
        shuffling:'Shuffle: ', failed:'Playback failed: ', noNotes:'No notes in this track',
        tracksUnit:'Tracks', sourcesUnit:'Sources', commercialUnit:'Commercial', catsUnit:'Categories',
        commercial:'Commercial', study:'Study', nc:'Non-comm.',
@@ -392,9 +405,37 @@ function renderCats(){
 async function selectCat(c, el){
   document.querySelectorAll('.cat.on').forEach(e=>e.classList.remove('on'));
   if(el) el.classList.add('on');
-  curCat=c; chunkIdx=0; buf=[]; flat=[]; rendered=0; curIdx=-1;
+  curCat=c; chunkIdx=0; buf=[]; flat=[]; rendered=0; curIdx=-1; autoLoaded=0;
+  $('region').value=''; $('source').value='';      /* 地域/来源选项随分类变化，重置 */
   skList(8);
+  loadFacets(c);                                    /* 分面异步填充，不阻塞列表 */
   await loadChunk();
+}
+
+/* ── 分面：作曲家建议（datalist）+ 地域 + 来源 ── */
+async function loadFacets(c, keep){
+  const reg=$('region'), src=$('source'), comp=$('composer'), dl=$('compList');
+  const keepReg = keep ? reg.value : '', keepSrc = keep ? src.value : '';
+  dl.innerHTML=''; FACETS=null;
+  src.innerHTML='<option value="">'+(LANG==='zh'?'全部来源':'All sources')+'</option>';
+  (c.sources||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; src.appendChild(o); });
+  reg.innerHTML='<option value="">'+(LANG==='zh'?'全部地域':'All regions')+'</option>';
+  reg.disabled = comp.disabled = !c.facets;
+  if(!c.facets) return;
+  try{ FACETS = await (await fetch('data/facets-'+c.id+'.json')).json(); }
+  catch(e){ return; }
+  (FACETS.r||[]).forEach(function(pair){
+    const o=document.createElement('option'); o.value=pair[0];
+    o.textContent=pair[0]+' ('+pair[1]+')'; reg.appendChild(o);
+  });
+  const frag=document.createDocumentFragment();
+  (FACETS.c||[]).slice(0,600).forEach(function(p){
+    const o=document.createElement('option'); o.value=p[1]||p[0];
+    o.label=p[2]+' '+(LANG==='zh'?'首':'tracks'); frag.appendChild(o);
+  });
+  dl.appendChild(frag);
+  if(keepReg) reg.value=keepReg;
+  if(keepSrc) src.value=keepSrc;
 }
 async function loadChunk(){
   if(!curCat || chunkIdx>=curCat.chunks) return;
@@ -403,7 +444,20 @@ async function loadChunk(){
   buf=buf.concat(part);
   if(chunkIdx===1) $('list').innerHTML='';
   flat=buf.filter(pass); rendered=0; renderNext(true);
-  $('status').textContent = catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+' / '+curCat.count.toLocaleString();
+  updateStatus();
+}
+function updateStatus(){
+  if(curCat) $('status').textContent = catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+
+    ' / '+curCat.count.toLocaleString()+' · '+t('matched')+' '+flat.length.toLocaleString();
+}
+/* 改变筛选条件：不重新下载，直接在已载入数据上重算；结果不够时自动续载分片 */
+async function refilter(){
+  if(!curCat) return;
+  autoLoaded=0;
+  flat=buf.filter(pass); rendered=0; renderNext(true); updateStatus();
+  while(curCat && (flat.length-rendered)<PAGE && chunkIdx<curCat.chunks && autoLoaded<30){
+    autoLoaded++; await loadChunk();
+  }
 }
 function pass(x){
   if($('mainOnly').checked && x.z!=='main') return false;
@@ -411,6 +465,10 @@ function pass(x){
   const d=$('dur').value;
   if(d){ const [lo,hi]=d.split('-').map(Number); const v=x.du||0;
     if(v && (v<lo||v>hi)) return false; if(!v && lo>0) return false; }
+  const rg=$('region').value; if(rg && x.r!==rg) return false;
+  const sc=$('source').value; if(sc && String(x.id||'').split('-')[0]!==sc) return false;
+  const cq=$('composer').value.trim().toLowerCase();
+  if(cq && (String(x.c||'')+' '+String(x.cn||'')).toLowerCase().indexOf(cq)<0) return false;
   return true;
 }
 function renderNext(fresh){
@@ -428,8 +486,10 @@ function rowFor(x, idx){
 }
 new IntersectionObserver(async e=>{
   if(!e[0].isIntersecting) return;
-  if(curCat && buf.length-rendered<PAGE*2 && chunkIdx<curCat.chunks) await loadChunk();
-  else renderNext();
+  /* 按「命中数」而非「已载入数」判断，这样筛选后仍能继续往深处找结果 */
+  if(curCat && (flat.length-rendered)<PAGE*2 && chunkIdx<curCat.chunks && autoLoaded<200){
+    autoLoaded++; await loadChunk();
+  } else renderNext();
 }, {rootMargin:'500px'}).observe($('sentinel'));
 
 $('q').oninput=(function(){ let h; return function(e){ clearTimeout(h); h=setTimeout(async function(){
@@ -465,9 +525,17 @@ $('rand').onclick=async()=>{
   const x=arr[Math.floor(Math.random()*arr.length)];
   if(x) play(x);
 };
-$('mainOnly').onchange=()=>{ if(curCat) selectCat(curCat); };
-$('period').onchange=()=>{ if(curCat) selectCat(curCat); };
-$('dur').onchange=()=>{ if(curCat) selectCat(curCat); };
+$('mainOnly').onchange=refilter;
+$('period').onchange=refilter;
+$('dur').onchange=refilter;
+$('region').onchange=refilter;
+$('source').onchange=refilter;
+$('composer').oninput=(function(){ let h; return function(){ clearTimeout(h); h=setTimeout(refilter,280); }; })();
+$('clear').onclick=()=>{
+  $('period').value=''; $('dur').value=''; $('region').value=''; $('source').value='';
+  $('composer').value=''; $('mainOnly').checked=false;
+  if(curCat) refilter(); else { $('list').innerHTML=''; renderHead(); }
+};
 $('sort').onchange=(e)=>{ const k=e.target.value; if(!k) return;
   flat.sort((a,b)=>String(a[k]||'~').localeCompare(String(b[k]||'~'))); rendered=0; renderNext(true); };
 
@@ -479,8 +547,10 @@ function applyLang(){
   document.querySelectorAll('[data-ph-zh]').forEach(el => el.placeholder = LANG === 'zh' ? el.dataset.phZh : el.dataset.phEn);
   if(!booted) return;                     // 首屏未加载时由 boot() 负责，别在这里抢跑
   renderHead();                           // 分类名 / 统计标签 / 时期下拉
+  if(curCat) loadFacets(curCat, true);    // 重建地域/来源下拉与作曲家建议（保留已选项）
   $('status').textContent = curCat
-    ? catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+' / '+curCat.count.toLocaleString()
+    ? catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+' / '+curCat.count.toLocaleString()+
+      ' · '+t('matched')+' '+flat.length.toLocaleString()
     : t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
   if(flat.length){ rendered=0; renderNext(true); }   // 重画当前列表（行内标签随语言变）
 }

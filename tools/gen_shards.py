@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""lib.midicn.com 数据分片生成器
+"""lib.midicn.com 数据分片 + 分面生成器
 
 从 meta/catalog.json 生成按需加载的分片（显著改善首屏）：
   data/summary.json        分类概览（约 5 KB）—— 首屏只加载这个
-  data/cat-<cat>.json      各分类曲目（点分类才加载）
+  data/cat-<cat>-<n>.json  各分类曲目分片（点分类才加载，500 条/片）
+  data/facets-<cat>.json   各分类分面（作曲家 / 地域，选中分类时懒加载）
   data/search-lite.json    全库轻量搜索索引（输入搜索时才懒加载）
 
 用法（部署流水线中调用）：
@@ -13,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -26,15 +28,39 @@ CAT_NAMES = {
     "folk-british": "英美民谣 · British & American Folk",
     "game": "游戏音乐 · Game Music",
     "piano": "古典钢琴（非商用）· Classical Piano (NC)",
+    "maestro": "钢琴演奏 · Piano Performance",
+    "emopia": "流行钢琴 · Pop Piano",
     "classical-traditional": "古典与传统（研究/学习）· Classical & Traditional (Study)",
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）
 KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f")
 
+# ── 地域名清洗：上游 Essen/Norbeck 等源残留 LaTeX 转义（{\"aa} / \"o 等） ──
+_LATEX = (
+    ("{\\aa}", "å"), ("{\\AA}", "Å"), ("{\\o}", "ø"), ("{\\O}", "Ø"),
+    ("\\\"o", "ö"), ("\\\"a", "ä"), ("\\\"u", "ü"),
+    ("\\\"O", "Ö"), ("\\\"A", "Ä"), ("\\\"U", "Ü"),
+    ("\\'e", "é"), ("\\'a", "á"), ("\\`e", "è"), ("\\ss", "ß"),
+)
+
+
+def clean_region(v):
+    """把 LaTeX 转义还原成正常字符：Sm{\\aa}land → Småland，H\\"alsingland → Hälsingland。"""
+    if not v:
+        return v
+    s = str(v)
+    for a, b in _LATEX:
+        s = s.replace(a, b)
+    s = s.replace("{", "").replace("}", "").replace("\\", "")
+    s = re.sub(r"\s+", " ", s).strip()
+    return s or v
+
 
 def slim(t: dict) -> dict:
     out = {k: t.get(k) for k in KEEP if t.get(k) not in (None, "")}
+    if out.get("r"):
+        out["r"] = clean_region(out["r"])
     midi = t.get("midi") or {}
     if midi.get("duration_sec"):
         out["du"] = int(midi["duration_sec"])
@@ -74,17 +100,37 @@ def main() -> int:
             part = items[i * CHUNK:(i + 1) * CHUNK]
             (out / f"cat-{cat}-{i}.json").write_text(
                 json.dumps(part, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
         srcs = sorted({i["id"].split("-")[0] for i in items})
         periods = sorted({i["p"] for i in items if i.get("p")})
+        has_region = any(i.get("r") for i in items)
         summary_cats.append({
             "id": cat, "name": CAT_NAMES.get(cat, cat), "count": len(items),
             "chunks": n_chunks, "sources": srcs, "periods": periods,
+            "facets": bool(has_region) or len({i.get("c") for i in items if i.get("c")}) > 1,
         })
         print(f"  cat-{cat}: {len(items):,} 条 / {n_chunks} 片", flush=True)
 
+        # ── 分面：作曲家（含显示名）+ 地域 ──
+        comp = defaultdict(int)
+        disp = {}
+        reg = defaultdict(int)
+        for i in items:
+            if i.get("c"):
+                comp[i["c"]] += 1
+                if i.get("cn"):
+                    disp[i["c"]] = i["cn"]
+            if i.get("r"):
+                reg[i["r"]] += 1
+        facets = {
+            "c": [[k, disp.get(k, k), n] for k, n in sorted(comp.items(), key=lambda kv: (-kv[1], kv[0]))],
+            "r": [[k, n] for k, n in sorted(reg.items(), key=lambda kv: (-kv[1], kv[0]))],
+        }
+        (out / f"facets-{cat}.json").write_text(
+            json.dumps(facets, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
     # 搜索索引（极简：id + 标题 + 作曲家 + 分类）
-    search = [[t["id"], t.get("t") or "", t.get("cn") or "", t["f"].split("/")[1]] for t in tracks
-              if True]
+    search = [[t["id"], t.get("t") or "", t.get("cn") or "", t["f"].split("/")[1]] for t in tracks]
     (out / "search-lite.json").write_text(
         json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
