@@ -26,8 +26,8 @@ jobs:
             unzip -q $z.zip -d site
             rm $z.zip
           done
-          mv site/midicn-lib-v1.0/* site/
-          rmdir site/midicn-lib-v1.0
+          mv site/midicn-lib-*/* site/
+          rmdir site/midicn-lib-*
           cp index.html site/
           cp -r vendor site/vendor
           ls site | head -6
