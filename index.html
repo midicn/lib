@@ -242,7 +242,9 @@ $('q').oninput = (function () {
         li.className = 'row'; li.dataset.id = id;
         li.innerHTML = '<span>' + (t || '(无题)').slice(0, 60) + ' <span class="m">' + (cn || '') + '</span></span>' +
                        '<span class="m">' + cat + '</span>';
-        li.onclick = () => play({ id: id, t: t, cn: cn, f: 'main/' + cat + '/' + id + '.mid' });
+        li.onclick = () => play({ id: id, t: t, cn: cn, g: cat,
+          f: (cat === 'piano' ? 'piano-special/piano/' : 'main/' + cat + '/') + id + '.mid',
+          z: (cat === 'piano' ? 'piano-special' : 'main') });
         $('list').appendChild(li);
       });
     }, 260);
