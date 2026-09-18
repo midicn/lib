@@ -18,11 +18,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download & assemble from Release v1.0
+      - name: Download & assemble from Release v1.1
         run: |
           mkdir -p site
-          for z in meta main piano-special; do
-            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/v1.0/midicn-lib-v1.0-$z.zip"
+          for z in meta main piano-special study; do
+            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/v1.1/midicn-lib-v1.1-$z.zip"
             unzip -q $z.zip -d site
             rm $z.zip
           done

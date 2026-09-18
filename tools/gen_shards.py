@@ -26,6 +26,7 @@ CAT_NAMES = {
     "folk-british": "英美民谣 · British & American Folk",
     "game": "游戏音乐 · Game Music",
     "piano": "古典钢琴（非商用）· Classical Piano (NC)",
+    "classical-traditional": "古典与传统（研究/学习）· Classical & Traditional (Study)",
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）
