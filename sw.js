@@ -1,5 +1,8 @@
-/* midicn-lib Service Worker · 缓存策略 */
-const V = 'midicn-v4';
+/* midicn-lib Service Worker · 缓存策略 v5
+   ├─ HTML 文档：network-first —— 保证总能拿到最新版页面代码（修 bug 后立即生效）
+   ├─ 索引/分片/脚本/样式：stale-while-revalidate —— 秒开 + 后台自更新
+   └─ MIDI 音频：cache-first —— 听过就永久缓存                                    */
+const V = 'midicn-v5';
 const CORE = ['./', './index.html', './manifest.json', './assets/style.css',
   './download.html', './sources.html', './licenses.html',
   './vendor/Tone.js', './vendor/Midi.js', './soundfont/engine/js-synthesizer.min.js'];
@@ -18,7 +21,18 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;
   const p = url.pathname;
 
-  /* MIDI 音频文件：cache-first（听过就永久缓存） */
+  /* ① HTML 文档：network-first（离线时回落缓存）—— 避免用户卡在旧版页面 */
+  if (req.mode === 'navigate' || p === '/' || p.endsWith('.html')) {
+    e.respondWith(
+      fetch(req).then(res => {
+        if (res && res.ok) caches.open(V).then(c => c.put(req, res.clone()));
+        return res;
+      }).catch(() => caches.match(req).then(hit => hit || caches.match('./')))
+    );
+    return;
+  }
+
+  /* ② MIDI 音频文件：cache-first（听过就永久缓存） */
   if (p.endsWith('.mid') || p.endsWith('.midi')) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok) caches.open(V).then(c => c.put(req, res.clone()));
@@ -26,8 +40,9 @@ self.addEventListener('fetch', e => {
     })));
     return;
   }
-  /* 索引与分片：stale-while-revalidate（先给缓存，后台更新） */
-  if (p.endsWith('.json') || p.endsWith('.js') || p.endsWith('.css') || p === '/' || p.endsWith('.html')) {
+
+  /* ③ 索引与分片 / 脚本 / 样式：stale-while-revalidate（先给缓存，后台更新） */
+  if (p.endsWith('.json') || p.endsWith('.js') || p.endsWith('.css')) {
     e.respondWith(caches.match(req).then(hit => {
       const net = fetch(req).then(res => { if (res.ok) caches.open(V).then(c => c.put(req, res.clone())); return res; })
         .catch(() => hit);

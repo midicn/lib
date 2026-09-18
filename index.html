@@ -497,6 +497,17 @@ document.addEventListener('keydown',(e)=>{
   else if(e.key==='/'){ e.preventDefault(); $('q').focus(); }
   else if(e.key==='Escape'){ stop(); }
 });
+/* ── 失败兜底：任何静默失败都要让用户看见，并给出重试入口 ── */
+function fatal(msg){
+  const s=$('status'); if(!s) return;
+  s.innerHTML='<span style="color:#E08A8A">'+msg+'</span>'+
+    '<button class="btn" id="retry" style="margin-left:.6rem;padding:.25rem .7rem">重试</button>';
+  const b=$('retry'); if(b) b.onclick=()=>location.reload();
+}
+window.addEventListener('error', e=>{ if(!booted) fatal('页面脚本出错：'+(e.message||'未知错误')); });
+window.addEventListener('unhandledrejection', e=>{ if(!booted) fatal('数据加载失败：'+((e.reason&&e.reason.message)||'网络异常')); });
+setTimeout(()=>{ if(!booted) fatal('数据加载超时（网络较慢或接口异常）'); }, 8000);
+
 applyLang();
 boot();          /* 首屏加载汇总数据 —— 必须无条件调用（SUMMARY 初值为 null） */
 </script>
