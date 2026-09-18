@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>midicn-lib · MIDI 音乐库</title>
+<meta name="description" content="80,662 首 MIDI 在线试听：爱尔兰传统、世界民谣、古典钢琴、游戏音乐等 17 个来源数据集，统一整理、质量验证、许可分区。">
+<script src="vendor/Tone.js"></script>
+<script src="vendor/Midi.js"></script>
+<style>
+:root { color-scheme: light dark; --bd: rgba(128,128,128,.28); --bd2: rgba(128,128,128,.5); --mut: #888; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; line-height: 1.6; padding: 1rem 1rem 5.5rem; max-width: 1180px; margin: 0 auto; }
+h1 { font-size: 1.25rem; font-weight: 500; }
+.sub { color: var(--mut); font-size: .82rem; margin: .15rem 0 1rem; }
+.sub a { color: inherit; }
+#boot { font-size: .85rem; color: var(--mut); }
+.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .6rem; margin: .8rem 0 1rem; }
+.cat { border: 0.5px solid var(--bd); border-radius: 10px; padding: .7rem .85rem; cursor: pointer; transition: border-color .15s; }
+.cat:hover { border-color: var(--bd2); }
+.cat.on { border-color: #534AB7; }
+.cat b { display: block; font-size: .88rem; font-weight: 500; }
+.cat span { font-size: .75rem; color: var(--mut); }
+.bar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .6rem; }
+input[type=search], select { padding: .4rem .6rem; border-radius: 8px; border: 0.5px solid var(--bd); background: transparent; color: inherit; font-size: .85rem; }
+input[type=search] { flex: 1; min-width: 180px; }
+label.chk { font-size: .8rem; color: var(--mut); display: flex; align-items: center; gap: .3rem; }
+#status { font-size: .8rem; color: var(--mut); margin: .3rem 0 .5rem; }
+ul { list-style: none; }
+li.row { display: flex; justify-content: space-between; gap: .6rem; align-items: center; padding: .42rem .6rem; border-radius: 7px; cursor: pointer; font-size: .85rem; }
+li.row:hover, li.row.on { background: rgba(120,120,255,.12); }
+li.row .m { color: var(--mut); font-size: .73rem; flex-shrink: 0; white-space: nowrap; }
+#sentinel { height: 1px; }
+#player { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(128,128,128,.1); border-top: 0.5px solid var(--bd); padding: .55rem 1rem; display: flex; gap: .7rem; align-items: center; backdrop-filter: blur(8px); }
+#player button { padding: .38rem 1rem; border-radius: 8px; border: 0.5px solid var(--bd2); background: transparent; color: inherit; cursor: pointer; font-size: .82rem; }
+#player button:disabled { opacity: .35; }
+#np { font-size: .82rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag { font-size: .68rem; padding: .08rem .4rem; border-radius: 999px; background: rgba(120,120,255,.16); white-space: nowrap; }
+#vol { width: 90px; }
+footer { font-size: .74rem; color: var(--mut); margin-top: 1.4rem; border-top: 0.5px solid var(--bd); padding-top: .7rem; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<h1>midicn-lib · MIDI 音乐库</h1>
+<p class="sub">
+  80,662 首 · 17 个来源数据集 · 统一整理 · 在线试听
+  · <a href="https://github.com/midicn/midi-lib" target="_blank">数据仓库</a>
+  · <a href="https://github.com/midicn/midi-lib/releases/tag/v1.0" target="_blank">下载数据包</a>
+</p>
+
+<div class="cats" id="cats"></div>
+<div id="boot">正在加载…</div>
+
+<div class="bar" id="toolbar" hidden>
+  <input type="search" id="q" placeholder="搜索全库标题 / 作曲家（首次输入会加载索引）">
+  <select id="periodSel"><option value="">全部时期</option></select>
+  <label class="chk"><input type="checkbox" id="mainOnly" checked> 只看可商用</label>
+</div>
+<div id="status"></div>
+<ul id="list"></ul>
+<div id="sentinel"></div>
+
+<div id="player">
+  <button id="stop" disabled>停止</button>
+  <div id="np">—</div>
+  <input type="range" id="vol" min="0" max="100" value="78" title="音量">
+  <span class="tag" id="zoneTag"></span>
+</div>
+
+<footer>
+  音色由 WebAudio 实时合成（Tone.js · MIT 许可，无第三方音色库）。音乐内容来自 17 个公开数据集，
+  许可逐曲标注，详见 <a href="https://github.com/midicn/midi-lib/blob/main/LICENSE.md" target="_blank">LICENSE</a>
+  与 <a href="https://github.com/midicn/midi-lib/blob/main/docs/LICENSE-AUDIT.md" target="_blank">许可审计</a>。
+  本站仅提供可公开发布的内容（源码：<a href="https://github.com/midicn/midi-lib-site" target="_blank">midi-lib-site</a>）。
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const PAGE = 120;
+let SUMMARY = null, currentCat = null, chunkIdx = 0, chunkBuf = [], rendered = 0;
+let SEARCH = null, searchReady = false;
+
+let ready = false, syn = null, bass = null, perc = null, part = null;
+const volDb = () => -36 + ($('vol').value / 100) * 36;
+function initAudio() {
+  if (ready) return;
+  const verb = new Tone.Reverb({ decay: 3.0, preDelay: 0.015, wet: 0.26 }).connect(Tone.Destination);
+  const filt = new Tone.Filter({ type: 'lowpass', frequency: 5200, rolloff: -12 }).connect(verb);
+  const comp = new Tone.Compressor({ threshold: -20, ratio: 2.6, attack: 0.01, release: 0.25 }).connect(filt);
+  syn = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'amtriangle', harmonicity: 2.02, modulationType: 'sine' },
+    envelope: { attack: 0.004, decay: 1.35, sustain: 0.1, release: 2.0 },
+    volume: -9,
+  }).connect(comp);
+  bass = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'sine' },
+    envelope: { attack: 0.012, decay: 1.1, sustain: 0.16, release: 1.6 },
+    volume: -11,
+  }).connect(comp);
+  perc = new Tone.PolySynth(Tone.MembraneSynth, { volume: -6 }).connect(comp);
+  Tone.Destination.volume.value = volDb();
+  ready = true;
+}
+$('vol').oninput = () => { if (ready) Tone.Destination.volume.value = volDb(); };
+
+function stop() {
+  if (part) { try { part.stop(); part.dispose(); } catch (e) {} part = null; }
+  if (ready) { syn.releaseAll(); bass.releaseAll(); perc.releaseAll(); }
+  $('stop').disabled = true;
+}
+
+async function play(t) {
+  stop();
+  document.querySelectorAll('li.row.on').forEach(e => e.classList.remove('on'));
+  const li = document.querySelector('li.row[data-id="' + t.id + '"]'); if (li) li.classList.add('on');
+  $('np').textContent = '加载 ' + (t.t || t.id) + ' …';
+  $('stop').disabled = false;
+  $('zoneTag').textContent = t.z === 'main' ? '可商用' : (t.z ? '非商用 NC' : '');
+  try {
+    initAudio();
+    await Tone.start();
+    const buf = await (await fetch(t.f)).arrayBuffer();
+    const midi = new Midi(buf);
+    const notes = [];
+    midi.tracks.forEach(tr => tr.notes.forEach(n => notes.push({
+      time: n.time, name: n.name, dur: Math.max(n.duration, 0.05),
+      vel: n.velocity, pitch: n.midi,
+    })));
+    if (!notes.length) { $('np').textContent = '该曲无音符'; return; }
+    const isPerc = (t.g === 'drum') || /drum|perc/i.test(t.i || '');
+    const start = Tone.now() + 0.12;
+    part = new Tone.Part((time, n) => {
+      const v = Math.min(1, Math.max(0.15, n.vel || 0.7));
+      if (isPerc) perc.triggerAttackRelease(n.pitch < 50 ? 'C1' : 'G2', 0.12, time, v * 0.9);
+      else if (n.pitch < 48) bass.triggerAttackRelease(n.name, n.dur, time, v * 0.85);
+      else syn.triggerAttackRelease(n.name, n.dur, time, v);
+    }, notes);
+    part.start(start);
+    const sec = Math.round(midi.duration);
+    part.stop('+' + (sec + 1.5));
+    $('np').textContent = (t.t || t.id) + (t.cn ? ' · ' + t.cn : '') + ' · ' + sec + 's · ' + midi.tracks.length + ' 轨 · ' + notes.length + ' 音符';
+  } catch (e) {
+    $('np').textContent = '播放失败：' + ((e && e.message) || e);
+  }
+}
+$('stop').onclick = stop;
+
+async function boot() {
+  try {
+    SUMMARY = await (await fetch('data/summary.json')).json();
+  } catch (e) {
+    $('boot').textContent = '加载概览失败：' + e.message; return;
+  }
+  $('boot').hidden = true;
+  $('toolbar').hidden = false;
+  renderCats();
+  const per = [...new Set(SUMMARY.categories.flatMap(c => c.periods))];
+  per.sort().forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; $('periodSel').appendChild(o); });
+  $('status').textContent = '共 ' + SUMMARY.total.toLocaleString() + ' 首 · 点击上方分类开始浏览，或直接搜索';
+}
+function renderCats() {
+  const box = $('cats');
+  SUMMARY.categories.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cat';
+    d.innerHTML = '<b>' + c.name + '</b><span>' + c.count.toLocaleString() + ' 首 · ' + c.sources.length + ' 个来源</span>';
+    d.onclick = () => selectCat(c, d);
+    box.appendChild(d);
+  });
+}
+async function selectCat(c, el) {
+  document.querySelectorAll('.cat.on').forEach(e => e.classList.remove('on'));
+  if (el) el.classList.add('on');
+  currentCat = c; chunkIdx = 0; chunkBuf = []; rendered = 0;
+  $('list').innerHTML = '';
+  $('status').textContent = '加载 ' + c.name + ' …';
+  await loadChunk();
+}
+async function loadChunk() {
+  if (!currentCat || chunkIdx >= currentCat.chunks) return;
+  const r = await fetch('data/cat-' + currentCat.id + '-' + chunkIdx + '.json');
+  const part = await r.json();
+  chunkIdx++;
+  chunkBuf = chunkBuf.concat(part);
+  renderNext();
+  $('status').textContent = currentCat.name + ' · 已加载 ' + chunkBuf.length.toLocaleString() + ' / ' + currentCat.count.toLocaleString();
+}
+function passFilter(t) {
+  if ($('mainOnly').checked && t.z !== 'main') return false;
+  const p = $('periodSel').value;
+  if (p && t.p !== p) return false;
+  return true;
+}
+function renderNext() {
+  const ul = $('list');
+  let added = 0;
+  while (rendered < chunkBuf.length && added < PAGE) {
+    const t = chunkBuf[rendered++];
+    if (!passFilter(t)) continue;
+    ul.appendChild(rowFor(t));
+    added++;
+  }
+}
+function rowFor(t) {
+  const li = document.createElement('li');
+  li.className = 'row'; li.dataset.id = t.id;
+  li.innerHTML = '<span>' + (t.t || '(无题)').slice(0, 60) + ' <span class="m">' + (t.cn || '').slice(0, 24) + '</span></span>' +
+                 '<span class="m">' + [t.p, t.r, t.z === 'main' ? '' : 'NC'].filter(Boolean).join(' · ') + '</span>';
+  li.onclick = () => play(t);
+  return li;
+}
+new IntersectionObserver(async e => {
+  if (!e[0].isIntersecting) return;
+  if (chunkBuf.length - rendered < PAGE * 2) {
+    if (currentCat && chunkIdx < currentCat.chunks) await loadChunk();
+  }
+  renderNext();
+}, { rootMargin: '400px' }).observe($('sentinel'));
+
+$('q').oninput = (function () {
+  let h;
+  return function (e) {
+    clearTimeout(h);
+    h = setTimeout(async function () {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) { if (currentCat) await selectCat(currentCat); else $('list').innerHTML = ''; return; }
+      if (!searchReady) {
+        $('status').textContent = '首次搜索：正在加载全库索引（约 1.5 MB）…';
+        SEARCH = await (await fetch('data/search-lite.json')).json();
+        searchReady = true;
+      }
+      const hits = SEARCH.filter(function (row) {
+        const id = row[0], t = row[1], cn = row[2];
+        return (t && t.toLowerCase().indexOf(q) >= 0) || (cn && cn.toLowerCase().indexOf(q) >= 0) || id.indexOf(q) >= 0;
+      }).slice(0, 400);
+      $('list').innerHTML = '';
+      $('status').textContent = '搜索「' + e.target.value.trim() + '」命中 ' + hits.length + (hits.length >= 400 ? '+' : '') + ' 条（显示前 400）';
+      hits.forEach(function (row) {
+        const id = row[0], t = row[1], cn = row[2], cat = row[3];
+        const li = document.createElement('li');
+        li.className = 'row'; li.dataset.id = id;
+        li.innerHTML = '<span>' + (t || '(无题)').slice(0, 60) + ' <span class="m">' + (cn || '') + '</span></span>' +
+                       '<span class="m">' + cat + '</span>';
+        li.onclick = () => play({ id: id, t: t, cn: cn, f: 'main/' + cat + '/' + id + '.mid' });
+        $('list').appendChild(li);
+      });
+    }, 260);
+  };
+})();
+$('mainOnly').onchange = () => { if (currentCat) selectCat(currentCat); };
+$('periodSel').onchange = () => { if (currentCat) selectCat(currentCat); };
+
+boot();
+</script>
+</body>
+</html>
