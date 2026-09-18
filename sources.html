@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#12100E">
+<title>数据来源 · midicn-lib</title>
+<meta name="description" content="midicn-lib 考察的全部数据源：已收录 18 个来源数据集，以及未收录源的原因与自取指引。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2312100E'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header><div class="hbar">
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#12100E"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
+  <nav class="nav">
+    <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+    <a href="sources.html" class="on" data-zh="数据来源" data-en="Sources">数据来源</a>
+    <a href="licenses.html" data-zh="许可与法律" data-en="License">许可与法律</a>
+    <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
+  </nav>
+  <button class="iconbtn" id="theme" title="切换主题"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn langbtn" id="lang">EN</button>
+</div></header>
+
+<main>
+<div data-lang="zh">
+  <h1>数据来源</h1>
+  <p class="lead">我们考察了 <b>36 个公开 MIDI 数据源</b>，收录 <b>18 个</b>（92,649 首已发布）。本页完整披露收录了什么、没收录什么、以及为什么——并告诉你可以去哪里自行获取。</p>
+
+  <h2>已收录来源（18 个）</h2>
+  <table>
+    <tr><th style="width:22%">来源</th><th style="width:13%">曲目</th><th style="width:26%">内容</th><th style="width:22%">许可</th><th style="width:17%">级别</th></tr>
+    <tr><td><b>ariamidi</b></td><td>32,522</td><td>古典钢琴转录</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2 非商用</span></td></tr>
+    <tr><td><b>TheSession</b></td><td>23,294</td><td>爱尔兰传统舞曲</td><td>CC BY-SA 3.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>Essen (EsAC)</b></td><td>10,448</td><td>世界民谣</td><td>站点开放声明</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>Lakh MIDI</b></td><td>9,640</td><td>古典与传统（已过滤）</td><td>CC BY 4.0</td><td><span class="tag c3">C3 研究学习</span></td></tr>
+    <tr><td><b>Norbeck Abby</b></td><td>3,473</td><td>爱尔兰/瑞典传统</td><td>站点开放声明</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>music21 corpus</b></td><td>3,068</td><td>古典/民谣混合</td><td>公有领域</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>Mutopia</b></td><td>1,861</td><td>古典器乐</td><td>逐曲 PD / CC</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>ABCMisc</b></td><td>1,579</td><td>克莱兹梅尔 / 巴尔干</td><td>站点开放声明</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>OpenScore Lieder</b></td><td>1,440</td><td>艺术歌曲</td><td>CC0-1.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>MAESTRO</b></td><td>1,276</td><td>钢琴演奏对齐</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2 非商用</span></td></tr>
+    <tr><td><b>Groove MIDI</b></td><td>1,150</td><td>专业鼓手节奏型</td><td>CC BY 4.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>EMOPIA</b></td><td>1,071</td><td>流行钢琴 + 情绪标注</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2 非商用</span></td></tr>
+    <tr><td><b>Nottingham</b></td><td>1,037</td><td>英美民谣</td><td>站点开放声明</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>Wikifonia（PD 子集）</b></td><td>446</td><td>传统 / 民歌</td><td>公有领域</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>OpenGameArt</b></td><td>342</td><td>游戏原创音乐</td><td>CC0 / CC BY</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>MusicNet</b></td><td>330</td><td>古典室内乐</td><td>CC BY 4.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>中国民歌集成</b></td><td>10,479</td><td>中国各省民歌</td><td>编者权待确认</td><td><span class="tag no">未发布</span></td></tr>
+    <tr><td><b>MuseData (CCARH)</b></td><td>924</td><td>古典器乐</td><td>许可未明确</td><td><span class="tag no">未发布</span></td></tr>
+  </table>
+
+  <h2>未收录来源与原因</h2>
+  <table>
+    <tr><th style="width:24%">来源</th><th style="width:12%">规模</th><th>未收录原因</th></tr>
+    <tr><td><b>KernScores (CCARH)</b></td><td>10.8 万</td><td>站点声明「for research and teaching」，未明确是否允许再分发</td></tr>
+    <tr><td><b>Josquin Research Project</b></td><td>~1,000</td><td>数据可公开下载，但站点无任何许可声明</td></tr>
+    <tr><td><b>Kunst der Fuge</b></td><td>19,300</td><td>声明「供个人使用」→ 不允许再分发</td></tr>
+    <tr><td><b>IMSLP 部分附件</b></td><td>数千</td><td>部分标注「no redistribution」；且 MIDI 数量极少（主要托管乐谱）</td></tr>
+    <tr><td><b>CPDL ChoralWiki</b></td><td>~25,000</td><td>许可已核实通过（基于 GPL，允许自由分发），但站点 Cloudflare 对数据中心 IP 硬拦截，抓取受阻</td></tr>
+  </table>
+
+  <h2>你可以自行获取</h2>
+  <div class="card hi">
+    <p>以下源公开可访问，你可以自行前往获取并判断授权：</p>
+    <table>
+      <tr><th style="width:34%">来源</th><th>地址</th></tr>
+      <tr><td>CPDL 合唱作品</td><td>cpdl.org</td></tr>
+      <tr><td>KernScores</td><td>kern.ccarh.org</td></tr>
+      <tr><td>Lakh MIDI（完整集）</td><td>colinraffel.com/projects/lmd/</td></tr>
+      <tr><td>IMSLP 乐谱与音频</td><td>imslp.org</td></tr>
+      <tr><td>Internet Archive MIDI</td><td>archive.org</td></tr>
+      <tr><td>TheSession 原始数据</td><td>thesession.org/data</td></tr>
+    </table>
+    <div class="note">每站的使用条款以其原文为准。我们只对本站已收录部分的合规性负责。</div>
+  </div>
+
+  <h2>收录原则</h2>
+  <ul>
+    <li><b>许可硬门槛</b>：只收明确允许再分发的内容</li>
+    <li><b>分级标注</b>：C1 可商用 / C2 不可商用 / C3 仅供研究学习，逐曲写入数据</li>
+    <li><b>宁缺毋滥</b>：许可不明或禁止再分发的源，无论规模一律不收</li>
+    <li><b>可复核</b>：全部判定依据存档，可查阅</li>
+    <li><b>可下架</b>：权利人如有异议，7 个工作日内响应</li>
+  </ul>
+</div>
+
+<div data-lang="en" hidden>
+  <h1>Data Sources</h1>
+  <p class="lead">We surveyed <b>36 public MIDI sources</b> and included <b>18</b> (92,649 tracks published). This page fully discloses what we included, what we excluded, and why — plus where you can obtain the rest yourself.</p>
+
+  <h2>Included Sources (18)</h2>
+  <table>
+    <tr><th style="width:24%">Source</th><th style="width:14%">Tracks</th><th style="width:26%">Content</th><th style="width:20%">License</th><th style="width:16%">Tier</th></tr>
+    <tr><td><b>ariamidi</b></td><td>32,522</td><td>Classical piano transcriptions</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2</span></td></tr>
+    <tr><td><b>TheSession</b></td><td>23,294</td><td>Irish traditional</td><td>CC BY-SA 3.0</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Essen (EsAC)</b></td><td>10,448</td><td>World folk songs</td><td>Site declaration</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Lakh MIDI</b></td><td>9,640</td><td>Classical &amp; traditional (filtered)</td><td>CC BY 4.0</td><td><span class="tag c3">C3</span></td></tr>
+    <tr><td><b>Norbeck Abby</b></td><td>3,473</td><td>Irish / Swedish traditional</td><td>Site declaration</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>music21 corpus</b></td><td>3,068</td><td>Classical / folk mixture</td><td>Public domain</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Mutopia</b></td><td>1,861</td><td>Classical instrumental</td><td>Per-track PD / CC</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>ABCMisc</b></td><td>1,579</td><td>Klezmer / Balkan</td><td>Site declaration</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>OpenScore Lieder</b></td><td>1,440</td><td>Art songs</td><td>CC0-1.0</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>MAESTRO</b></td><td>1,276</td><td>Piano performance alignment</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2</span></td></tr>
+    <tr><td><b>Groove MIDI</b></td><td>1,150</td><td>Drum grooves</td><td>CC BY 4.0</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>EMOPIA</b></td><td>1,071</td><td>Pop piano + emotion</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2</span></td></tr>
+    <tr><td><b>Nottingham</b></td><td>1,037</td><td>British / American folk</td><td>Site declaration</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Wikifonia (PD subset)</b></td><td>446</td><td>Traditional / folk</td><td>Public domain</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>OpenGameArt</b></td><td>342</td><td>Game music</td><td>CC0 / CC BY</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>MusicNet</b></td><td>330</td><td>Classical chamber</td><td>CC BY 4.0</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Chinese Folk Collection</b></td><td>10,479</td><td>Folk songs of China</td><td>Editorial rights pending</td><td><span class="tag no">Not published</span></td></tr>
+    <tr><td><b>MuseData (CCARH)</b></td><td>924</td><td>Classical instrumental</td><td>License unclear</td><td><span class="tag no">Not published</span></td></tr>
+  </table>
+
+  <h2>Excluded Sources &amp; Reasons</h2>
+  <table>
+    <tr><th style="width:26%">Source</th><th style="width:12%">Size</th><th>Reason</th></tr>
+    <tr><td><b>KernScores (CCARH)</b></td><td>108k</td><td>States "for research and teaching"; redistribution not explicitly permitted</td></tr>
+    <tr><td><b>Josquin Research Project</b></td><td>~1,000</td><td>Data downloadable, but no license statement on site</td></tr>
+    <tr><td><b>Kunst der Fuge</b></td><td>19,300</td><td>"Personal use" only — redistribution not allowed</td></tr>
+    <tr><td><b>Parts of IMSLP</b></td><td>thousands</td><td>Some marked "no redistribution"; very few MIDI files hosted</td></tr>
+    <tr><td><b>CPDL ChoralWiki</b></td><td>~25,000</td><td>License verified (GPL-based, free distribution) but Cloudflare blocks datacenter IPs</td></tr>
+  </table>
+
+  <h2>Obtain It Yourself</h2>
+  <div class="card hi">
+    <table>
+      <tr><th style="width:36%">Source</th><th>URL</th></tr>
+      <tr><td>CPDL choral works</td><td>cpdl.org</td></tr>
+      <tr><td>KernScores</td><td>kern.ccarh.org</td></tr>
+      <tr><td>Lakh MIDI (full)</td><td>colinraffel.com/projects/lmd/</td></tr>
+      <tr><td>IMSLP</td><td>imslp.org</td></tr>
+      <tr><td>Internet Archive MIDI</td><td>archive.org</td></tr>
+      <tr><td>TheSession raw data</td><td>thesession.org/data</td></tr>
+    </table>
+    <div class="note">Each site's own terms govern. We are responsible only for the compliance of what we redistribute.</div>
+  </div>
+
+  <h2>Our Principles</h2>
+  <ul>
+    <li><b>Redistribution required</b> — no permission, no inclusion</li>
+    <li><b>Tiered labeling</b> — C1 / C2 / C3 written per track</li>
+    <li><b>Better safe than sorry</b> — unclear or restrictive licenses are excluded regardless of scale</li>
+    <li><b>Auditable</b> — every decision archived and reviewable</li>
+    <li><b>Takedown-ready</b> — rights-holder notices answered within 7 business days</li>
+  </ul>
+</div>
+</main>
+
+<footer>
+  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 92,649 首 / 18 个来源数据集" data-en="midicn-lib · Open MIDI Library · 92,649 tracks / 18 source datasets">midicn-lib · 开放 MIDI 音乐库 · 92,649 首 / 18 个来源数据集</span>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+if (localStorage.getItem('midicn-theme')) document.documentElement.dataset.theme = localStorage.getItem('midicn-theme');
+$('theme').onclick = () => { const c = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = c; localStorage.setItem('midicn-theme', c); };
+let LANG = localStorage.getItem('midicn-lang') || 'zh';
+function applyLang(){
+  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-lang]').forEach(el => el.hidden = el.dataset.lang !== LANG);
+  document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
+  $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
+}
+$('lang').onclick = () => { LANG = LANG === 'zh' ? 'en' : 'zh'; localStorage.setItem('midicn-lang', LANG); applyLang(); };
+applyLang();
+</script>
+</body>
+</html>
