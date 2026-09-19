@@ -43,6 +43,10 @@ jobs:
           cp -r assets site/assets 2>/dev/null || true
           ls site | head -6
           find site -name '*.mid' | wc -l
+      - name: 写入 GitHub 上的真实包体积（不依赖用户端访问 API）
+        run: |
+          cd site
+          python3 ../tools/inject_sizes.py download.html
       - name: Generate shards (按需加载分片)
         run: |
           cd site
