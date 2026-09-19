@@ -88,7 +88,7 @@ $('lang').onclick = () => { LANG = LANG==='zh'?'en':'zh'; localStorage.setItem('
 $('lang').textContent = LANG==='zh'?'EN':'中';
 
 const T = {
-  zh:{ composer:'作曲家', period:'时期', genre:'类型', region:'地域', inst:'编制', cat:'分类', workno:'作品编号', form:'曲式', year:'年代',
+  zh:{ composer:'作曲家', period:'时期', genre:'类型', region:'地域', inst:'编制', cat:'分类', workno:'作品编号', form:'曲式', year:'年代', country:'国家',
        license:'许可与调用', data:'数据', listen:'试听', rel:'相似与相邻',
        ok:'C1 可商用', mid:'C2 非商用', no:'C3 研究/学习', use1:'需按来源署名（文本如下，可一键复制）',
        use2:'仅限个人欣赏 / 教育 / 非商业项目，禁止商业使用', use3:'仅限研究 / 教学 / 学习，禁止商业使用与公开表演',
@@ -97,7 +97,7 @@ const T = {
        copy:'复制署名', copied:'已复制 ✓', libopen:'在音乐库中打开', prev:'上一曲', next:'下一曲',
        samec:'同作曲家更多作品', none:'（暂无可推荐）', playing:'播放中', sf:'采样音源', synth:'合成音源',
        load:'加载', failed:'播放失败：', sfl:'音源加载中', nf:'未找到该曲目（ID 或参数有误）' },
-  en:{ composer:'Composer', period:'Period', genre:'Genre', region:'Region', inst:'Scoring', cat:'Category', workno:'Work No.', form:'Form', year:'Year',
+  en:{ composer:'Composer', period:'Period', genre:'Genre', region:'Region', inst:'Scoring', cat:'Category', workno:'Work No.', form:'Form', year:'Year', country:'Country',
        license:'License & Usage', data:'Data', listen:'Listen', rel:'Related',
        ok:'C1 Commercial', mid:'C2 Non-comm.', no:'C3 Study', use1:'Attribution required (text below, one-click copy)',
        use2:'Personal / educational / non-commercial use only', use3:'Research / teaching / study only; no commercial use or public performance',
@@ -319,6 +319,7 @@ function render(x, ctx){
     +(x.form?'<dt>'+t('form')+'</dt><dd>'+esc(x.form)+'</dd>':'')
     +(x.yr?'<dt>'+t('year')+'</dt><dd>'+esc(x.yr)+'</dd>':'')
     +'<dt>'+t('genre')+'</dt><dd>'+esc(x.g||'—')+'</dd>'
+    +(x.ctry?'<dt>'+t('country')+'</dt><dd>'+esc(x.ctry)+'</dd>':'')
     +'<dt>'+t('region')+'</dt><dd>'+esc(x.r||'—')+'</dd>'
     +'<dt>'+t('inst')+'</dt><dd>'+esc(x.i||'—')+'</dd>'
     +'<dt>'+t('cat')+'</dt><dd>'+esc(ctx.cat)+'</dd></dl></div>'

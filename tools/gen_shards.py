@@ -37,7 +37,7 @@ CAT_NAMES = {
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）
-KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f", "opus", "no", "form", "yr")
+KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f", "opus", "no", "form", "yr", "ctry")
 
 # ── 地域名清洗：上游 Essen/Norbeck 等源残留 LaTeX 转义（{\"aa} / \"o 等） ──
 _LATEX = (
