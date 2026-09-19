@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="description" content="midicn-lib 曲目详情：作品识别、许可档位与调用方式。">
+<title>曲目详情 · midicn-lib</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F'/%3E%3Crect x='23' y='20' width='5' height='21' rx='2.5' fill='%23E8C547'/%3E%3Crect x='32' y='14' width='5' height='27' rx='2.5' fill='%23E07A3F'/%3E%3Crect x='41' y='23' width='5' height='18' rx='2.5' fill='%23E8C547'/%3E%3Ccircle cx='45' cy='14' r='5' fill='%23E8C547'/%3E%3C/svg%3E">
+<script src="vendor/Tone.js"></script>
+<script src="vendor/Midi.js"></script>
+<script src="soundfont/engine/js-synthesizer.min.js"></script>
+<style>
+.crumbs{font-size:12px;color:var(--dim2);margin:.9rem .2rem .4rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.crumbs a{color:var(--dim)}
+.wrap{max-width:860px;margin:0 auto;padding:0 1rem 3rem}
+h1.dt{font-size:1.35rem;font-weight:600;letter-spacing:-.02em;margin:.3rem .2rem .2rem;line-height:1.35}
+.sub{font-size:12.5px;color:var(--dim2);margin:0 .2rem 1rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.7rem;margin-bottom:.9rem}
+.card{background:var(--surface);border:1px solid var(--bd);border-radius:var(--r);padding:.85rem 1rem;backdrop-filter:blur(14px)}
+.card h3{font-size:.78rem;font-weight:500;color:var(--dim);margin:0 0 .55rem;letter-spacing:.04em}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .9rem;font-size:13px}
+.kv dt{color:var(--dim2);white-space:nowrap}
+.kv dd{margin:0;color:var(--tx);word-break:break-word}
+.concl{display:flex;align-items:center;gap:.5rem;font-size:13.5px;font-weight:500;margin-bottom:.5rem}
+.concl .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.ok{background:#63C97E}.dot.mid{background:#E8C547}.dot.no{background:#E08A8A}
+.attr{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.7;color:var(--dim);
+  background:rgba(127,127,127,.08);border:1px dashed var(--bd);border-radius:8px;padding:.6rem .7rem;margin:.5rem 0;white-space:pre-wrap;word-break:break-word}
+.req{font-size:12px;color:var(--dim);margin:.4rem 0 0;line-height:1.6}
+.rowbtns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+.recs{display:flex;flex-direction:column;gap:.15rem}
+.recs a{display:flex;justify-content:space-between;gap:.6rem;padding:.38rem .5rem;border-radius:var(--rs);font-size:12.5px;color:var(--tx);text-decoration:none}
+.recs a:hover{background:var(--surface);color:var(--accent)}
+.recs a span{color:var(--dim2);flex:none}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.6rem}
+.np{font-size:12.5px;color:var(--dim2);min-height:1.2em;margin:.55rem .1rem 0}
+.prog{appearance:none;height:6px;border-radius:3px;background:var(--surface);border:1px solid var(--bd);width:100%;margin:.4rem 0 .2rem}
+.prog::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer}
+.err{color:#E08A8A}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#070706"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F"/><rect x="23" y="20" width="5" height="21" rx="2.5" fill="#E8C547"/><rect x="32" y="14" width="5" height="27" rx="2.5" fill="#E07A3F"/><rect x="41" y="23" width="5" height="18" rx="2.5" fill="#E8C547"/><circle cx="45" cy="14" r="5" fill="#E8C547"/></svg><span>midicn<b>-lib</b></span></a>
+  <nav class="nav">
+    <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+    <a href="download.html" data-zh="下载数据" data-en="Download">下载数据</a>
+    <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+    <a href="licenses.html" data-zh="许可与法律" data-en="License">许可与法律</a>
+  </nav>
+  <button class="iconbtn" id="theme" title="主题"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn langbtn" id="lang">EN</button>
+</div></header>
+
+<div class="wrap">
+  <div class="crumbs" id="crumbs"></div>
+  <h1 class="dt" id="ttl">…</h1>
+  <p class="sub" id="sub"></p>
+  <div id="box" class="grid2"></div>
+  <div class="card" style="margin-bottom:.9rem">
+    <h3 data-zh="试听" data-en="Listen">试听</h3>
+    <div class="actions">
+      <button class="btn primary" id="play" style="min-width:86px">▶ <span data-zh="播放" data-en="Play">播放</span></button>
+      <input type="range" id="vol" min="0" max="100" value="78" title="Volume" style="width:110px">
+      <span class="pill" id="sfbadge">—</span>
+      <span class="pill" id="tag"></span>
+      <a class="btn" id="libopen" href="#" style="text-decoration:none" data-zh="在音乐库中打开" data-en="Open in library">在音乐库中打开</a>
+    </div>
+    <div class="np" id="np">—</div>
+    <input type="range" class="prog" id="prog" min="0" max="1000" value="0" disabled>
+  </div>
+  <div class="card" style="margin-bottom:.9rem">
+    <h3 data-zh="相似与相邻" data-en="Related">相似与相邻</h3>
+    <div class="recs" id="recs"><span class="ts" style="color:var(--dim2)">…</span></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let LANG = localStorage.getItem('midicn-lang') || 'zh';
+if (localStorage.getItem('midicn-theme')) document.documentElement.dataset.theme = localStorage.getItem('midicn-theme');
+$('theme').onclick = () => { const c = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = c; localStorage.setItem('midicn-theme', c); };
+$('lang').onclick = () => { LANG = LANG==='zh'?'en':'zh'; localStorage.setItem('midicn-lang',LANG);
+  $('lang').textContent = LANG==='zh'?'EN':'中'; applyLang(); };
+$('lang').textContent = LANG==='zh'?'EN':'中';
+
+const T = {
+  zh:{ composer:'作曲家', period:'时期', genre:'类型', region:'地域', inst:'编制', cat:'分类',
+       license:'许可与调用', data:'数据', listen:'试听', rel:'相似与相邻',
+       ok:'C1 可商用', mid:'C2 非商用', no:'C3 研究/学习', use1:'需按来源署名（文本如下，可一键复制）',
+       use2:'仅限个人欣赏 / 教育 / 非商业项目，禁止商业使用', use3:'仅限研究 / 教学 / 学习，禁止商业使用与公开表演',
+       use3b:'仅限研究 / 教学 / 学习用途，不得用于产品或公开表演',
+       dur:'时长', notes:'音符数', fsize:'文件大小', file:'库内路径', dl:'下载 MIDI',
+       copy:'复制署名', copied:'已复制 ✓', libopen:'在音乐库中打开', prev:'上一曲', next:'下一曲',
+       samec:'同作曲家更多作品', none:'（暂无可推荐）', playing:'播放中', sf:'采样音源', synth:'合成音源',
+       load:'加载', failed:'播放失败：', sfl:'音源加载中', nf:'未找到该曲目（ID 或参数有误）' },
+  en:{ composer:'Composer', period:'Period', genre:'Genre', region:'Region', inst:'Scoring', cat:'Category',
+       license:'License & Usage', data:'Data', listen:'Listen', rel:'Related',
+       ok:'C1 Commercial', mid:'C2 Non-comm.', no:'C3 Study', use1:'Attribution required (text below, one-click copy)',
+       use2:'Personal / educational / non-commercial use only', use3:'Research / teaching / study only; no commercial use or public performance',
+       use3b:'Research / teaching / study only; not for products or public performance',
+       dur:'Duration', notes:'Notes', fsize:'File size', file:'Path', dl:'Download MIDI',
+       copy:'Copy attribution', copied:'Copied ✓', libopen:'Open in library', prev:'Prev', next:'Next',
+       samec:'More by this composer', none:'(none)', playing:'Playing', sf:'SoundFont', synth:'Synth',
+       load:'Loading', failed:'Playback failed: ', sfl:'Loading soundfont', nf:'Track not found (bad id or params)' }
+};
+const t = k => T[LANG][k] || k;
+function applyLang(){ document.documentElement.lang = LANG==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG==='zh' ? el.dataset.zh : el.dataset.en);
+  if(window.__track) render(window.__track, window.__ctx); }
+$('lang').textContent = LANG==='zh'?'EN':'中';
+
+/* 来源 → 归属与附加义务 */
+const SRC = {
+  aria:{n:'ariamidi',l:'CC BY-NC-SA 4.0'}, thesession:{n:'TheSession.org',l:'CC BY-SA 4.0'},
+  essen:{n:'Essen (EsAC)',l:'站点开放声明'}, lakh:{n:'Lakh MIDI',l:'CC BY 4.0'},
+  norbeck:{n:'Norbeck Abby',l:'站点开放声明'}, m21:{n:'music21 corpus',l:'公有领域'},
+  mutopia:{n:'Mutopia Project',l:'逐曲 PD / CC'}, abcmisc:{n:'ABCMisc',l:'站点开放声明'},
+  openscore:{n:'OpenScore Lieder',l:'CC0-1.0'}, maestro:{n:'MAESTRO',l:'CC BY-NC-SA 4.0'},
+  groove:{n:'Groove MIDI Dataset',l:'CC BY 4.0'}, emopia:{n:'EMOPIA',l:'CC BY-NC-SA 4.0'},
+  nottingham:{n:'Nottingham',l:'站点开放声明'}, wikifonia:{n:'Wikifonia（PD 子集）',l:'公有领域'},
+  oga:{n:'OpenGameArt',l:'CC0 / CC BY / CC BY-SA / GPL（逐曲）'}, musicnet:{n:'MusicNet',l:'CC BY 4.0'},
+  chinafolk:{n:'中国民间歌曲集成（OMR 数据集）',l:'TRADITIONAL-STUDY'},
+  giantmidi:{n:'GiantMIDI-Piano（ByteDance）',l:'CC BY 4.0'},
+  cyberhymnal:{n:'The Cyber Hymnal™（hymntime.com/tch）',l:'Public Domain'}
+};
+const PERIOD = {renaissance:['文艺复兴','Renaissance'],baroque:['巴洛克','Baroque'],classical:['古典','Classical'],
+  romantic:['浪漫','Romantic'],modern:['现代','Modern'],contemporary:['当代','Contemporary'],traditional:['传统','Traditional']};
+
+/* ── 音频（与 index.html 同引擎） ── */
+let ready=false,syn=null,bass=null,perc=null,part=null,sfSynth=null,sfReady=false,sfLoading=false,sfFailed=false;
+let playing=false,uiTimer=null,curTotal=1,t0=0;
+const volDb = () => -36 + ($('vol').value/100)*36;
+function initAudio(){
+  if(ready) return;
+  const verb = new Tone.Reverb({decay:3.0,preDelay:.015,wet:.26}).connect(Tone.Destination);
+  const filt = new Tone.Filter({type:'lowpass',frequency:5200,rolloff:-12}).connect(verb);
+  const comp = new Tone.Compressor({threshold:-20,ratio:2.6,attack:.01,release:.25}).connect(filt);
+  syn = new Tone.PolySynth(Tone.Synth,{oscillator:{type:'amtriangle',harmonicity:2.02,modulationType:'sine'},
+    envelope:{attack:.004,decay:1.35,sustain:.1,release:2.0},volume:-9}).connect(comp);
+  bass = new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},
+    envelope:{attack:.012,decay:1.1,sustain:.16,release:1.6},volume:-11}).connect(comp);
+  perc = new Tone.PolySynth(Tone.MembraneSynth,{volume:-6}).connect(comp);
+  Tone.Destination.volume.value = volDb(); ready=true;
+}
+$('vol').oninput = () => { if(ready) Tone.Destination.volume.value = volDb(); };
+function setBadge(txt,cls){ const el=$('sfbadge'); el.textContent=txt; el.className='pill '+(cls||''); }
+async function ensureSoundFont(){
+  if(sfReady||sfLoading||sfFailed) return;
+  sfLoading=true; setBadge(t('sfl'));
+  try{
+    const AC = Tone.getContext().rawContext;
+    sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
+    await sfSynth.init(AC);
+    const sf = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
+    await sfSynth.loadSFont(sf);
+    sfReady=true; setBadge(t('sf'),'sf');
+  }catch(e){ sfFailed=true; setBadge(t('synth'),'nc'); }
+  sfLoading=false;
+}
+const fmt = s => { s=Math.max(0,Math.round(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+function stop(){
+  clearInterval(uiTimer);
+  if(sfSynth){ try{sfSynth.stop();}catch(e){} }
+  if(part){ try{part.stop();part.dispose();}catch(e){} part=null; }
+  try{ Tone.Transport.stop(); Tone.Transport.cancel(); }catch(e){}
+  if(ready){ syn.releaseAll(); bass.releaseAll(); perc.releaseAll(); }
+  playing=false; $('play').innerHTML='▶ <span data-zh="播放" data-en="Play">播放</span>';
+  $('prog').value=0;
+}
+async function playTrack(x){
+  stop(); $('np').textContent = t('load')+' '+(x.t||x.id)+' …';
+  $('tag').textContent = x.z==='main'?'C1':(x.z==='study'?'C3':'C2');
+  $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
+  curTotal = x.du || 1;
+  try{
+    await Tone.start();
+    const ab = await (await fetch(x.f)).arrayBuffer();
+    if(sfReady){
+      sfSynth.stop(); await sfSynth.playNewMIDI(ab);
+      playing=true; $('play').innerHTML='⏸'; t0=Date.now();
+      $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+t('playing')+' · '+t('sf');
+      uiTimer=setInterval(()=>{ if(!playing) return;
+        const pos=(Date.now()-t0)/1000;
+        $('prog').value=Math.min(1000,(pos/Math.max(curTotal,.1))*1000);
+        if(pos>=curTotal) stop(); },300);
+      return;
+    }
+    await ensureSoundFont();
+    if(sfReady){ return playTrack(x); }
+    initAudio();
+    const midi = new Midi(ab);
+    const notes=[];
+    midi.tracks.forEach(tr => tr.notes.forEach(n => notes.push({
+      time:n.time,name:n.name,dur:Math.max(n.duration,.05),vel:n.velocity,pitch:n.midi })));
+    if(!notes.length){ $('np').textContent=T[LANG].nf; return; }
+    const isPerc = (x.g==='drum') || /drum|perc/i.test(x.i||'');
+    Tone.Transport.stop(); Tone.Transport.cancel(); Tone.Transport.position=0;
+    part = new Tone.Part((time,n)=>{
+      const v=Math.min(1,Math.max(.15,n.vel||.7));
+      if(isPerc) perc.triggerAttackRelease(n.pitch<50?'C1':'G2',.12,time,v*.9);
+      else if(n.pitch<48) bass.triggerAttackRelease(n.name,n.dur,time,v*.85);
+      else syn.triggerAttackRelease(n.name,n.dur,time,v);
+    }, notes);
+    part.start(0);
+    curTotal=Math.round(midi.duration)||1;
+    part.stop(curTotal+1.5); Tone.Transport.start('+0.08');
+    playing=true; $('play').innerHTML='⏸';
+    $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+fmt(curTotal);
+    uiTimer=setInterval(()=>{ if(!playing) return;
+      const pos=Tone.Transport.seconds;
+      $('prog').value=Math.min(1000,(pos/Math.max(curTotal,.1))*1000);
+      if(pos>=curTotal) stop(); },300);
+  }catch(e){ $('np').textContent=t('failed')+(e&&e.message||e); }
+}
+$('play').onclick = () => { playing ? stop() : playTrack(window.__track); };
+
+/* ── 数据定位与渲染 ── */
+let LOC=null, CHUNK=null, CATCHUNK=null;
+async function findIn(cat, chunk, id){
+  const arr = CHUNK && CATCHUNK===cat+'-'+chunk ? CHUNK
+    : (CHUNK = CATCHUNK=cat+'-'+chunk, await (await fetch('data/cat-'+cat+'-'+chunk+'.json')).json());
+  const i = arr.findIndex(x => x.id === id);
+  return i >= 0 ? {x:arr[i], arr, i, cat, chunk} : null;
+}
+async function locate(id, cat, chunk){
+  if(cat!=null && chunk!=null){ const r = await findIn(cat, +chunk, id); if(r) return r; }
+  if(!LOC) LOC = await (await fetch('data/loc.json')).json();
+  const e = LOC[id]; if(!e) return null;
+  return await findIn(e[0], e[1], id);
+}
+function zonePill(z,l){
+  if(z==='main') return ['dot ok', t('ok')];
+  if(z==='piano-special') return ['dot mid', t('mid')];
+  if(l==='TRADITIONAL-STUDY') return ['dot mid', t('no')+' · TRADITIONAL-STUDY'];
+  return ['dot no', t('no')];
+}
+function attribution(x){
+  const src = SRC[x.id.split('-')[0]] || {n:x.id.split('-')[0], l:x.l};
+  const lines = LANG==='zh'
+    ? ['本曲收录于 midicn-lib（lib.midicn.com）· 曲目 ID: '+x.id,
+       '原始来源：'+src.n+' · 许可：'+(x.l||'—'),
+       '使用 midicn-lib 数据时请保留本署名。']
+    : ['From midicn-lib (lib.midicn.com) · Track ID: '+x.id,
+       'Source: '+src.n+' · License: '+(x.l||'—'),
+       'Please keep this attribution when using midicn-lib data.'];
+  if(x.l==='TRADITIONAL-STUDY') lines.push(LANG==='zh'
+    ? '附加义务：限研究 / 教学 / 学习用途；禁止商业使用与公开表演；底本为《中国民间歌曲集成》（受版权保护的汇编作品）。'
+    : 'Additional: research / teaching / study only; no commercial use or public performance; source book is a copyrighted compilation.');
+  if(src.n.indexOf('Cyber Hymnal')>=0) lines.push(LANG==='zh'
+    ? '来源要求：署名 The Cyber Hymnal™（hymntime.com/tch）。'
+    : 'Source requirement: credit The Cyber Hymnal™ (hymntime.com/tch).');
+  if((x.l||'').indexOf('NC')>=0) lines.push(LANG==='zh'
+    ? '附加义务：该来源许可为非商用（NC）。'
+    : 'Additional: the source license is Non-Commercial (NC).');
+  return lines.join('\n');
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function render(x, ctx){
+  window.__track = x; window.__ctx = ctx;
+  const src = SRC[x.id.split('-')[0]] || {n:'', l:''};
+  const pn = PERIOD[x.p] ? PERIOD[x.p][LANG==='zh'?0:1] : (x.p||'—');
+  $('ttl').textContent = x.t || x.id;
+  $('sub').textContent = (x.cn || 'Traditional') + ' · ' + pn + ' · ' + (src.n || '');
+  const cr = $('crumbs');
+  cr.innerHTML = '<a href="./">'+(LANG==='zh'?'音乐库':'Library')+'</a> › '
+    + '<a href="./?cat='+esc(ctx.cat)+'">'+esc(ctx.cat)+'</a> › <span>'+esc((x.t||x.id).slice(0,42))+'</span>';
+  const [dot, label] = zonePill(x.z, x.l);
+  const concl = {'ok':'#3B6D11','mid':'#854F0B','no':'#791F1F'}[dot.split(' ')[1]];
+  const useText = x.z==='main' ? t('use1') : (x.l==='TRADITIONAL-STUDY' ? t('use3b') : (x.z==='study' ? t('use3') : t('use2')));
+  $('box').innerHTML =
+    '<div class="card"><h3>'+t('composer')+' / '+t('period')+'</h3><dl class="kv">'
+    +'<dt>'+t('composer')+'</dt><dd>'+esc(x.cn||'Traditional')+'</dd>'
+    +'<dt>'+t('period')+'</dt><dd>'+esc(pn)+'</dd>'
+    +'<dt>'+t('genre')+'</dt><dd>'+esc(x.g||'—')+'</dd>'
+    +'<dt>'+t('region')+'</dt><dd>'+esc(x.r||'—')+'</dd>'
+    +'<dt>'+t('inst')+'</dt><dd>'+esc(x.i||'—')+'</dd>'
+    +'<dt>'+t('cat')+'</dt><dd>'+esc(ctx.cat)+'</dd></dl></div>'
+    +'<div class="card"><h3>'+t('license')+'</h3>'
+    +'<div class="concl"><span class="'+dot+'"></span><span style="color:'+concl+'">'+label+'</span></div>'
+    +'<div class="req">'+useText+'</div>'
+    +'<div class="attr" id="attr">'+esc(attribution(x))+'</div>'
+    +'<div class="actions"><button class="btn" id="cp">'+t('copy')+'</button></div>'
+    +'<p class="req" style="margin-top:.6rem">'+(LANG==='zh'
+      ?'权利人如有异议：通过项目 Issues 告知，7 个工作日内响应下架。'
+      :'Rights holders: open a project Issue; we remove flagged tracks within 7 business days.')+'</p></div>'
+    +'<div class="card"><h3>'+t('data')+'</h3><dl class="kv">'
+    +'<dt>'+t('dur')+'</dt><dd>'+(x.du?fmt(x.du):'—')+'</dd>'
+    +'<dt>'+t('notes')+'</dt><dd>'+(x.nn?x.nn.toLocaleString():'—')+'</dd>'
+    +'<dt>'+t('fsize')+'</dt><dd id="fsz">…</dd>'
+    +'<dt>'+t('file')+'</dt><dd>'+esc(x.f)+'</dd></dl>'
+    +'<div class="actions"><a class="btn primary" href="'+esc(x.f)+'" download style="text-decoration:none">'+t('dl')+'</a></div></div>';
+  $('tag').textContent = x.z==='main'?'C1':(x.z==='study'?'C3':'C2');
+  $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
+  $('libopen').href = './?play='+encodeURIComponent(x.id)+'&cat='+encodeURIComponent(ctx.cat)+'&chunk='+ctx.chunk;
+  $('cp').onclick = async () => {
+    const txt = document.getElementById('attr').textContent;
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove(); }
+    $('cp').textContent = t('copied'); setTimeout(()=>{$('cp').textContent=t('copy');},1600);
+  };
+  fetch(x.f, {method:'HEAD'}).then(r=>{ const el=$('fsz');
+    if(el && r.ok) el.textContent=(parseInt(r.headers.get('Content-Length')||0)/1024).toFixed(1)+' KB'; }).catch(()=>{});
+  /* JSON-LD */
+  let ld = document.getElementById('ld'); if(ld) ld.remove();
+  ld = document.createElement('script'); ld.id='ld'; ld.type='application/ld+json';
+  ld.textContent = JSON.stringify({'@context':'https://schema.org','@type':'MusicComposition',
+    name:x.t||x.id, composer:{'@type':'Person',name:x.cn||'Traditional'},
+    genre:x.g||'', identifier:x.id, url:location.href.split('?')[0].replace(location.search,'')+'?id='+x.id,
+    isAccessibleForFree:true, license:x.l||''});
+  document.head.appendChild(ld);
+  renderRecs(x, ctx);
+}
+async function renderRecs(x, ctx){
+  const box = $('recs'); box.innerHTML='';
+  const add = (id, label, sub2, href) => { const a=document.createElement('a'); a.href=href;
+    a.innerHTML='<span style="color:var(--tx)">'+esc(label)+'</span><span>'+esc(sub2)+'</span>'; box.appendChild(a); };
+  const prev = ctx.arr[ctx.i-1], next = ctx.arr[ctx.i+1];
+  const mk = (tid) => 'detail.html?id='+encodeURIComponent(tid)+'&cat='+encodeURIComponent(ctx.cat)+'&chunk='+ctx.chunk;
+  if(prev) add(prev.id, prev.t||prev.id, t('prev'), mk(prev.id));
+  if(next) add(next.id, next.t||next.id, t('next'), mk(next.id));
+  try{
+    if(!window.__BYSRC) window.__BYSRC = await (await fetch('meta/index-by-composer.json')).json();
+    const ids = (window.__BYSRC[x.c]||[]).filter(tid => tid !== x.id).slice(0, 8);
+    if(ids.length){
+      const head=document.createElement('div'); head.className='ts'; head.style.cssText='color:var(--dim);margin:.4rem 0 .2rem';
+      head.textContent=t('samec'); box.appendChild(head);
+      if(!LOC) LOC = await (await fetch('data/loc.json')).json();
+      ids.forEach(tid => { const e = LOC[tid]; if(!e) return;
+        add(tid, tid, e[0]+' · #'+e[1], 'detail.html?id='+encodeURIComponent(tid)+'&cat='+encodeURIComponent(e[0])+'&chunk='+e[1]); });
+    }
+  }catch(e){}
+  if(!box.children.length) box.innerHTML='<span class="ts" style="color:var(--dim2)">'+t('none')+'</span>';
+}
+(async function(){
+  const q = new URLSearchParams(location.search);
+  const id = q.get('id');
+  if(!id){ $('ttl').textContent='?'; $('ttl').className='dt err';
+    $('sub').textContent='detail.html?id=<trackId>'; return; }
+  try{
+    const ctx = await locate(id, q.get('cat'), q.get('chunk'));
+    if(!ctx){ $('ttl').className='dt err'; $('ttl').textContent='404'; $('sub').textContent=t('nf'); return; }
+    render(ctx.x, ctx);
+    document.title = (ctx.x.t||ctx.x.id)+' · midicn-lib';
+  }catch(e){ $('ttl').className='dt err'; $('ttl').textContent='Error';
+    $('sub').textContent=(e&&e.message)||String(e); }
+})();
+</script>
+</body>
+</html>

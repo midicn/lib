@@ -97,12 +97,15 @@ def main() -> int:
     # 分类分片（类内按 500 条切片——首屏更快）
     CHUNK = 500
     summary_cats = []
+    loc = {}          # id -> [cat, chunkIdx]：详情页直链兜底定位
     for cat, items in sorted(by_cat.items(), key=lambda kv: -len(kv[1])):
         n_chunks = max(1, (len(items) + CHUNK - 1) // CHUNK)
         for i in range(n_chunks):
             part = items[i * CHUNK:(i + 1) * CHUNK]
             (out / f"cat-{cat}-{i}.json").write_text(
                 json.dumps(part, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+            for it in part:
+                loc[it["id"]] = [cat, i]
 
         srcs = sorted({i["id"].split("-")[0] for i in items})
         periods = sorted({i["p"] for i in items if i.get("p")})
@@ -136,6 +139,10 @@ def main() -> int:
     search = [[t["id"], t.get("t") or "", t.get("cn") or "", t["f"].split("/")[1]] for t in tracks]
     (out / "search-lite.json").write_text(
         json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    # 曲目定位表（详情页直链兜底：id -> [分类, 分片号]）
+    (out / "loc.json").write_text(
+        json.dumps(loc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     # 概览
     summary = {

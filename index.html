@@ -78,6 +78,8 @@ header .nav{margin-left:0}
 #list{list-style:none}
 .row{display:flex;align-items:center;gap:.75rem;padding:.52rem .72rem;border-radius:var(--rs);cursor:pointer;
   transition:background .15s,transform .15s;font-size:13.5px;border:1px solid transparent}
+.row .tt a{color:inherit;text-decoration:none}
+.row .tt a:hover{color:var(--accent)}
 .row:hover{background:var(--surface);border-color:var(--bd);transform:translateX(2px)}
 .row.on{background:linear-gradient(90deg,var(--halo1),transparent);border-color:var(--bd-hi);box-shadow:inset 3px 0 0 var(--accent)}
 .row .pl{width:15px;flex-shrink:0;color:var(--p2);font-size:11px;opacity:.8;transition:.15s}
@@ -425,6 +427,27 @@ async function boot(){
   $('status').textContent = t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
   $('list').innerHTML='';
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  deepLink();
+}
+/* 深链：?play=<id>&cat=<分类>&chunk=<分片号> —— 定位并高亮（不自动播放，受浏览器手势限制） */
+async function deepLink(){
+  const q=new URLSearchParams(location.search);
+  const pid=q.get('play'); if(!pid) return;
+  let c = q.get('cat') ? SUMMARY.categories.find(x=>x.id===q.get('cat')) : null;
+  let ch = q.get('chunk')!=null ? +q.get('chunk') : null;
+  if(!c || ch==null){
+    const L=await (await fetch('data/loc.json')).json(); const e=L[pid]; if(!e) return;
+    c=SUMMARY.categories.find(x=>x.id===e[0]); ch=e[1]; if(!c||ch==null) return;
+  }
+  await selectCat(c);
+  while(chunkIdx<=ch && chunkIdx<c.chunks) await loadChunk();
+  const x=buf.find(t=>t.id===pid); if(!x) return;
+  flat=buf.filter(pass);
+  const fi=flat.indexOf(x);
+  while(rendered<=fi && rendered<flat.length) renderNext();
+  const li=document.querySelector('.row[data-id="'+pid+'"]');
+  if(li){ li.classList.add('on'); li.scrollIntoView({block:'center'}); }
+  $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · ▶';
 }
 function renderHead(){
   if(!SUMMARY) return;
@@ -489,7 +512,8 @@ async function loadFacets(c, keep){
 async function loadChunk(){
   if(!curCat || chunkIdx>=curCat.chunks) return;
   const r=await fetch('data/cat-'+curCat.id+'-'+chunkIdx+'.json');
-  const part=await r.json(); chunkIdx++;
+  const part=await r.json(); const ch=chunkIdx; chunkIdx++;
+  part.forEach(t=>{ t._ch=ch; });
   buf=buf.concat(part);
   if(chunkIdx===1) $('list').innerHTML='';
   flat=buf.filter(pass); rendered=0; renderNext(true);
@@ -529,7 +553,10 @@ function rowFor(x, idx){
   const li=document.createElement('li'); li.className='row'; li.dataset.id=x.id;
   const tags=[];
   if(x.z && x.z!=='main') tags.push('<span class="pill '+(x.z==='study'?'':'nc')+'">'+(x.z==='study'?t('study'):'NC')+'</span>');
-  li.innerHTML='<span class="pl">▶</span><span class="tt">'+(x.t||t('noTitle')).slice(0,70)+'<span class="sub"> '+(x.cn||'').slice(0,26)+'</span></span><span class="meta">'+(x.du?fmt(x.du)+' · ':'')+[x.p,x.r].filter(Boolean).join(' · ')+' '+tags.join('')+'</span>';
+  const dcat = x._cat || (curCat ? curCat.id : '');
+  const dchunk = (x._ch!=null) ? '&chunk='+x._ch : '';
+  const durl = 'detail.html?id='+encodeURIComponent(x.id)+(dcat?'&cat='+encodeURIComponent(dcat):'')+dchunk;
+  li.innerHTML='<span class="pl">▶</span><span class="tt"><a class="ttl" href="'+durl+'" onclick="event.stopPropagation()">'+(x.t||t('noTitle')).slice(0,70)+'</a><span class="sub"> '+(x.cn||'').slice(0,26)+'</span></span><span class="meta">'+(x.du?fmt(x.du)+' · ':'')+[x.p,x.r].filter(Boolean).join(' · ')+' '+tags.join('')+'</span>';
   li.onclick=()=>play(x, idx);
   return li;
 }
@@ -553,8 +580,9 @@ $('q').oninput=(function(){ let h; return function(e){ clearTimeout(h); h=setTim
   flat=hits.map(function(row){
     const id=row[0],tt=row[1],cn=row[2],cat=row[3];
     const isPiano=cat==='piano';
-    return {id:id,t:tt,cn:cn,g:cat,z:isPiano?'piano-special':'main',
+    const x={id:id,t:tt,cn:cn,g:cat,z:isPiano?'piano-special':'main',
             f:(isPiano?'piano-special/piano/':'main/'+cat+'/')+id+'.mid'};
+    x._cat=cat; return x;
   });
   $('list').innerHTML=''; rendered=0;
   $('status').textContent=t('found')+e.target.value.trim()+t('hit')+' '+hits.length+(hits.length>=400?'+':'')+' '+t('entries');
