@@ -1,10 +1,7 @@
-/* 站点端到端回归测试（jsdom）· 27 项
- * 用法：
- *   NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *     "C:/Users/chenhua/.workbuddy/binaries/node/versions/22.22.2-3/node.exe" tools/e2e-test.js        # 测线上
- *     ... tools/e2e-test.js index.html                                                                # 测本地改动
- * 覆盖：首屏渲染 / 中英切换 / 搜索 / 分类加载 / 筛选器 / 多维分面（作曲家·地域·来源）/
- *       下载条 / 声波条 / 播放器控件 / 运行时错误
- * 依赖：jsdom（npm i jsdom --registry=https://registry.npmmirror.com）
+/* 站点端到端回归测试（jsdom）· 34 项
+ * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
+ *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
+ * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
  */
 // 端到端交互回归：分类加载 / 双语切换 / 搜索 / 筛选器 / 下载条
 // 用法: node diag-e2e.js [本地html路径]   不给参数则测线上
@@ -62,8 +59,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   await wait(5000);
 
   console.log('\n【1】首屏');
-  ok('分类卡片渲染 11 个', q('.cat:not(.sk)') === 11, q('.cat:not(.sk)') + ' 个');
-  ok('统计数字已填', /92,649/.test(d.getElementById('stats').textContent));
+  ok('分类卡片渲染 12 个', q('.cat:not(.sk)') === 12, q('.cat:not(.sk)') + ' 个');
+  ok('统计数字已填', /103,122/.test(d.getElementById('stats').textContent));
   ok('时期下拉有选项', q('#period option') > 1, q('#period option') + ' 项');
 
   console.log('\n【2】语言切换（EN）');
@@ -82,7 +79,7 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   const inp = d.getElementById('q');
   inp.value = 'bach';
   inp.dispatchEvent(new w.Event('input', { bubbles: true }));
-  await wait(14000);
+  await wait(26000);
   const n1 = q('#list li.row');
   ok('搜索出结果', n1 > 0, n1 + ' 行');
   console.log('     status:', d.getElementById('status').textContent.slice(0, 90));
@@ -103,15 +100,30 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   ok('「只看可商用」可切换且状态更新', d.getElementById('status').textContent.length > 0,
      '筛选后 ' + q('#list li.row') + ' 行（原 ' + n2 + ' 行）');
 
+  console.log('\n【4b】布局与可折叠筛选区');
+  const hero = d.querySelector('.blk.hero') || d.querySelector('.hero');
+  const secs = [...d.querySelectorAll('main > section.blk')];
+  console.log('     main 分区数:', secs.length);
+  ok('① 音乐库在最上', !!hero && secs.length > 0 && secs[0].contains(hero));
+  ok('② 分类区紧随其后', secs.length > 1 && secs[1].contains(d.getElementById('cats')));
+  ok('③ 筛选区', secs.length > 2 && !!d.getElementById('ftoggle'));
+  ok('④ 曲目区含列表', secs.length > 3 && secs[3].contains(d.getElementById('list')));
+  ok('筛选面板默认收起', d.getElementById('fpanel').hidden === true);
+  click(d.getElementById('ftoggle'));
+  await wait(300);
+  ok('点「筛选」可展开', d.getElementById('fpanel').hidden === false &&
+     d.getElementById('ftoggle').getAttribute('aria-expanded') === 'true');
+  ok('播放器在最后', !!d.getElementById('player'));
+
   console.log('\n【5】下载条与导航');
   const chips = [...d.querySelectorAll('.dlchip')].map(a => a.getAttribute('href'));
   ok('下载 chip 4 个', chips.length === 4, chips.length + ' 个');
-  ok('下载链指向 v1.3 release', chips.every(h => /releases\/download\/v1\.3/.test(h)));
+  ok('下载链指向 v1.4 release', chips.every(h => /releases\/download\/v1\.4/.test(h)));
   const navs = [...d.querySelectorAll('.nav a')].map(a => a.getAttribute('href'));
   ok('导航含下载/来源/许可', ['download.html', 'sources.html', 'licenses.html'].every(x => navs.includes(x)), navs.join(' '));
   ok('声波可视化条已生成', q('#viz i') === 14, q('#viz i') + ' 根');
   ok('播放器控件齐全', ['play', 'prev', 'next', 'loop', 'prog', 'vol'].every(id => !!d.getElementById(id)));
-  ok('来源数已改为 16', /16 \u4e2a\u6765\u6e90|16 source/.test(HTML) && !/18 \u4e2a\u6765\u6e90\u6570\u636e\u96c6/.test(HTML));
+  ok('来源数已改为 17', /17 \u4e2a\u6765\u6e90|17 source/.test(HTML) && !/16 \u4e2a\u6765\u6e90\u6570\u636e\u96c6/.test(HTML));
 
   console.log('\n【7】多维筛选（作曲家 / 地域 / 来源）');
   // 挑一个既有地域又有作曲家的分类：爱尔兰传统

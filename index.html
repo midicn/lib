@@ -50,6 +50,28 @@ header .nav{margin-left:0}
 .bar select:disabled,.bar input:disabled{opacity:.4;cursor:not-allowed}
 #composer{width:132px}
 .bar ::placeholder{color:var(--dim2)}
+
+/* 分区与可折叠筛选区 */
+.blk{margin:0}
+.blk.hero{margin-bottom:.2rem}
+.blkhead{display:flex;align-items:center;gap:.6rem;margin:1.1rem .2rem .6rem;flex-wrap:wrap}
+.blkhead h2{font-size:.95rem;font-weight:600;margin:0;letter-spacing:-.01em}
+.blkhead .spacer{flex:1}
+.blkhint,.blkstatus{font-size:11.5px;color:var(--dim2)}
+#status{margin:0}
+.ftoggle{display:flex;align-items:center;gap:.5rem;width:100%;padding:.5rem .8rem;border-radius:var(--r);
+  border:1px solid var(--bd);background:var(--surface);color:var(--tx);font-size:13px;cursor:pointer;
+  backdrop-filter:blur(14px);transition:.2s;font-family:inherit}
+.ftoggle:hover{border-color:var(--bd-hi);color:var(--tx)}
+.ftoggle svg{width:15px;height:15px;fill:var(--dim)}
+.ftoggle .chev{margin-left:auto;color:var(--dim);transition:transform .22s;font-size:12px}
+.ftoggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.fbadge{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 5px;border-radius:999px;
+  background:linear-gradient(135deg,var(--p1),var(--accent));color:#150D06;font-size:10.5px;font-weight:700}
+:root[data-theme=light] .fbadge{color:#fff}
+.bar[hidden]{display:none}
+.bar{margin-top:.5rem}
+.dls{margin-top:1.4rem}
 .chk{display:flex;align-items:center;gap:.34rem;font-size:12.5px;color:var(--dim);cursor:pointer;user-select:none}
 .chk input{accent-color:var(--p1);width:14px;height:14px;cursor:pointer}
 #status{font-size:12.5px;color:var(--dim);margin:.55rem .2rem .6rem}
@@ -134,47 +156,74 @@ header .nav{margin-left:0}
 </div></header>
 
 <main>
-  <div class="hero">
+  <!-- ① 音乐库 -->
+  <section class="blk hero">
     <h1 data-zh="MIDI 音乐库" data-en="MIDI Music Library">MIDI 音乐库</h1>
     <p class="lead" id="heroSub">…</p>
     <div class="stats" id="stats"></div>
-  </div>
-  <div class="cats" id="cats"></div>
+  </section>
+  <!-- ② 分类区 -->
+  <section class="blk">
+    <div class="blkhead">
+      <h2 data-zh="分类浏览" data-en="Browse by Category">分类浏览</h2>
+      <span class="blkhint" data-zh="点一个分类开始浏览" data-en="Pick a category to start">点一个分类开始浏览</span>
+    </div>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <!-- ③ 筛选区（可折叠，默认收起） -->
+  <section class="blk">
+    <button class="ftoggle" id="ftoggle" aria-expanded="false" aria-controls="fpanel">
+      <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h10v2H7v-2zm3 6h4v2h-4v-2z"/></svg>
+      <span data-zh="筛选" data-en="Filters">筛选</span>
+      <span class="fbadge" id="fbadge" hidden>0</span>
+      <span class="chev">▾</span>
+    </button>
+    <div class="bar" id="fpanel" hidden>
+      <select id="period"><option value="">—</option></select>
+      <select id="dur">
+        <option value="" data-zh="全部时长" data-en="Any length">全部时长</option>
+        <option value="0-30" data-zh="30 秒内" data-en="Under 30s">30 秒内</option>
+        <option value="30-120" data-zh="30 秒 – 2 分钟" data-en="30s – 2min">30 秒 – 2 分钟</option>
+        <option value="120-300" data-zh="2 – 5 分钟" data-en="2 – 5min">2 – 5 分钟</option>
+        <option value="300-99999" data-zh="5 分钟以上" data-en="Over 5min">5 分钟以上</option>
+      </select>
+      <select id="sort">
+        <option value="" data-zh="默认排序" data-en="Default order">默认排序</option>
+        <option value="t" data-zh="按标题" data-en="By title">按标题</option>
+        <option value="c" data-zh="按作曲家" data-en="By composer">按作曲家</option>
+        <option value="p" data-zh="按时期" data-en="By period">按时期</option>
+      </select>
+      <input id="composer" type="search" list="compList" placeholder="作曲家" data-ph-zh="作曲家" data-ph-en="Composer">
+      <datalist id="compList"></datalist>
+      <select id="region"><option value="">—</option></select>
+      <select id="source"><option value="">—</option></select>
+      <label class="chk"><input type="checkbox" id="mainOnly"> <span data-zh="只看可商用" data-en="Commercial only">只看可商用</span></label>
+      <button class="btn" id="clear" style="font-size:11.5px;padding:.3rem .6rem" data-zh="清空筛选" data-en="Clear">清空筛选</button>
+    </div>
+  </section>
+
+  <!-- ④ 曲目区 -->
+  <section class="blk">
+    <div class="blkhead">
+      <h2 data-zh="曲目" data-en="Tracks">曲目</h2>
+      <span id="status" class="blkstatus"></span>
+      <span class="spacer"></span>
+      <button class="btn primary" id="rand" data-zh="🎲 随机试听" data-en="🎲 Shuffle">🎲 随机试听</button>
+    </div>
+    <ul id="list"></ul>
+    <div id="sentinel" style="height:1px"></div>
+  </section>
+
+  <!-- 打包下载（移到底部，不占首屏） -->
   <div class="dls">
     <span class="dltitle" data-zh="打包下载 · v1.4" data-en="Packaged download · v1.4">打包下载 · v1.4</span>
     <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-main.zip"><b>main</b> 48,140<span data-zh="首 · 36.8MB" data-en=" · 36.8MB">首 · 36.8MB</span></a>
     <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-piano-special.zip"><b>piano-special</b> 34,869<span data-zh="首 · 304.5MB" data-en=" · 304.5MB">首 · 304.5MB</span></a>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-study.zip"><b>study</b> 20,113<span data-zh="首 · 58.6MB" data-en=" · 58.6MB">首 · 58.6MB</span></a>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-meta.zip"><b>meta</b> <span data-zh="全库索引 · 4.9MB" data-en="full index · 4.9MB">全库索引 · 4.9MB</span></a>
+    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-study.zip"><b>study</b> 20,113<span data-zh="首 · 59.2MB" data-en=" · 59.2MB">首 · 59.2MB</span></a>
+    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.4/midicn-lib-v1.4-meta.zip"><b>meta</b> <span data-zh="全库索引 · 5.5MB" data-en="full index · 5.5MB">全库索引 · 5.5MB</span></a>
     <a class="dlmore" href="download.html" data-zh="下载说明 →" data-en="Details →">下载说明 →</a>
   </div>
-  <div class="bar">
-    <select id="period"><option value="">—</option></select>
-    <select id="dur">
-      <option value="" data-zh="全部时长" data-en="Any length">全部时长</option>
-      <option value="0-30" data-zh="30 秒内" data-en="Under 30s">30 秒内</option>
-      <option value="30-120" data-zh="30 秒 – 2 分钟" data-en="30s – 2min">30 秒 – 2 分钟</option>
-      <option value="120-300" data-zh="2 – 5 分钟" data-en="2 – 5min">2 – 5 分钟</option>
-      <option value="300-99999" data-zh="5 分钟以上" data-en="Over 5min">5 分钟以上</option>
-    </select>
-    <select id="sort">
-      <option value="" data-zh="默认排序" data-en="Default order">默认排序</option>
-      <option value="t" data-zh="按标题" data-en="By title">按标题</option>
-      <option value="c" data-zh="按作曲家" data-en="By composer">按作曲家</option>
-      <option value="p" data-zh="按时期" data-en="By period">按时期</option>
-    </select>
-    <input id="composer" type="search" list="compList" placeholder="作曲家" data-ph-zh="作曲家" data-ph-en="Composer">
-    <datalist id="compList"></datalist>
-    <select id="region"><option value="">—</option></select>
-    <select id="source"><option value="">—</option></select>
-    <label class="chk"><input type="checkbox" id="mainOnly"> <span data-zh="只看可商用" data-en="Commercial only">只看可商用</span></label>
-    <button class="btn" id="clear" style="font-size:11.5px;padding:.3rem .6rem" data-zh="清空筛选" data-en="Clear">清空筛选</button>
-    <span class="spacer"></span>
-    <button class="btn primary" id="rand" data-zh="🎲 随机试听" data-en="🎲 Shuffle">🎲 随机试听</button>
-  </div>
-  <div id="status"></div>
-  <ul id="list"></ul>
-  <div id="sentinel" style="height:1px"></div>
 </main>
 
 <footer>
@@ -530,10 +579,39 @@ $('period').onchange=refilter;
 $('dur').onchange=refilter;
 $('region').onchange=refilter;
 $('source').onchange=refilter;
-$('composer').oninput=(function(){ let h; return function(){ clearTimeout(h); h=setTimeout(refilter,280); }; })();
+$('composer').oninput=(function(){ let h; return function(){ clearTimeout(h); h=setTimeout(function(){ refilter(); syncFilterBadge(); },280); }; })();
+
+/* 筛选区折叠 + 生效条件计数 */
+function activeFilterCount(){
+  let n=0;
+  if($('period').value) n++;
+  if($('dur').value) n++;
+  if($('composer').value.trim()) n++;
+  if($('region').value) n++;
+  if($('source').value) n++;
+  if($('mainOnly').checked) n++;
+  return n;
+}
+function syncFilterBadge(){
+  const n=activeFilterCount(), b=$('fbadge');
+  if(!b) return;
+  b.textContent=String(n); b.hidden = (n===0);
+}
+$('ftoggle').onclick=()=>{
+  const p=$('fpanel'), open=p.hidden;
+  p.hidden=!open;
+  $('ftoggle').setAttribute('aria-expanded', open?'true':'false');
+};
+function refilterSync(){ syncFilterBadge(); refilter(); }
+$('mainOnly').onchange=refilterSync;
+$('period').onchange=refilterSync;
+$('dur').onchange=refilterSync;
+$('region').onchange=refilterSync;
+$('source').onchange=refilterSync;
 $('clear').onclick=()=>{
   $('period').value=''; $('dur').value=''; $('region').value=''; $('source').value='';
   $('composer').value=''; $('mainOnly').checked=false;
+  syncFilterBadge();
   if(curCat) refilter(); else { $('list').innerHTML=''; renderHead(); }
 };
 $('sort').onchange=(e)=>{ const k=e.target.value; if(!k) return;
