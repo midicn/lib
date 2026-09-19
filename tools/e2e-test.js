@@ -59,8 +59,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   await wait(5000);
 
   console.log('\n【1】首屏');
-  ok('分类卡片渲染 13 个', q('.cat:not(.sk)') === 13, q('.cat:not(.sk)') + ' 个');
-  ok('统计数字已填', /113,234/.test(d.getElementById('stats').textContent));
+  ok('分类卡片渲染 14 个', q('.cat:not(.sk)') === 14, q('.cat:not(.sk)') + ' 个');
+  ok('统计数字已填', /124,179/.test(d.getElementById('stats').textContent));
   ok('时期下拉有选项', q('#period option') > 1, q('#period option') + ' 项');
 
   console.log('\n【2】语言切换（EN）');
@@ -118,12 +118,12 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   console.log('\n【5】下载条与导航');
   const chips = [...d.querySelectorAll('.dlchip')].map(a => a.getAttribute('href'));
   ok('下载 chip 4 个', chips.length === 4, chips.length + ' 个');
-  ok('下载链指向 v1.5 release', chips.every(h => /releases\/download\/v1\.5/.test(h)));
+  ok('下载链指向 v1.6 release', chips.every(h => /releases\/download\/v1\.6/.test(h)));
   const navs = [...d.querySelectorAll('.nav a')].map(a => a.getAttribute('href'));
   ok('导航含下载/来源/许可', ['download.html', 'sources.html', 'licenses.html'].every(x => navs.includes(x)), navs.join(' '));
   ok('声波可视化条已生成', q('#viz i') === 14, q('#viz i') + ' 根');
   ok('播放器控件齐全', ['play', 'prev', 'next', 'loop', 'prog', 'vol'].every(id => !!d.getElementById(id)));
-  ok('来源数已改为 18', /18 \u4e2a\u6765\u6e90|18 source/.test(HTML) && !/17 \u4e2a\u6765\u6e90\u6570\u636e\u96c6/.test(HTML));
+  ok('来源数已改为 19', /19 \u4e2a\u6765\u6e90|19 source/.test(HTML) && !/18 \u4e2a\u6765\u6e90\u6570\u636e\u96c6/.test(HTML));
 
   console.log('\n【7】多维筛选（作曲家 / 地域 / 来源）');
   // 挑一个既有地域又有作曲家的分类：爱尔兰传统
