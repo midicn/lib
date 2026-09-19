@@ -338,6 +338,14 @@ function render(x, ctx){
   $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
   $('libopen').href = './?play='+encodeURIComponent(x.id)+'&cat='+encodeURIComponent(ctx.cat)+'&chunk='+ctx.chunk;
   $('dl').onclick = () => dlTrack(x);
+  $('cp').onclick = async () => {
+    const el=document.getElementById('attr'); if(!el) return;
+    const txt = el.textContent;
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove(); }
+    $('cp').textContent = t('copied'); setTimeout(()=>{ if(window.__track) $('cp').textContent=t('copy'); },1600);
+  };
   /* 文件大小：HEAD + 超时重试 */
   fetchT(x.f, {method:'HEAD'}).then(r=>{ const el=$('fsz');
     if(el && r.ok) el.textContent=(parseInt(r.headers.get('Content-Length')||0)/1024).toFixed(1)+' KB'; }).catch(()=>{});
@@ -351,14 +359,6 @@ function render(x, ctx){
   document.head.appendChild(ld);
   renderRecs(x, ctx);
 }
-$('cp').onclick = async () => {
-  const el=document.getElementById('attr'); if(!el) return;
-  const txt = el.textContent;
-  try{ await navigator.clipboard.writeText(txt); }
-  catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); ta.remove(); }
-  $('cp').textContent = t('copied'); setTimeout(()=>{ if(window.__track) $('cp').textContent=t('copy'); },1600);
-};
 /* 进度式下载：fetch + 百分比 → blob 保存；失败回落浏览器直链 */
 async function dlTrack(x){
   const btn=$('dl'), st=$('dlstate');
