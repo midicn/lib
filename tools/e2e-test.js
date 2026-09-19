@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 34 项
+/* 站点端到端回归测试（jsdom）· 35 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -79,8 +79,13 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   const inp = d.getElementById('q');
   inp.value = 'bach';
   inp.dispatchEvent(new w.Event('input', { bubbles: true }));
-  await wait(26000);
-  const n1 = q('#list li.row');
+  // 轮询等待全库索引（~7.5MB）加载完成，最多 60s
+  let n1 = 0;
+  for (let i = 0; i < 30; i++) {
+    await wait(2000);
+    n1 = q('#list li.row');
+    if (n1 > 0) break;
+  }
   ok('搜索出结果', n1 > 0, n1 + ' 行');
   console.log('     status:', d.getElementById('status').textContent.slice(0, 90));
   ok('结果行含标题', n1 === 0 || /bach/i.test(d.querySelector('#list li.row').textContent));
@@ -94,6 +99,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   const n2 = q('#list li.row');
   ok('分类加载出曲目', n2 > 0, n2 + ' 行');
   ok('status 显示已加载', /loaded|已加载/.test(d.getElementById('status').textContent));
+  const withDu = [...d.querySelectorAll('#list li.row')].filter(li => /\d+:\d\d/.test(li.textContent)).length;
+  ok('曲目行显示时长（分片带 du）', withDu > 0, withDu + '/' + n2 + ' 行带 mm:ss');
   d.getElementById('mainOnly').checked = true;
   d.getElementById('mainOnly').dispatchEvent(new w.Event('change', { bubbles: true }));
   await wait(4000);
@@ -131,8 +138,9 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   if (!target) {
     console.log('  – 未找到目标分类，跳过');
   } else {
+    d.getElementById('mainOnly').checked = false;      // 清掉上一节留下的筛选，隔离测试
     click(target);
-    await wait(7000);
+    await wait(14000);
     const nReg = q('#region option'), nSrc = q('#source option'), nComp = q('#compList option');
     ok('来源下拉已填充', nSrc > 1, nSrc + ' 项');
     ok('地域下拉已填充（分面文件可用）', nReg > 1, nReg + ' 项');
@@ -162,7 +170,7 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   ok('无脚本错误', errs.length === 0, errs.slice(0, 4).join(' | '));
 
   const bad = results.filter(r => !r[0]);
-  console.log('\n===== 结果: ' + (results.length - bad.length) + '/' + results.length + ' 通过 =====');
+  console.log('\n===== 结果 (35 项): ' + (results.length - bad.length) + '/' + results.length + ' 通过 =====');
   if (bad.length) { console.log('失败项:'); bad.forEach(b => console.log('  - ' + b[1])); process.exitCode = 1; }
   w.close();
 })().catch(e => { console.error('测试脚本失败:', e); process.exit(1); });
