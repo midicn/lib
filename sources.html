@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#070706">
 <title>数据来源 · midicn-lib</title>
-<meta name="description" content="midicn-lib 考察的全部数据源：已发布 16 个来源数据集（另 2 个许可待确认），以及未收录源的原因与自取指引。">
+<meta name="description" content="midicn-lib 考察的全部数据源：已发布 17 个来源数据集，以及未收录源的原因（含许可原文依据）与自取指引。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -26,9 +26,9 @@
 <main>
 <div data-lang="zh">
   <h1>数据来源</h1>
-  <p class="lead">我们考察了 <b>36 个公开 MIDI 数据源</b>，收录 <b>16 个</b>（92,649 首已发布）。另有 <b>1 个已整理完毕、等待授权</b>（中国民间歌曲集成，10,479 首），以及 <b>1 个许可明文禁止分发、永久排除</b>（MuseData）。下方「未收录来源与原因」逐条给出原文依据。本页完整披露收录了什么、没收录什么、以及为什么——并告诉你可以去哪里自行获取。</p>
+  <p class="lead">我们考察了 <b>36 个公开 MIDI 数据源</b>，收录 <b>17 个</b>（103,122 首已发布）。另有 <b>1 个许可明文禁止分发、永久排除</b>（MuseData）。下方「未收录来源与原因」逐条给出原文依据。本页完整披露收录了什么、没收录什么、以及为什么——并告诉你可以去哪里自行获取。</p>
 
-  <h2>已发布来源（16 个）</h2>
+  <h2>已发布来源（17 个）</h2>
   <table>
     <tr><th style="width:22%">来源</th><th style="width:13%">曲目</th><th style="width:26%">内容</th><th style="width:22%">许可</th><th style="width:17%">级别</th></tr>
     <tr><td><b>ariamidi</b></td><td>32,522</td><td>古典钢琴转录</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2 非商用</span></td></tr>
@@ -47,9 +47,29 @@
     <tr><td><b>Wikifonia（PD 子集）</b></td><td>445</td><td>传统 / 民歌</td><td>公有领域</td><td><span class="tag c1">C1 可商用</span></td></tr>
     <tr><td><b>OpenGameArt</b></td><td>340</td><td>游戏原创音乐</td><td>CC0 / CC BY / CC BY-SA / GPL（逐曲）</td><td><span class="tag c1">C1 可商用</span></td></tr>
     <tr><td><b>MusicNet</b></td><td>297</td><td>古典室内乐</td><td>CC BY 4.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
+    <tr><td><b>中国民间歌曲集成</b></td><td>10,473</td><td>中国各省民歌（OMR 转录）</td><td>TRADITIONAL-STUDY</td><td><span class="tag c3">C3 研究学习</span></td></tr>
   </table>
 
-  <p class="note">表中的曲目数为 <b>已发布</b> 数量（去除损坏文件与重复项之后），合计 92,649 首 = 全库总量。</p>
+  <p class="note">表中的曲目数为 <b>已发布</b> 数量（去除损坏文件与重复项之后），合计 103,122 首 = 全库总量。</p>
+
+
+  <h2>关于「中国民间歌曲集成」（C3 研究/学习）</h2>
+  <div class="card hi">
+    <p><b>来源</b>：GitHub 公开数据集
+      <code>github.com/m-july/Anthology-of-Chinese-Folk-Songs</code>
+      （论文《The Renaissance of Expert Systems: Optical Recognition of Printed Chinese Jianpu Musical Scores with Lyrics》，arXiv:2512.14758 的数据集），
+      内容为《中国民间歌曲集成》14 卷的光学识别（OMR）结果，原始格式为 MIDI 与 MusicXML。</p>
+    <p><b>我们的判断</b>：</p>
+    <ul>
+      <li>民歌<b>旋律本身</b>属传统民间文学艺术，作者不可考、流传久远，作为音乐作品通常已进入公有领域</li>
+      <li>但本数据是依据<b>《中国民间歌曲集成》的记谱／整理稿</b>识别而来，该整理与汇编成果<b>受版权保护</b>——上游作者亦声明原始扫描图属受版权作品、不公开</li>
+      <li>因此我们<b>不作商用授权</b>：这批曲目归入 <span class="tag c3">C3 研究/学习</span>，限研究、教学、学习用途，<b>禁止商业使用与公开表演</b></li>
+    </ul>
+    <p><b>使用要求</b>：必须标注数据来源为「中国民间歌曲集成（ Anthology of Chinese Folk Songs，OMR 数据集，github.com/m-july/Anthology-of-Chinese-Folk-Songs）」；
+      catalog 中该批曲目的许可字段为 <code>TRADITIONAL-STUDY</code>。若你计划商用，请自行向底本权利人取得授权。</p>
+    <p><b>数据质量</b>：上游说明该数据集尚未完全清洗，小节线可能需要再校正；陕西卷（二）部分唱词字符缺失，建议谨慎使用。</p>
+    <div class="note">如权利方认为不宜收录，请通过项目 Issues 告知，我们将在 7 个工作日内下架该批数据。</div>
+  </div>
 
   <h2>未收录来源与原因（含原文依据）</h2>
   <table>
@@ -60,7 +80,6 @@
     <tr><td><b>IMSLP 部分附件</b></td><td>数千</td><td>部分标注「no redistribution」；且 MIDI 数量极少（主要托管乐谱）</td></tr>
     <tr><td><b>CPDL ChoralWiki</b></td><td>~25,000</td><td>许可已核实通过（基于 GPL，允许自由分发），但站点 Cloudflare 对数据中心 IP 硬拦截，抓取受阻</td></tr>
     <tr><td><b>MuseData (CCARH)</b></td><td>924</td><td><b>许可明文禁止任何分发</b>。原文第 (4) 条：文件「仅供单人个人使用」；第 (5) 条：「在任何情况下都不得将数据嵌入或包含于供商业或非商业分发的教学材料中」。我们的准入门槛要求许可明确允许二次分发，因此<b>永久排除</b>，不会因等待而改变</td></tr>
-    <tr><td><b>中国民间歌曲集成</b>（OMR 数据集）</td><td>10,479</td><td>本地已完整整理（MIDI + MusicXML），但两道坎未过：① 上游数据集仓库<b>未声明任何许可</b>（GitHub 无 LICENSE = 保留所有权利）；② 底本《中国民间歌曲集成》是<b>受版权保护的汇编作品</b>——上游作者亦声明「原始扫描图属受版权保护作品，不公开」。已整理待授权，<b>授权到位即可发布</b></td></tr>
   </table>
 
   <h2>你可以自行获取</h2>
@@ -74,7 +93,6 @@
       <tr><td>IMSLP 乐谱与音频</td><td>imslp.org</td></tr>
       <tr><td>Internet Archive MIDI</td><td>archive.org</td></tr>
       <tr><td>TheSession 原始数据</td><td>thesession.org/data</td></tr>
-      <tr><td>中国民间歌曲集成（OMR 数据集）</td><td>github.com/m-july/Anthology-of-Chinese-Folk-Songs</td></tr>
     </table>
     <div class="note">每站的使用条款以其原文为准。我们只对本站已收录部分的合规性负责。</div>
   </div>
@@ -91,9 +109,9 @@
 
 <div data-lang="en" hidden>
   <h1>Data Sources</h1>
-  <p class="lead">We surveyed <b>36 public MIDI sources</b> and included <b>16</b> (92,649 tracks published). One more is <b>fully curated but awaiting rights clearance</b> (Anthology of Chinese Folk Songs, 10,479 tracks) and one is <b>permanently excluded</b> because its license forbids any distribution (MuseData). See "Excluded Sources & Reasons" for exact wording. This page fully discloses what we included, what we excluded, and why — plus where you can obtain the rest yourself.</p>
+  <p class="lead">We surveyed <b>36 public MIDI sources</b> and included <b>17</b> (103,122 tracks published). One is <b>permanently excluded</b> because its license forbids any distribution (MuseData). See "Excluded Sources & Reasons" for exact wording. This page fully discloses what we included, what we excluded, and why — plus where you can obtain the rest yourself.</p>
 
-  <h2>Published Sources (16)</h2>
+  <h2>Published Sources (17)</h2>
   <table>
     <tr><th style="width:24%">Source</th><th style="width:14%">Tracks</th><th style="width:26%">Content</th><th style="width:20%">License</th><th style="width:16%">Tier</th></tr>
     <tr><td><b>ariamidi</b></td><td>32,522</td><td>Classical piano transcriptions</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2</span></td></tr>
@@ -112,9 +130,37 @@
     <tr><td><b>Wikifonia (PD subset)</b></td><td>445</td><td>Traditional / folk</td><td>Public domain</td><td><span class="tag c1">C1</span></td></tr>
     <tr><td><b>OpenGameArt</b></td><td>340</td><td>Game music</td><td>CC0 / CC BY / CC BY-SA / GPL (per track)</td><td><span class="tag c1">C1</span></td></tr>
     <tr><td><b>MusicNet</b></td><td>297</td><td>Classical chamber</td><td>CC BY 4.0</td><td><span class="tag c1">C1</span></td></tr>
+    <tr><td><b>Anthology of Chinese Folk Songs</b></td><td>10,473</td><td>Chinese provincial folk songs (OMR)</td><td>TRADITIONAL-STUDY</td><td><span class="tag c3">C3</span></td></tr>
   </table>
 
-  <p class="note">Track counts above are <b>published</b> numbers (after removing broken and duplicate files); they sum to 92,649 — the full library.</p>
+  <p class="note">Track counts above are <b>published</b> numbers (after removing broken and duplicate files); they sum to 103,122 — the full library.</p>
+
+
+  <h2>About the Chinese Folk Songs Anthology (C3 / Study)</h2>
+  <div class="card hi">
+    <p><b>Source</b>: the public GitHub dataset
+      <code>github.com/m-july/Anthology-of-Chinese-Folk-Songs</code> — the dataset accompanying
+      "The Renaissance of Expert Systems: Optical Recognition of Printed Chinese Jianpu Musical Scores
+      with Lyrics" (arXiv:2512.14758). It contains OMR output for 14 volumes of the
+      <i>Anthology of Chinese Folk Songs</i>, in MIDI and MusicXML.</p>
+    <p><b>Our assessment</b>:</p>
+    <ul>
+      <li>The <b>melodies themselves</b> are traditional folk music — anonymous, transmitted over
+        generations, and generally in the public domain as musical works</li>
+      <li>However, these files were recognised from the <b>notated / edited edition</b> published in the
+        anthology, and that editing-and-compilation work <b>is protected</b>. The upstream author likewise
+        states that the scanned images are copyrighted and withheld</li>
+      <li>We therefore <b>do not grant commercial rights</b>: these tracks are placed in
+        <span class="tag c3">C3 Study</span> — research, teaching and study only;
+        <b>commercial use and public performance are prohibited</b></li>
+    </ul>
+    <p><b>Attribution required</b>: credit "Anthology of Chinese Folk Songs (OMR dataset,
+      github.com/m-july/Anthology-of-Chinese-Folk-Songs)". The catalog license field for these tracks is
+      <code>TRADITIONAL-STUDY</code>. For commercial use, obtain permission from the underlying rights holders.</p>
+    <p><b>Data quality</b>: the upstream notes the dataset is not fully cleaned and measure boundaries may
+      need normalising; some lyric characters are missing in Volume <i>Shaanxi II</i> — use it with care.</p>
+    <div class="note">If any rights holder objects, contact us via the project Issues; we will remove this batch within 7 business days.</div>
+  </div>
 
   <h2>Excluded Sources &amp; Reasons (with exact wording)</h2>
   <table>
@@ -125,7 +171,6 @@
     <tr><td><b>Parts of IMSLP</b></td><td>thousands</td><td>Some marked "no redistribution"; very few MIDI files hosted</td></tr>
     <tr><td><b>CPDL ChoralWiki</b></td><td>~25,000</td><td>License verified (GPL-based, free distribution) but Cloudflare blocks datacenter IPs</td></tr>
     <tr><td><b>MuseData (CCARH)</b></td><td>924</td><td><b>License explicitly forbids any distribution.</b> Clause (4): files are "for personal use (single-user) only"; clause (5): "under no circumstance is the data to be embedded or included in teaching materials for commercial or non-commercial distribution". Our admission rule requires explicit permission to redistribute → <b>permanently excluded</b></td></tr>
-    <tr><td><b>Anthology of Chinese Folk Songs</b> (OMR dataset)</td><td>10,479</td><td>Fully curated locally (MIDI + MusicXML), but two blockers: ① upstream dataset repo declares <b>no license</b> (GitHub without LICENSE = all rights reserved); ② the source book is a <b>copyrighted compilation</b> — the upstream author also states the scanned images are copyrighted and withheld. <b>Publishable the moment rights are cleared</b></td></tr>
   </table>
 
   <h2>Obtain It Yourself</h2>
@@ -138,7 +183,6 @@
       <tr><td>IMSLP</td><td>imslp.org</td></tr>
       <tr><td>Internet Archive MIDI</td><td>archive.org</td></tr>
       <tr><td>TheSession raw data</td><td>thesession.org/data</td></tr>
-      <tr><td>Anthology of Chinese Folk Songs (OMR dataset)</td><td>github.com/m-july/Anthology-of-Chinese-Folk-Songs</td></tr>
     </table>
     <div class="note">Each site's own terms govern. We are responsible only for the compliance of what we redistribute.</div>
   </div>
@@ -155,7 +199,7 @@
 </main>
 
 <footer>
-  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 92,649 首 / 16 个来源数据集" data-en="midicn-lib · Open MIDI Library · 92,649 tracks / 16 source datasets">midicn-lib · 开放 MIDI 音乐库 · 92,649 首 / 16 个来源数据集</span>
+  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 103,122 首 / 17 个来源数据集" data-en="midicn-lib · Open MIDI Library · 103,122 tracks / 17 source datasets">midicn-lib · 开放 MIDI 音乐库 · 103,122 首 / 17 个来源数据集</span>
 </footer>
 
 <script>
