@@ -62,13 +62,13 @@ def clean_region(v):
 
 def slim(t: dict) -> dict:
     out = {k: t.get(k) for k in KEEP if t.get(k) not in (None, "")}
+    # catalog 的时长/音符数在顶层（v1.3+），之前误从嵌套 midi 字段读 → 分片一直缺 du/nn
+    if t.get("du"):
+        out["du"] = int(t["du"])
+    if t.get("nn"):
+        out["nn"] = int(t["nn"])
     if out.get("r"):
         out["r"] = clean_region(out["r"])
-    midi = t.get("midi") or {}
-    if midi.get("duration_sec"):
-        out["du"] = int(midi["duration_sec"])
-    if midi.get("note_count"):
-        out["nn"] = midi["note_count"]
     return out
 
 
