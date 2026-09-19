@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 35 项
+/* 站点端到端回归测试（jsdom）· 44 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -24,7 +24,25 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   vc.on('jsdomError', e => errs.push(String((e.detail && e.detail.message) || e.message)));
   vc.on('error', () => {});
 
+  /* 预载大文件（代理慢，避免页面内 60s 超时） */
+  const CACHE = {};
+  await Promise.all(['data/search-lite.json', 'data/loc.json'].map(async k => {
+    try { CACHE[k] = new Uint8Array(await (await globalThis.fetch(SITE + '/' + k)).arrayBuffer()); }
+    catch (e) { console.log('  (预载失败，跳过缓存)', k); }
+  }));
+  console.log('  预载缓存:', Object.keys(CACHE).join(', ') || '无');
+
   const html = HTML.replace(/<script src="(vendor|soundfont)\/[^"]*"><\/script>/g, '');
+  const shim = w => {
+    const nf2 = globalThis.fetch;
+    w.fetch = (u, o) => {
+      let url = /^https?:/.test(u) ? u : SITE + '/' + String(u).replace(/^\.?\//, '');
+      const key = url.startsWith(SITE + '/') ? url.slice(SITE.length + 1) : url;
+      if (CACHE[key]) return Promise.resolve(new Response(CACHE[key],
+        { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      return nf2(url, o);
+    };
+  };
   const dom = new JSDOM(html, {
     url: SITE + '/', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w) {
@@ -43,8 +61,7 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
       };
       w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
       w.AudioContext = class { constructor() { return { currentTime: 0, destination: {}, resume: () => Promise.resolve(), state: 'running' }; } };
-      const nf = globalThis.fetch;
-      w.fetch = (u, o) => nf(/^https?:/.test(u) ? u : SITE + '/' + String(u).replace(/^\.?\//, ''), o);
+      shim(w);
       w.addEventListener('error', e => errs.push('onerror: ' + (e.message || '')));
       w.addEventListener('unhandledrejection', e => errs.push('rejection: ' + String((e.reason && e.reason.message) || e.reason)));
     },
@@ -149,8 +166,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
       const reg = d.getElementById('region');
       reg.value = reg.options[1].value;
       reg.dispatchEvent(new w.Event('change', { bubbles: true }));
-      await wait(6000);
-      const rows = q('#list li.row');
+      let rows = 0;
+      for (let i = 0; i < 20; i++) { await wait(2000); rows = q('#list li.row'); if (rows > 0) break; }
       ok('按地域筛选后有结果', rows > 0, rows + ' 行 · ' + reg.value);
       ok('状态栏显示命中数', /命中|matched/i.test(d.getElementById('status').textContent),
          d.getElementById('status').textContent.slice(0, 80));
@@ -165,6 +182,35 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
     ok('「清空筛选」恢复列表', q('#list li.row') > 0 && d.getElementById('region').value === '' &&
        d.getElementById('composer').value === '');
   }
+
+  console.log('\n【8】曲目详情页（detail.html?id=…）');
+  try {
+    const shard = await (await fetch(SITE + '/data/cat-hymn-0.json')).json();
+    const t0 = shard[0];
+    const durl = SITE + '/detail.html?id=' + encodeURIComponent(t0.id) + '&cat=hymn&chunk=0';
+    const d2 = await JSDOM.fromURL(durl, {
+      runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
+      beforeParse(w2) { shim(w2);
+        w2.addEventListener('error', e => errs.push('detail onerror: ' + (e.message || '')));
+      },
+    });
+    const w2 = d2.window, dd = w2.document;
+    await new Promise(r => w2.addEventListener('load', r, { once: true }));
+    await wait(5000);
+    const h1 = dd.querySelector('h1.dt');
+    ok('详情页 h1 渲染曲名', h1 && h1.textContent.trim().length > 1 && h1.textContent !== '…', h1 && h1.textContent.trim().slice(0, 40));
+    ok('识别字段齐', /作曲家|Composer/.test(dd.getElementById('box').textContent) &&
+       /时期|Period/.test(dd.getElementById('box').textContent));
+    ok('许可结论出现（C1/C2/C3）', /C1|C2|C3/.test(dd.getElementById('box').textContent));
+    ok('署名文本含 midicn-lib', dd.getElementById('attr') && /midicn-lib/.test(dd.getElementById('attr').textContent));
+    const dl = dd.querySelector('a[download]');
+    ok('下载 MIDI 链接', dl && /\.mid$/.test(dl.getAttribute('href')), dl && dl.getAttribute('href').split('/').pop());
+    ok('复制按钮存在', !!dd.getElementById('cp'));
+    ok('推荐列表有内容', dd.getElementById('recs').children.length > 0, dd.getElementById('recs').children.length + ' 项');
+    ok('JSON-LD 注入', !!dd.querySelector('script[type="application/ld+json"]'));
+    ok('noindex（Q 阶段）', /noindex/.test(HTML) || /noindex/.test(dd.querySelector('meta[name="robots"]') ? dd.querySelector('meta[name="robots"]').content : ''));
+    d2.window.close();
+  } catch (e) { ok('详情页测试', false, String(e).slice(0, 120)); }
 
   console.log('\n【6】运行时错误');
   ok('无脚本错误', errs.length === 0, errs.slice(0, 4).join(' | '));
