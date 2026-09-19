@@ -32,6 +32,7 @@ CAT_NAMES = {
     "emopia": "流行钢琴 · Pop Piano",
     "classical-traditional": "古典与传统（研究/学习）· Classical & Traditional (Study)",
     "folk-china": "中国民歌（研究/学习）· Chinese Folk Songs (Study)",
+    "piano-performance": "钢琴演奏（可商用）· Piano Performance",
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）

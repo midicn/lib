@@ -1,7 +1,7 @@
 {
  "name": "midicn-lib · MIDI 音乐库 / MIDI Music Library",
  "short_name": "midicn-lib",
- "description": "103,122 首 MIDI 在线试听与打包下载（17 个来源数据集，逐曲标注许可）| 103,122 MIDI tracks — stream online or download (17 source datasets, per-track licenses)",
+ "description": "113,234 首 MIDI 在线试听与打包下载（18 个来源数据集，逐曲标注许可）| 113,234 MIDI tracks — stream online or download (18 source datasets, per-track licenses)",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

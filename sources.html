@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#070706">
 <title>数据来源 · midicn-lib</title>
-<meta name="description" content="midicn-lib 考察的全部数据源：已发布 17 个来源数据集，以及未收录源的原因（含许可原文依据）与自取指引。">
+<meta name="description" content="midicn-lib 考察的全部数据源：已发布 18 个来源数据集，以及未收录源的原因（含许可原文依据）与自取指引。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -26,9 +26,9 @@
 <main>
 <div data-lang="zh">
   <h1>数据来源</h1>
-  <p class="lead">我们考察了 <b>36 个公开 MIDI 数据源</b>，收录 <b>17 个</b>（103,122 首已发布）。另有 <b>1 个许可明文禁止分发、永久排除</b>（MuseData）。下方「未收录来源与原因」逐条给出原文依据。本页完整披露收录了什么、没收录什么、以及为什么——并告诉你可以去哪里自行获取。</p>
+  <p class="lead">我们考察了 <b>36 个公开 MIDI 数据源</b>，收录 <b>18 个</b>（113,234 首已发布）。另有 <b>1 个许可明文禁止分发、永久排除</b>（MuseData）。下方「未收录来源与原因」逐条给出原文依据。本页完整披露收录了什么、没收录什么、以及为什么——并告诉你可以去哪里自行获取。</p>
 
-  <h2>已发布来源（17 个）</h2>
+  <h2>已发布来源（18 个）</h2>
   <table>
     <tr><th style="width:22%">来源</th><th style="width:13%">曲目</th><th style="width:26%">内容</th><th style="width:22%">许可</th><th style="width:17%">级别</th></tr>
     <tr><td><b>ariamidi</b></td><td>32,522</td><td>古典钢琴转录</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2 非商用</span></td></tr>
@@ -48,9 +48,10 @@
     <tr><td><b>OpenGameArt</b></td><td>340</td><td>游戏原创音乐</td><td>CC0 / CC BY / CC BY-SA / GPL（逐曲）</td><td><span class="tag c1">C1 可商用</span></td></tr>
     <tr><td><b>MusicNet</b></td><td>297</td><td>古典室内乐</td><td>CC BY 4.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
     <tr><td><b>中国民间歌曲集成</b></td><td>10,473</td><td>中国各省民歌（OMR 转录）</td><td>TRADITIONAL-STUDY</td><td><span class="tag c3">C3 研究学习</span></td></tr>
+    <tr><td><b>GiantMIDI-Piano</b></td><td>10,112</td><td>古典钢琴独奏（演奏录音转录，2,704 位作曲家）</td><td>CC BY 4.0</td><td><span class="tag c1">C1 可商用</span></td></tr>
   </table>
 
-  <p class="note">表中的曲目数为 <b>已发布</b> 数量（去除损坏文件与重复项之后），合计 103,122 首 = 全库总量。</p>
+  <p class="note">表中的曲目数为 <b>已发布</b> 数量（去除损坏文件与重复项之后），合计 113,234 首 = 全库总量。</p>
 
 
   <h2>关于「中国民间歌曲集成」（C3 研究/学习）</h2>
@@ -69,6 +70,7 @@
       catalog 中该批曲目的许可字段为 <code>TRADITIONAL-STUDY</code>。若你计划商用，请自行向底本权利人取得授权。</p>
     <p><b>数据质量</b>：上游说明该数据集尚未完全清洗，小节线可能需要再校正；陕西卷（二）部分唱词字符缺失，建议谨慎使用。</p>
     <div class="note">如权利方认为不宜收录，请通过项目 Issues 告知，我们将在 7 个工作日内下架该批数据。</div>
+    <p style="margin-top:.9rem"><b>另：GiantMIDI-Piano（10,112 首，C1 可商用）</b>——字节跳动发布、以高精度钢琴转谱系统从演奏录音转录的古典钢琴独奏集（2,704 位作曲家，1,237 小时）。许可 <b>CC BY 4.0</b>（仓库 README 明示；其 disclaimer 仅为标准免责条款，不含使用限制），因此归入 <span class="tag c1">C1 可商用</span>，使用时需署名数据集与论文：Kong et al., "GiantMIDI-Piano", arXiv:2010.07061 · github.com/bytedance/GiantMIDI-Piano。</p>
   </div>
 
   <h2>未收录来源与原因（含原文依据）</h2>
@@ -109,9 +111,9 @@
 
 <div data-lang="en" hidden>
   <h1>Data Sources</h1>
-  <p class="lead">We surveyed <b>36 public MIDI sources</b> and included <b>17</b> (103,122 tracks published). One is <b>permanently excluded</b> because its license forbids any distribution (MuseData). See "Excluded Sources & Reasons" for exact wording. This page fully discloses what we included, what we excluded, and why — plus where you can obtain the rest yourself.</p>
+  <p class="lead">We surveyed <b>36 public MIDI sources</b> and included <b>18</b> (113,234 tracks published). One is <b>permanently excluded</b> because its license forbids any distribution (MuseData). See "Excluded Sources & Reasons" for exact wording. This page fully discloses what we included, what we excluded, and why — plus where you can obtain the rest yourself.</p>
 
-  <h2>Published Sources (17)</h2>
+  <h2>Published Sources (18)</h2>
   <table>
     <tr><th style="width:24%">Source</th><th style="width:14%">Tracks</th><th style="width:26%">Content</th><th style="width:20%">License</th><th style="width:16%">Tier</th></tr>
     <tr><td><b>ariamidi</b></td><td>32,522</td><td>Classical piano transcriptions</td><td>CC BY-NC-SA 4.0</td><td><span class="tag c2">C2</span></td></tr>
@@ -131,9 +133,10 @@
     <tr><td><b>OpenGameArt</b></td><td>340</td><td>Game music</td><td>CC0 / CC BY / CC BY-SA / GPL (per track)</td><td><span class="tag c1">C1</span></td></tr>
     <tr><td><b>MusicNet</b></td><td>297</td><td>Classical chamber</td><td>CC BY 4.0</td><td><span class="tag c1">C1</span></td></tr>
     <tr><td><b>Anthology of Chinese Folk Songs</b></td><td>10,473</td><td>Chinese provincial folk songs (OMR)</td><td>TRADITIONAL-STUDY</td><td><span class="tag c3">C3</span></td></tr>
+    <tr><td><b>GiantMIDI-Piano</b></td><td>10,112</td><td>Classical piano solos (audio-transcribed, 2,704 composers)</td><td>CC BY 4.0</td><td><span class="tag c1">C1</span></td></tr>
   </table>
 
-  <p class="note">Track counts above are <b>published</b> numbers (after removing broken and duplicate files); they sum to 103,122 — the full library.</p>
+  <p class="note">Track counts above are <b>published</b> numbers (after removing broken and duplicate files); they sum to 113,234 — the full library.</p>
 
 
   <h2>About the Chinese Folk Songs Anthology (C3 / Study)</h2>
@@ -199,7 +202,7 @@
 </main>
 
 <footer>
-  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 103,122 首 / 17 个来源数据集" data-en="midicn-lib · Open MIDI Library · 103,122 tracks / 17 source datasets">midicn-lib · 开放 MIDI 音乐库 · 103,122 首 / 17 个来源数据集</span>
+  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 113,234 首 / 18 个来源数据集" data-en="midicn-lib · Open MIDI Library · 113,234 tracks / 18 source datasets">midicn-lib · 开放 MIDI 音乐库 · 113,234 首 / 18 个来源数据集</span>
 </footer>
 
 <script>
