@@ -301,6 +301,38 @@ $('theme').onclick = () => { const c = document.documentElement.dataset.theme ==
 /* ── 音频 ── */
 let ready=false, syn=null, bass=null, perc=null, part=null;
 let sfSynth=null, sfReady=false, sfLoading=false, sfFailed=false;
+/* 网络韧性：超时 + 重试（境内访问 GH Pages 常见停滞，不再永久卡死） */
+function fetchT(url, opt){
+  opt=opt||{}; const tries=opt.tries||3, to=opt.timeout||20000;
+  return (async function(){
+    let last=null;
+    for(let a=0;a<tries;a++){
+      const ac=new AbortController(); const tm=setTimeout(()=>ac.abort(),to);
+      try{
+        const r=await fetch(url,Object.assign({},opt,{signal:ac.signal}));
+        clearTimeout(tm);
+        if(!r.ok&&r.status>=500&&a<tries-1){ await new Promise(z=>setTimeout(z,700*(a+1))); continue; }
+        return r;
+      }catch(e){ clearTimeout(tm); last=e;
+        if(a<tries-1) await new Promise(z=>setTimeout(z,700*(a+1))); }
+    }
+    throw last||new Error('fetch failed');
+  })();
+}
+async function fetchBuf(url,onPct){
+  const r=await fetchT(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const len=+r.headers.get('Content-Length')||0;
+  if(!r.body||!len) return await r.arrayBuffer();
+  const rd=r.body.getReader(); const chunks=[]; let got=0;
+  for(;;){ const st=await rd.read(); if(st.done) break;
+    chunks.push(st.value); got+=st.value.length;
+    if(onPct) onPct(Math.min(99,Math.round(got/len*100))); }
+  if(onPct) onPct(100);
+  const out=new Uint8Array(got); let o=0;
+  for(const c of chunks){ out.set(c,o); o+=c.length; }
+  return out.buffer;
+}
 const volDb = () => -36 + ($('vol').value/100)*36;
 function initAudio(){
   if(ready) return;
@@ -319,16 +351,21 @@ $('vol').oninput = () => { if(ready) Tone.Destination.volume.value = volDb(); };
 $('rate').onchange = e => { if(ready) Tone.Transport.timeScale = parseFloat(e.target.value); };
 function setBadge(txt, cls){ const el=$('sfbadge'); el.textContent=txt; el.className='pill '+(cls||''); }
 async function ensureSoundFont(){
-  if(sfReady||sfLoading||sfFailed) return;
+  if(sfReady||sfLoading) return;
   sfLoading=true; setBadge(t('loadingSF'));
   try{
     const AC = Tone.getContext().rawContext;
     sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
     await sfSynth.init(AC);
-    const sf = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
-    await sfSynth.loadSFont(sf);
+    /* 音源走 gz（传输更小）+ 解压 + 进度%；失败回落原始 sf2；SW cache-first 只下一次 */
+    let ab=null;
+    if('DecompressionStream' in window){
+      try{ ab=await fetchBuf('soundfont/GeneralUser-GS.sf2.gz', p=>setBadge(t('loadingSF')+' '+p+'%')); }catch(e){}
+    }
+    if(!ab) ab=await fetchBuf('soundfont/GeneralUser-GS.sf2', p=>setBadge(t('loadingSF')+' '+p+'%'));
+    await sfSynth.loadSFont(ab);
     sfReady=true; setBadge(t('playing'),'sf');
-  }catch(e){ sfFailed=true; setBadge(t('synth')); }
+  }catch(e){ sfFailed=true; setBadge(t('synth'),'nc'); }
   sfLoading=false;
 }
 const fmt = s => { s=Math.max(0,Math.round(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
@@ -365,7 +402,7 @@ async function play(x, idx){
   if(sfReady){
     try{
       await Tone.start();
-      const ab = await (await fetch(x.f)).arrayBuffer();
+      const ab = await fetchBuf(x.f, p=>{ $('np').textContent=(x.t||x.id)+' · '+t('load')+' '+p+'%'; });
       sfSynth.stop(); await sfSynth.playNewMIDI(ab);
       playing=true; $('play').textContent='⏸'; $('viz').classList.add('on');
       $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+t('playing');
@@ -375,7 +412,7 @@ async function play(x, idx){
   ensureSoundFont();
   try{
     initAudio(); await Tone.start();
-    const ab = await (await fetch(x.f)).arrayBuffer();
+    const ab = await fetchBuf(x.f, p=>{ $('np').textContent=(x.t||x.id)+' · '+t('load')+' '+p+'%'; });
     const midi = new Midi(ab);
     const notes=[];
     midi.tracks.forEach(tr => tr.notes.forEach(n => notes.push({
@@ -419,7 +456,7 @@ async function boot(){
   skeleton(8); skList(6);
   $('np').textContent = '—';
   if(!SUMMARY){
-    try{ SUMMARY = await (await fetch('data/summary.json')).json(); }
+    try{ SUMMARY = await (await fetchT('data/summary.json')).json(); }
     catch(e){ $('heroSub').textContent = 'Load failed: ' + e.message; return; }
   }
   booted = true;
@@ -436,7 +473,7 @@ async function deepLink(){
   let c = q.get('cat') ? SUMMARY.categories.find(x=>x.id===q.get('cat')) : null;
   let ch = q.get('chunk')!=null ? +q.get('chunk') : null;
   if(!c || ch==null){
-    const L=await (await fetch('data/loc.json')).json(); const e=L[pid]; if(!e) return;
+    const L=await (await fetchT('data/loc.json')).json(); const e=L[pid]; if(!e) return;
     c=SUMMARY.categories.find(x=>x.id===e[0]); ch=e[1]; if(!c||ch==null) return;
   }
   await selectCat(c);
@@ -494,7 +531,7 @@ async function loadFacets(c, keep){
   reg.innerHTML='<option value="">'+(LANG==='zh'?'全部地域':'All regions')+'</option>';
   reg.disabled = comp.disabled = !c.facets;
   if(!c.facets) return;
-  try{ FACETS = await (await fetch('data/facets-'+c.id+'.json')).json(); }
+  try{ FACETS = await (await fetchT('data/facets-'+c.id+'.json')).json(); }
   catch(e){ return; }
   (FACETS.r||[]).forEach(function(pair){
     const o=document.createElement('option'); o.value=pair[0];
@@ -511,7 +548,7 @@ async function loadFacets(c, keep){
 }
 async function loadChunk(){
   if(!curCat || chunkIdx>=curCat.chunks) return;
-  const r=await fetch('data/cat-'+curCat.id+'-'+chunkIdx+'.json');
+  const r=await fetchT('data/cat-'+curCat.id+'-'+chunkIdx+'.json');
   const part=await r.json(); const ch=chunkIdx; chunkIdx++;
   part.forEach(t=>{ t._ch=ch; });
   buf=buf.concat(part);
@@ -572,7 +609,7 @@ $('q').oninput=(function(){ let h; return function(e){ clearTimeout(h); h=setTim
   const q=e.target.value.trim().toLowerCase();
   if(!q){ if(curCat) await selectCat(curCat); else $('list').innerHTML=''; return; }
   if(!searchReady){ $('status').textContent=t('searching');
-    SEARCH=await (await fetch('data/search-lite.json')).json(); searchReady=true; }
+    SEARCH=await (await fetchT('data/search-lite.json')).json(); searchReady=true; }
   const hits=SEARCH.filter(function(row){
     const id=row[0],tt=row[1],cn=row[2];
     return (tt&&tt.toLowerCase().indexOf(q)>=0)||(cn&&cn.toLowerCase().indexOf(q)>=0)||id.indexOf(q)>=0;
@@ -598,7 +635,7 @@ $('rand').onclick=async()=>{
   const c=SUMMARY.categories[Math.floor(Math.random()*SUMMARY.categories.length)];
   const i=Math.floor(Math.random()*c.chunks);
   $('status').textContent=t('shuffling')+catName(c)+' …';
-  const arr=await (await fetch('data/cat-'+c.id+'-'+i+'.json')).json();
+  const arr=await (await fetchT('data/cat-'+c.id+'-'+i+'.json')).json();
   const x=arr[Math.floor(Math.random()*arr.length)];
   if(x) play(x);
 };

@@ -8,9 +8,9 @@
 <title>曲目详情 · midicn-lib</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F'/%3E%3Crect x='23' y='20' width='5' height='21' rx='2.5' fill='%23E8C547'/%3E%3Crect x='32' y='14' width='5' height='27' rx='2.5' fill='%23E07A3F'/%3E%3Crect x='41' y='23' width='5' height='18' rx='2.5' fill='%23E8C547'/%3E%3Ccircle cx='45' cy='14' r='5' fill='%23E8C547'/%3E%3C/svg%3E">
-<script src="vendor/Tone.js"></script>
-<script src="vendor/Midi.js"></script>
-<script src="soundfont/engine/js-synthesizer.min.js"></script>
+<script src="vendor/Tone.js" defer></script>
+<script src="vendor/Midi.js" defer></script>
+<script src="soundfont/engine/js-synthesizer.min.js" defer></script>
 <style>
 .crumbs{font-size:12px;color:var(--dim2);margin:.9rem .2rem .4rem;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
 .crumbs a{color:var(--dim)}
@@ -130,9 +130,44 @@ const SRC = {
 const PERIOD = {renaissance:['文艺复兴','Renaissance'],baroque:['巴洛克','Baroque'],classical:['古典','Classical'],
   romantic:['浪漫','Romantic'],modern:['现代','Modern'],contemporary:['当代','Contemporary'],traditional:['传统','Traditional']};
 
-/* ── 音频（与 index.html 同引擎） ── */
+/* ── 音频（与 index.html 同引擎；defer 脚本在后台加载，点击播放前必已就绪） ── */
+function fetchT(url, opt){
+  opt=opt||{}; const tries=opt.tries||3, to=opt.timeout||20000;
+  return (async function(){
+    let last=null;
+    for(let a=0;a<tries;a++){
+      const ac=new AbortController(); const tm=setTimeout(()=>ac.abort(),to);
+      try{
+        const r=await fetch(url,Object.assign({},opt,{signal:ac.signal}));
+        clearTimeout(tm);
+        if(!r.ok&&r.status>=500&&a<tries-1){ await new Promise(z=>setTimeout(z,700*(a+1))); continue; }
+        return r;
+      }catch(e){ clearTimeout(tm); last=e;
+        if(a<tries-1) await new Promise(z=>setTimeout(z,700*(a+1))); }
+    }
+    throw last||new Error('fetch failed');
+  })();
+}
+async function fetchBuf(url,onPct){
+  const r=await fetchT(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const len=+r.headers.get('Content-Length')||0;
+  if(!r.body||!len) return await r.arrayBuffer();
+  const rd=r.body.getReader(); const chunks=[]; let got=0;
+  for(;;){ const st=await rd.read(); if(st.done) break;
+    chunks.push(st.value); got+=st.value.length;
+    if(onPct) onPct(Math.min(99,Math.round(got/len*100))); }
+  if(onPct) onPct(100);
+  const out=new Uint8Array(got); let o=0;
+  for(const c of chunks){ out.set(c,o); o+=c.length; }
+  return out.buffer;
+}
 let ready=false,syn=null,bass=null,perc=null,part=null,sfSynth=null,sfReady=false,sfLoading=false,sfFailed=false;
 let playing=false,uiTimer=null,curTotal=1,t0=0;
+async function waitEngine(){
+  let n=0; while(typeof Tone==='undefined' && n<100){ await new Promise(z=>setTimeout(z,100)); n++; }
+  if(typeof Tone==='undefined') throw new Error('audio engine not ready');
+}
 const volDb = () => -36 + ($('vol').value/100)*36;
 function initAudio(){
   if(ready) return;
@@ -149,14 +184,18 @@ function initAudio(){
 $('vol').oninput = () => { if(ready) Tone.Destination.volume.value = volDb(); };
 function setBadge(txt,cls){ const el=$('sfbadge'); el.textContent=txt; el.className='pill '+(cls||''); }
 async function ensureSoundFont(){
-  if(sfReady||sfLoading||sfFailed) return;
+  if(sfReady||sfLoading) return;
   sfLoading=true; setBadge(t('sfl'));
   try{
     const AC = Tone.getContext().rawContext;
     sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
     await sfSynth.init(AC);
-    const sf = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
-    await sfSynth.loadSFont(sf);
+    let ab=null;
+    if('DecompressionStream' in window){
+      try{ ab=await fetchBuf('soundfont/GeneralUser-GS.sf2.gz', p=>setBadge(t('sfl')+' '+p+'%')); }catch(e){}
+    }
+    if(!ab) ab=await fetchBuf('soundfont/GeneralUser-GS.sf2', p=>setBadge(t('sfl')+' '+p+'%'));
+    await sfSynth.loadSFont(ab);
     sfReady=true; setBadge(t('sf'),'sf');
   }catch(e){ sfFailed=true; setBadge(t('synth'),'nc'); }
   sfLoading=false;
@@ -172,13 +211,14 @@ function stop(){
   $('prog').value=0;
 }
 async function playTrack(x){
-  stop(); $('np').textContent = t('load')+' '+(x.t||x.id)+' …';
+  stop(); await waitEngine();
+  $('np').textContent = t('load')+' '+(x.t||x.id)+' …';
   $('tag').textContent = x.z==='main'?'C1':(x.z==='study'?'C3':'C2');
   $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
   curTotal = x.du || 1;
   try{
     await Tone.start();
-    const ab = await (await fetch(x.f)).arrayBuffer();
+    const ab = await fetchBuf(x.f, p=>{ $('np').textContent=(x.t||x.id)+' · '+t('load')+' '+p+'%'; });
     if(sfReady){
       sfSynth.stop(); await sfSynth.playNewMIDI(ab);
       playing=true; $('play').innerHTML='⏸'; t0=Date.now();
@@ -292,18 +332,14 @@ function render(x, ctx){
     +'<dt>'+t('notes')+'</dt><dd>'+(x.nn?x.nn.toLocaleString():'—')+'</dd>'
     +'<dt>'+t('fsize')+'</dt><dd id="fsz">…</dd>'
     +'<dt>'+t('file')+'</dt><dd>'+esc(x.f)+'</dd></dl>'
-    +'<div class="actions"><a class="btn primary" href="'+esc(x.f)+'" download style="text-decoration:none">'+t('dl')+'</a></div></div>';
+    +'<div class="actions"><button class="btn primary" id="dl" style="min-width:120px">'+t('dl')+'</button>'
+    +'<span class="pill" id="dlstate" hidden></span></div></div>';
   $('tag').textContent = x.z==='main'?'C1':(x.z==='study'?'C3':'C2');
   $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
   $('libopen').href = './?play='+encodeURIComponent(x.id)+'&cat='+encodeURIComponent(ctx.cat)+'&chunk='+ctx.chunk;
-  $('cp').onclick = async () => {
-    const txt = document.getElementById('attr').textContent;
-    try{ await navigator.clipboard.writeText(txt); }
-    catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); ta.remove(); }
-    $('cp').textContent = t('copied'); setTimeout(()=>{$('cp').textContent=t('copy');},1600);
-  };
-  fetch(x.f, {method:'HEAD'}).then(r=>{ const el=$('fsz');
+  $('dl').onclick = () => dlTrack(x);
+  /* 文件大小：HEAD + 超时重试 */
+  fetchT(x.f, {method:'HEAD'}).then(r=>{ const el=$('fsz');
     if(el && r.ok) el.textContent=(parseInt(r.headers.get('Content-Length')||0)/1024).toFixed(1)+' KB'; }).catch(()=>{});
   /* JSON-LD */
   let ld = document.getElementById('ld'); if(ld) ld.remove();
@@ -314,6 +350,31 @@ function render(x, ctx){
     isAccessibleForFree:true, license:x.l||''});
   document.head.appendChild(ld);
   renderRecs(x, ctx);
+}
+$('cp').onclick = async () => {
+  const el=document.getElementById('attr'); if(!el) return;
+  const txt = el.textContent;
+  try{ await navigator.clipboard.writeText(txt); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); }
+  $('cp').textContent = t('copied'); setTimeout(()=>{ if(window.__track) $('cp').textContent=t('copy'); },1600);
+};
+/* 进度式下载：fetch + 百分比 → blob 保存；失败回落浏览器直链 */
+async function dlTrack(x){
+  const btn=$('dl'), st=$('dlstate');
+  btn.disabled=true;
+  try{
+    const ab=await fetchBuf(x.f, p=>{ btn.textContent=t('dl')+' '+p+'%'; });
+    const blob=new Blob([ab],{type:'audio/midi'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=x.id+'.mid'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    if(st){ st.hidden=false; st.textContent='✓ '+fmt(x.du||0); setTimeout(()=>{st.hidden=true;},2500); }
+  }catch(e){
+    if(st){ st.hidden=false; st.textContent='✗ '+(e&&e.message||e); setTimeout(()=>{st.hidden=true;},3000); }
+    window.open(x.f,'_blank');           /* 回落：浏览器直链下载 */
+  }
+  btn.textContent=t('dl'); btn.disabled=false;
 }
 async function renderRecs(x, ctx){
   const box = $('recs'); box.innerHTML='';
