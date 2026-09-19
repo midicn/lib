@@ -37,7 +37,7 @@ CAT_NAMES = {
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）
-KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f")
+KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f", "opus", "no")
 
 # ── 地域名清洗：上游 Essen/Norbeck 等源残留 LaTeX 转义（{\"aa} / \"o 等） ──
 _LATEX = (
@@ -60,6 +60,23 @@ def clean_region(v):
     return s or v
 
 
+def disp_title(t: dict):
+    """无标题曲目的可分辨显示名：作曲家 · Op. 编号（如 aria 上游无标题、仅有编号体系）。"""
+    tt = str(t.get("t") or "").strip()
+    if tt:
+        return tt
+    cn = str(t.get("cn") or "").strip()
+    op, no = t.get("opus"), t.get("no")
+    if cn and op:
+        s = f"{cn} · Op. {op}"
+        if no not in (None, ""):
+            s += f" No. {no}"
+        return s
+    if cn:
+        return cn
+    return None
+
+
 def slim(t: dict) -> dict:
     out = {k: t.get(k) for k in KEEP if t.get(k) not in (None, "")}
     # catalog 的时长/音符数在顶层（v1.3+），之前误从嵌套 midi 字段读 → 分片一直缺 du/nn
@@ -69,6 +86,10 @@ def slim(t: dict) -> dict:
         out["nn"] = int(t["nn"])
     if out.get("r"):
         out["r"] = clean_region(out["r"])
+    # 无标题曲目（如 aria）合成「作曲家 · Op. 编号」显示名，保证每首可分辨
+    tt = disp_title(t)
+    if tt:
+        out["t"] = tt
     return out
 
 
@@ -135,8 +156,8 @@ def main() -> int:
         (out / f"facets-{cat}.json").write_text(
             json.dumps(facets, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-    # 搜索索引（极简：id + 标题 + 作曲家 + 分类）
-    search = [[t["id"], t.get("t") or "", t.get("cn") or "", t["f"].split("/")[1]] for t in tracks]
+    # 搜索索引（极简：id + 标题（无标题时用合成名）+ 作曲家 + 分类）
+    search = [[t["id"], disp_title(t) or "", t.get("cn") or "", t["f"].split("/")[1]] for t in tracks]
     (out / "search-lite.json").write_text(
         json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
