@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 44 项
+/* 站点端到端回归测试（jsdom）· 45 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -203,8 +203,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
        /时期|Period/.test(dd.getElementById('box').textContent));
     ok('许可结论出现（C1/C2/C3）', /C1|C2|C3/.test(dd.getElementById('box').textContent));
     ok('署名文本含 midicn-lib', dd.getElementById('attr') && /midicn-lib/.test(dd.getElementById('attr').textContent));
-    const dl = dd.querySelector('a[download]');
-    ok('下载 MIDI 链接', dl && /\.mid$/.test(dl.getAttribute('href')), dl && dl.getAttribute('href').split('/').pop());
+    ok('下载按钮（进度式）', !!dd.getElementById('dl'));
+    ok('「在音乐库中打开」深链', /play=/.test((dd.getElementById('libopen')||{}).href || ''));
     ok('复制按钮存在', !!dd.getElementById('cp'));
     ok('推荐列表有内容', dd.getElementById('recs').children.length > 0, dd.getElementById('recs').children.length + ' 项');
     ok('JSON-LD 注入', !!dd.querySelector('script[type="application/ld+json"]'));
