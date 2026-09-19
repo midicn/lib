@@ -31,7 +31,7 @@ jobs:
           mv site/midicn-lib-*/* site/
           rmdir site/midicn-lib-*
           cp detail.html site/ 2>/dev/null || true
-cp index.html site/
+          cp index.html site/
           cp -r vendor site/vendor
           cp manifest.json site/ 2>/dev/null || true
           cp sw.js site/ 2>/dev/null || true
