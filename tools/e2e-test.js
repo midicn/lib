@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 45 项
+/* 站点端到端回归测试（jsdom）· 49 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -128,6 +128,8 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   const hero = d.querySelector('.blk.hero') || d.querySelector('.hero');
   const secs = [...d.querySelectorAll('main > section.blk')];
   console.log('     main 分区数:', secs.length);
+  const cssTxt = (d.querySelector('style') || {}).textContent || '';
+  ok('UI 令牌已定义（移动端骨架）', /--player-h:/.test(cssTxt) && /sheet-open|fclose/.test(cssTxt + d.documentElement.outerHTML));
   ok('① 音乐库在最上', !!hero && secs.length > 0 && secs[0].contains(hero));
   ok('② 分类区紧随其后', secs.length > 1 && secs[1].contains(d.getElementById('cats')));
   ok('③ 筛选区', secs.length > 2 && !!d.getElementById('ftoggle'));
@@ -137,6 +139,11 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   await wait(300);
   ok('点「筛选」可展开', d.getElementById('fpanel').hidden === false &&
      d.getElementById('ftoggle').getAttribute('aria-expanded') === 'true');
+  /* ── 阶段一 UI 契约（移动端骨架） ── */
+  ok('抽屉开合带 .open 类', d.getElementById('fpanel').classList.contains('open'));
+  ok('抽屉有「收起筛选」按钮', !!d.getElementById('fclose'));
+  click(d.getElementById('fclose'));
+  ok('点「收起筛选」可关闭', d.getElementById('fpanel').hidden === true);
   ok('播放器在最后', !!d.getElementById('player'));
 
   console.log('\n【5】下载条与导航');
