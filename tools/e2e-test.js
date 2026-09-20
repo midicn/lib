@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 49 项
+/* 站点端到端回归测试（jsdom）· 53 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -140,6 +140,14 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   ok('点「筛选」可展开', d.getElementById('fpanel').hidden === false &&
      d.getElementById('ftoggle').getAttribute('aria-expanded') === 'true');
   /* ── 阶段一 UI 契约（移动端骨架） ── */
+  /* ── 阶段二 UI 契约（应用式桌面） ── */
+  ok('侧栏分类导航已渲染', d.querySelectorAll('#side .sideitem').length === 14, d.querySelectorAll('#side .sideitem').length + ' 项');
+  ok('侧栏首项与分类数一致', /32,522|32.522/.test((d.querySelector('#side .sideitem .si-c')||{}).textContent || ''));
+  ok('正在播放面板存在', !!d.getElementById('nowp'));
+  const sideFirst = d.querySelector('#side .sideitem');
+  if (sideFirst) click(sideFirst);
+  await wait(1200);
+  ok('点侧栏可切换分类高亮', d.querySelector('#side .sideitem[aria-current="true"]') !== null);
   ok('抽屉开合带 .open 类', d.getElementById('fpanel').classList.contains('open'));
   ok('抽屉有「收起筛选」按钮', !!d.getElementById('fclose'));
   click(d.getElementById('fclose'));
