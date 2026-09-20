@@ -192,6 +192,56 @@ header .nav{margin-left:0}
   main{max-width:1240px}
   .cats{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 }
+
+/* ══════════════════════════════════════════════════════════
+   阶段二 · 应用式桌面布局（≥1024 侧栏 / ≥1440 正在播放面板）
+   ══════════════════════════════════════════════════════════ */
+.side,.nowp{display:none}
+.sideitem{display:flex;align-items:center;gap:.6rem;width:100%;padding:.42rem .55rem;min-height:40px;
+  border:0;border-left:3px solid transparent;border-radius:0 var(--rs) var(--rs) 0;
+  background:transparent;color:var(--dim);font-size:var(--fs-sm);cursor:pointer;text-align:left;transition:.16s}
+.sideitem:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.sideitem[aria-current="true"]{background:linear-gradient(90deg,rgba(224,122,63,.20),transparent);
+  color:var(--tx);border-left-color:var(--p1);font-weight:600}
+.sideitem svg{width:15px;height:15px;fill:currentColor;flex:none;opacity:.9}
+.sideitem .si-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sideitem .si-c{font-size:var(--fs-xs);color:var(--dim2);font-variant-numeric:tabular-nums}
+.sidehd{font-size:var(--fs-xs);color:var(--dim2);letter-spacing:.09em;padding:.3rem .55rem .45rem}
+.spacer{list-style:none;padding:0;margin:0;pointer-events:none}
+.nowp .np-t{font-size:var(--fs-lg);font-weight:600;line-height:1.35;word-break:break-word}
+.nowp .np-m{font-size:var(--fs-sm);color:var(--dim);line-height:1.6}
+.nowp .np-acts{display:flex;flex-wrap:wrap;gap:.4rem}
+.nowp .np-acts a,.nowp .np-acts button{font-size:var(--fs-xs);min-height:32px;display:inline-flex;align-items:center;
+  gap:.3rem;padding:.28rem .62rem;border-radius:999px;border:1px solid var(--bd);
+  background:rgba(255,255,255,.04);color:var(--dim);cursor:pointer;text-decoration:none}
+.nowp .np-acts a:hover,.nowp .np-acts button:hover{border-color:var(--bd-hi);color:var(--tx)}
+.nowp .np-sim{margin-top:auto;display:flex;flex-direction:column;gap:.1rem}
+.nowp .np-hd{font-size:var(--fs-xs);color:var(--dim2);letter-spacing:.06em;margin-bottom:.2rem}
+.nowp .np-sim button{text-align:left;border:0;background:transparent;color:var(--dim);font-size:var(--fs-sm);
+  padding:.38rem .35rem;border-radius:var(--rs);cursor:pointer;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-family:inherit}
+.nowp .np-sim button:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+
+@media(min-width:1024px){
+  main{display:grid;grid-template-columns:248px minmax(0,1fr);gap:var(--s5);max-width:1260px;align-items:start}
+  main > section.blk{grid-column:2;min-width:0}
+  .side{display:block;grid-column:1;grid-row:1/span 99;position:sticky;top:64px;
+    background:var(--surface);border:1px solid var(--bd);border-radius:var(--r);
+    backdrop-filter:blur(14px);padding:var(--s2) var(--s2) var(--s3);
+    max-height:calc(100vh - 140px);overflow-y:auto}
+  .cats{display:none}                     /* 侧栏取代分类卡片墙（DOM 保留，便于切换） */
+  #player .pwrap{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    align-items:center;gap:var(--s4)}
+  #player .ptop{grid-column:1;min-width:0}
+  #player #prog{grid-column:2;width:min(36vw,420px)}
+  #player .pctl{grid-column:3;justify-content:flex-end}
+}
+@media(min-width:1440px){
+  main{grid-template-columns:248px minmax(0,1fr) 336px;max-width:1600px}
+  .nowp{display:flex;flex-direction:column;gap:var(--s3);grid-column:3;grid-row:1/span 99;
+    position:sticky;top:64px;background:var(--surface);border:1px solid var(--bd);
+    border-radius:var(--r);backdrop-filter:blur(14px);padding:var(--s4)}
+}
 </style>
 </head>
 <body>
@@ -213,6 +263,8 @@ header .nav{margin-left:0}
 </div></header>
 
 <main>
+<aside class="side" id="side" aria-label="分类导航 / Categories"></aside>
+<aside class="nowp" id="nowp" aria-label="正在播放 / Now playing"></aside>
   <!-- ① 音乐库 -->
   <section class="blk hero">
     <h1 data-zh="MIDI 音乐库" data-en="MIDI Music Library">MIDI 音乐库</h1>
@@ -453,6 +505,7 @@ async function play(x, idx){
   document.querySelectorAll('.row.on').forEach(e=>e.classList.remove('on'));
   const li=document.querySelector('.row[data-id="'+x.id+'"]'); if(li) li.classList.add('on');
   $('np').textContent = t('load')+' ' + (x.t || x.id) + ' …';
+  updateNowPlaying(x, (flat||[]).filter(y=>y.cn && y.cn===x.cn && y.id!==x.id));
   $('tag').textContent = zoneLabel(x.z);
   $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
   if(sfReady){
@@ -462,7 +515,9 @@ async function play(x, idx){
       sfSynth.stop(); await sfSynth.playNewMIDI(ab);
       playing=true; $('play').textContent='⏸'; $('viz').classList.add('on');
       $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+t('playing');
-      setBadge(t('playing'),'sf'); return;
+      setBadge(t('playing'),'sf');
+      updateNowPlaying(x, (flat||[]).filter(y=>y.cn && y.cn===x.cn && y.id!==x.id));
+      return;
     }catch(e){}
   }
   ensureSoundFont();
@@ -507,6 +562,79 @@ function skList(n){ $('list').innerHTML='<li class="sk"></li>'.repeat(n); }
 
 /* 首页静态骨架 + 汇总数据的两段式渲染：
    fetch 汇总 → renderHead()（统计/分类/筛选器），语言切换时只重放 renderHead()，不再重复请求。 */
+/* ═══ 阶段二：侧栏分类导航 ═══ */
+function renderSidebar(){
+  if(!SUMMARY) return;
+  const box=$('side'); if(!box) return;
+  box.innerHTML = '<div class="sidehd">'+t('catsUnit')+'</div>' + SUMMARY.categories.map(c=>(
+    '<button class="sideitem" type="button" data-id="'+c.id+'" aria-current="false">'+
+      '<svg viewBox="0 0 24 24"><path d="'+(ICONS[c.id]||ICONS['classical-traditional'])+'"/></svg>'+
+      '<span class="si-n">'+catName(c)+'</span>'+
+      '<span class="si-c">'+c.count.toLocaleString()+'</span>'+
+    '</button>')).join('');
+  box.querySelectorAll('.sideitem').forEach(b=>{
+    b.onclick=()=>{
+      const c=SUMMARY.categories.find(x=>x.id===b.dataset.id);
+      if(!c) return;
+      selectCat(c,null);
+      const l=$('list'); if(l && l.scrollIntoView) l.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+  syncSidebar();
+}
+function syncSidebar(){
+  const on = curCat ? curCat.id : '';
+  document.querySelectorAll('#side .sideitem').forEach(b=>{
+    b.setAttribute('aria-current', b.dataset.id===on ? 'true' : 'false');
+  });
+}
+/* ═══ 阶段二：正在播放面板（≥1440）═══ */
+let npCur = null;
+function updateNowPlaying(x, similar){
+  npCur = x || npCur;
+  const box=$('nowp'); if(!box || !npCur) return;
+  const ttl = npCur.t || npCur.id;
+  const zone = zoneLabel(npCur.z);
+  const dur = npCur.du ? Math.floor(npCur.du/60)+':'+String(Math.floor(npCur.du%60)).padStart(2,'0') : '';
+  const durl = 'detail.html?id='+encodeURIComponent(npCur.id)+(curCat?'&cat='+encodeURIComponent(curCat.id):'')+((npCur._ch!=null)?'&chunk='+npCur._ch:'');
+  const sim = (similar||[]).slice(0,5);
+  box.innerHTML =
+    '<div class="np-hd">'+t('playing')+'</div>'+
+    '<div class="np-t">'+esc(ttl)+'</div>'+
+    '<div class="np-m">'+esc(npCur.cn||'')+(npCur.opus?(' · Op. '+esc(String(npCur.opus))+(npCur.no?(' No. '+esc(String(npCur.no))):'')):'')+
+      (dur?(' · '+dur):'')+'</div>'+
+    '<div><span class="pill '+(npCur.z==='main'?'st':(npCur.z==='study'?'':'nc'))+'">'+zone+'</span></div>'+
+    '<div class="np-acts">'+
+      '<a href="'+durl+'">'+t('detail')+'</a>'+
+      '<a href="'+esc(npCur.f)+'" download>'+t('dl')+'</a>'+
+      '<button type="button" id="npattr">'+t('copy')+'</button>'+
+    '</div>'+
+    (sim.length?('<div class="np-sim"><div class="np-hd">'+t('similar')+'</div>'+
+      sim.map(y=>'<button type="button" data-id="'+esc(y.id)+'">'+esc((y.t||y.id).slice(0,34))+'</button>').join('')+'</div>'):'');
+  const ab=$('npattr');
+  if(ab) ab.onclick=()=>{ const txt=attribution(npCur);
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{ab.textContent=t('copied');setTimeout(()=>{ab.textContent=t('copy');},1500);}).catch(()=>{}); };
+  box.querySelectorAll('.np-sim button').forEach(b=>{
+    b.onclick=()=>{ const y=(flat||[]).find(z=>z.id===b.dataset.id); if(y) play(y); };
+  });
+}
+function attribution(x){
+  return (x.t||x.id)+' — '+(x.cn||'')+'. Source: midicn-lib (midicn/midi-lib). License: '+(x.l||'')+'.';
+}
+/* ═══ 阶段二：列表窗口化（DOM 上限，超限回收远端行）═══ */
+const MAX_ROWS = 1200, TRIM_ROWS = 300;
+function maybeWindow(){
+  const ul=$('list'); if(!ul) return;
+  if(ul.querySelectorAll('li.row').length <= MAX_ROWS) return;
+  const rows=[...ul.querySelectorAll('li.row')];
+  const kill=rows.slice(0, TRIM_ROWS);
+  const h=kill.reduce((a,r)=>a+r.offsetHeight,0) || TRIM_ROWS*44;
+  kill.forEach(r=>r.remove());
+  let sp=ul.querySelector('li.spacer');
+  if(!sp){ sp=document.createElement('li'); sp.className='spacer'; ul.insertBefore(sp, ul.firstChild); }
+  sp.style.height=(parseFloat(sp.style.height||0)+h)+'px';
+}
+
 async function boot(){
   if(booted) return;
   skeleton(8); skList(6);
@@ -516,7 +644,7 @@ async function boot(){
     catch(e){ $('heroSub').textContent = 'Load failed: ' + e.message; return; }
   }
   booted = true;
-  renderHead();
+  renderHead(); renderSidebar();
   $('status').textContent = t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
   $('list').innerHTML='';
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -573,6 +701,7 @@ async function selectCat(c, el){
   curCat=c; chunkIdx=0; buf=[]; flat=[]; rendered=0; curIdx=-1; autoLoaded=0;
   $('region').value=''; $('source').value='';      /* 地域/来源选项随分类变化，重置 */
   skList(8);
+  syncSidebar();
   loadFacets(c);                                    /* 分面异步填充，不阻塞列表 */
   await loadChunk();
 }
@@ -641,6 +770,7 @@ function renderNext(fresh){
   const ul=$('list'); if(fresh) ul.innerHTML='';
   let added=0;
   while(rendered<flat.length && added<PAGE){ ul.appendChild(rowFor(flat[rendered],rendered)); rendered++; added++; }
+  maybeWindow();
 }
 function rowFor(x, idx){
   const li=document.createElement('li'); li.className='row'; li.dataset.id=x.id;
