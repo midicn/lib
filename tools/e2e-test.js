@@ -1,4 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 53 项
+/* 站点端到端回归测试（jsdom）· 54 项
  * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
@@ -126,10 +126,11 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
 
   console.log('\n【4b】布局与可折叠筛选区');
   const hero = d.querySelector('.blk.hero') || d.querySelector('.hero');
-  const secs = [...d.querySelectorAll('main > section.blk')];
+  const secs = [...d.querySelectorAll('main section.blk')];
   console.log('     main 分区数:', secs.length);
   const cssTxt = (d.querySelector('style') || {}).textContent || '';
-  ok('UI 令牌已定义（移动端骨架）', /--player-h:/.test(cssTxt) && /sheet-open|fclose/.test(cssTxt + d.documentElement.outerHTML));
+  ok('无嵌套滚动容器（无拖拉框）', !/overflow-y:\s*auto/.test(d.documentElement.outerHTML));
+  ok('采用令牌体系（间距/描边变量）', /var\(--s\d\)/.test(cssTxt) && /var\(--line\)/.test(cssTxt) && /var\(--bg-elev\)/.test(cssTxt));
   ok('① 音乐库在最上', !!hero && secs.length > 0 && secs[0].contains(hero));
   ok('② 分类区紧随其后', secs.length > 1 && secs[1].contains(d.getElementById('cats')));
   ok('③ 筛选区', secs.length > 2 && !!d.getElementById('ftoggle'));
@@ -148,10 +149,10 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   if (sideFirst) click(sideFirst);
   await wait(1200);
   ok('点侧栏可切换分类高亮', d.querySelector('#side .sideitem[aria-current="true"]') !== null);
-  ok('抽屉开合带 .open 类', d.getElementById('fpanel').classList.contains('open'));
-  ok('抽屉有「收起筛选」按钮', !!d.getElementById('fclose'));
+  ok('筛选面板展开（内联·非抽屉）', d.getElementById('fpanel').classList.contains('open') && !d.body.classList.contains('sheet-open'));
+  ok('筛选面板有收起按钮', !!d.getElementById('fclose'));
   click(d.getElementById('fclose'));
-  ok('点「收起筛选」可关闭', d.getElementById('fpanel').hidden === true);
+  ok('点收起按钮可关闭面板', d.getElementById('fpanel').hidden === true);
   ok('播放器在最后', !!d.getElementById('player'));
 
   console.log('\n【5】下载条与导航');
