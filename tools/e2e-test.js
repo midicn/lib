@@ -142,7 +142,7 @@ const ok = (n, c, extra = '') => { results.push([c, n, extra]); console.log(`  $
   console.log('\n【5】下载条与导航');
   const chips = [...d.querySelectorAll('.dlchip')].map(a => a.getAttribute('href'));
   ok('下载 chip 4 个', chips.length === 4, chips.length + ' 个');
-  ok('下载链指向 v1.10 release', chips.every(h => /releases\/download\/v1\.10/.test(h)));
+  ok('下载链指向 v1.11 release', chips.every(h => /releases\/download\/v1\.11/.test(h)));
   const navs = [...d.querySelectorAll('.nav a')].map(a => a.getAttribute('href'));
   ok('导航含下载/来源/许可', ['download.html', 'sources.html', 'licenses.html'].every(x => navs.includes(x)), navs.join(' '));
   ok('声波可视化条已生成', q('#viz i') === 14, q('#viz i') + ' 根');
