@@ -1,4 +1,55 @@
 /* ═══════════════════════════════════════════════
+   设计令牌层（v8 · 2026-09-20）
+   ─ 字体/间距/圆角/触控/层级/断点 全部集中在此
+   ─ 改这里即可全站生效（配色沿用上方变量）
+   ═══════════════════════════════════════════════ */
+:root{
+  /* 字体阶梯（流体，随视口缩放；不再写死 px） */
+  --fs-xs:clamp(10.5px,.68rem,12px);      /* 徽标/标注 */
+  --fs-sm:clamp(11.5px,.76rem,13px);      /* 次要信息 */
+  --fs-base:clamp(13px,.86rem,14.5px);    /* 正文 */
+  --fs-lg:clamp(14.5px,.95rem,16.5px);    /* 强调正文 */
+  --fs-h3:clamp(15px,1rem,18px);
+  --fs-h2:clamp(16px,1.1rem,20px);
+  --fs-h1:clamp(21px,3.2vw,34px);
+  /* 间距阶梯（4 的倍数） */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* 圆角 */
+  --r-sm:9px; --r:14px; --r-lg:18px;
+  /* 触控最小尺寸（触屏可达性红线） */
+  --tap:44px;
+  /* 层级 */
+  --z-hdr:30; --z-play:50; --z-sheet:60; --z-toast:70;
+  /* 安全区（iPhone 底部横条等） */
+  --sa-b:env(safe-area-inset-bottom,0px);
+  --sa-l:env(safe-area-inset-left,0px);
+  --sa-r:env(safe-area-inset-right,0px);
+  /* 容器宽度：文档页窄、应用页宽（阶段二启用 app 版） */
+  --page:1000px; --app:1600px;
+  /* 过渡 */
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --dur:.24s;
+}
+@media(prefers-reduced-motion:reduce){ :root{--dur:.01s} }
+
+/* 令牌落地：基础排版 */
+body{font-size:var(--fs-base)}
+h1{font-size:var(--fs-h1)}
+h2{font-size:var(--fs-h2)}
+h3{font-size:var(--fs-h3)}
+p,ul,li{font-size:var(--fs-base)}
+.lead{font-size:var(--fs-lg)}
+.note,.tag,.dltitle,.dlchip{font-size:var(--fs-sm)}
+
+/* 小屏通用：表格可横滑、页脚避让安全区、卡片内边距收紧 */
+@media(max-width:640px){
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:520px}
+  footer{padding-bottom:calc(1.2rem + var(--sa-b));padding-left:calc(1.1rem + var(--sa-l));padding-right:calc(1.1rem + var(--sa-r))}
+  main{padding-left:calc(var(--s4) + var(--sa-l));padding-right:calc(var(--s4) + var(--sa-r))}
+}
+
+/* ═══════════════════════════════════════════════
    midicn-lib 设计系统 · 共享样式
    配色通过 CSS 变量集中管理，换肤只需改这一处
    ═══════════════════════════════════════════════ */

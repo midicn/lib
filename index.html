@@ -137,6 +137,61 @@ header .nav{margin-left:0}
   .row .meta .pill{display:none}#vol{display:none}.viz{width:64px;height:22px}
   body{padding-bottom:118px}
 }
+
+/* ══════════════════════════════════════════════════════════
+   阶段一 · 移动端骨架（<768px）
+   ─ 筛选变底部抽屉 · 分类 2 列大卡 · 触控 ≥44px · 安全区
+   ══════════════════════════════════════════════════════════ */
+:root{ --player-h:118px }
+.fclose{display:none}
+@media(max-width:767px){
+  /* ① 筛选 → 底部抽屉 */
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:var(--z-sheet);
+    border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:none;
+    background:color-mix(in srgb,var(--ink2) 94%,transparent);
+    backdrop-filter:blur(20px) saturate(150%);
+    max-height:76vh;overflow-y:auto;overscroll-behavior:contain;
+    padding:var(--s2) var(--s4) calc(var(--s4) + var(--sa-b));
+    transform:translateY(103%);transition:transform var(--dur) var(--ease);
+    box-shadow:0 0 0 100vmax rgba(0,0,0,0),0 -20px 44px -20px rgba(0,0,0,.7);
+  }
+  .bar:not([hidden]){transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.52),0 -20px 44px -20px rgba(0,0,0,.7)}
+  .bar:not([hidden])::before{
+    content:'';display:block;width:40px;height:4px;border-radius:99px;
+    background:var(--bd-hi);margin:.1rem auto var(--s3);opacity:.7}
+  .fclose{
+    display:block;width:100%;margin-top:var(--s3);min-height:var(--tap);
+    border:1px solid var(--bd-hi);border-radius:var(--r-sm);
+    background:linear-gradient(100deg,var(--p1),var(--accent));color:#150D06;
+    font-size:var(--fs-base);font-weight:600;cursor:pointer}
+  /* ② 分类 2 列大卡（大触区） */
+  .cats{grid-template-columns:1fr 1fr;gap:var(--s3)}
+  .cat{min-height:76px;padding:var(--s3) var(--s3) calc(var(--s3) - 2px)}
+  .cat b{font-size:var(--fs-base)}
+  /* ③ 触控尺寸：行高与按钮 */
+  .row{min-height:56px;padding:.62rem .72rem;align-items:flex-start}
+  .row .pl{width:var(--tap);height:var(--tap);margin-top:-4px}
+  .pctl button{min-width:var(--tap);min-height:var(--tap)}
+  .ftoggle{min-height:var(--tap);padding:.6rem .8rem}
+  .dlchip{min-height:34px;display:inline-flex;align-items:center}
+  /* ④ 安全区：播放条与页面底部 */
+  #player{padding-bottom:var(--sa-b)}
+  body{padding-bottom:calc(var(--player-h) + var(--sa-b) + var(--s2))}
+  footer{padding-bottom:calc(var(--s6) + var(--sa-b))}
+}
+/* 桌面：筛选栏吸顶（为阶段二的应用式布局铺路） */
+@media(min-width:1024px){
+  .ftoggle{position:sticky;top:54px;z-index:12;
+    background:color-mix(in srgb,var(--ink) 82%,transparent);backdrop-filter:blur(12px)}
+  .bar{padding:var(--s4) var(--s5) calc(var(--s4) + var(--s5));border-radius:var(--r)}
+  .blkhead h2{font-size:var(--fs-h2)}
+}
+/* 宽屏：容器放宽（≥1440） */
+@media(min-width:1440px){
+  main{max-width:1240px}
+  .cats{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+}
 </style>
 </head>
 <body>
@@ -212,7 +267,8 @@ header .nav{margin-left:0}
       <span id="status" class="blkstatus"></span>
       <span class="spacer"></span>
       <button class="btn primary" id="rand" data-zh="🎲 随机试听" data-en="🎲 Shuffle">🎲 随机试听</button>
-    </div>
+    
+  <button class="fclose" id="fclose" type="button">收起筛选 / Close</button></div>
     <ul id="list"></ul>
     <div id="sentinel" style="height:1px"></div>
   </section>
@@ -662,11 +718,18 @@ function syncFilterBadge(){
   if(!b) return;
   b.textContent=String(n); b.hidden = (n===0);
 }
-$('ftoggle').onclick=()=>{
-  const p=$('fpanel'), open=p.hidden;
+function setSheet(open){
+  const p=$('fpanel');
+  if(!p) return;
   p.hidden=!open;
+  p.classList.toggle('open', open);
+  document.body.classList.toggle('sheet-open', open);
   $('ftoggle').setAttribute('aria-expanded', open?'true':'false');
-};
+}
+$('ftoggle').onclick=()=>setSheet($('fpanel').hidden);
+if($('fclose')) $('fclose').onclick=()=>setSheet(false);
+/* 抽屉内点空白/按 Esc 也能收起 */
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') setSheet(false); });
 function refilterSync(){ syncFilterBadge(); refilter(); }
 $('mainOnly').onchange=refilterSync;
 $('period').onchange=refilterSync;
