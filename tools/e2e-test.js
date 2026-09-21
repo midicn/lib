@@ -25,14 +25,17 @@ const wait = ms => new Promise(r=>setTimeout(r, ms));
 function localize(html, htmlPath){
   if (!LOCAL) return html;
   const dir = path.dirname(htmlPath);
-  let arch = '';
+  let arch = '', plr = '';
   try{ arch = fs.readFileSync(path.join(dir, 'assets', 'archive.js'), 'utf-8'); }catch(e){}
+  try{ plr = fs.readFileSync(path.join(dir, 'assets', 'player.js'), 'utf-8'); }catch(e){}
   let css = '';
   try{ css = fs.readFileSync(path.join(dir, 'assets', 'style.css'), 'utf-8'); }catch(e){}
   return html
     .replace(/<script src="vendor\/[^"]+"><\/script>/g, '')
     .replace(/<script src="assets\/archive\.js"><\/script>/g,
       arch ? '<script>' + arch + '</script>' : '')
+    .replace(/<script src="assets\/player\.js"><\/script>/g,
+      plr ? '<script>' + plr + '</script>' : '')
     .replace(/<link rel="stylesheet" href="assets\/style\.css">/g,
       css ? '<style>' + css + '</style>' : '');
 }
@@ -90,9 +93,10 @@ function makeFetch(realFetch){
 
   /* 【1】扉页 */
   console.log('\n【1】扉页与骨架');
-  const figs = d.querySelectorAll('#figs .fig');
-  ok('扉页数据块 4 个', figs.length === 4, figs.length + ' 个');
-  ok('曲目总数已填充', /124[,.]?179/.test((figs[0]||{}).textContent || ''), (figs[0]||{}).textContent);
+  const hmeta = d.getElementById('heroMeta');
+  ok('扉页改为紧凑行内数字（无大数字块）', !!hmeta && d.querySelectorAll('.fig').length === 0);
+  ok('曲目总数已填充', /124[,.]?179/.test((hmeta||{}).textContent || ''), (hmeta||{}).textContent);
+  ok('导语已填充', (((d.getElementById('heroLede')||{}).textContent) || '').length > 20);
   ok('标题为衬线大标题', /MIDI/.test((d.querySelector('.hero h1')||{}).textContent || ''));
   ok('编辑导语存在', !!d.querySelector('.hero .lede'));
 
