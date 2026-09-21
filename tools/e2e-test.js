@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.2（63 项：引擎解耦 + 来源地址/台账核验）*/
+/* midicn-lib 端到端回归 v11.3（70 项：含站内台账页核验）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -336,6 +336,13 @@ function makeFetch(realFetch){
     ok('来源页标注核验日期与台账入口', /id="prov"/.test(sc) && /SRC_VERIFIED/.test(sc) && /PROV_DOC/.test(sc));
     ok('核验日期已填且台账指向 PROVENANCE.md',
        /SRC_VERIFIED\s*=\s*'\d{4}-\d{2}-\d{2}'/.test(arch) && /PROVENANCE\.md/.test(arch));
+    /* 站内台账页（不依赖 GitHub 的自证入口）*/
+    const pv = await assetText('provenance.html');
+    const ncards = (pv.match(/class="panel pc"/g) || []).length;
+    ok('站内台账页存在且含 19 张来源卡', ncards === 19, ncards ? ncards + ' 张' : '（未找到）');
+    ok('台账页含三条规则与 180 天复核周期', /三条规则/.test(pv) && /180 天复核周期/.test(pv));
+    ok('台账页给出整包校验值', /MD5/.test(pv) && /d26e22562e67eb7d37535e96cc5eebba/.test(pv));
+    ok('来源页指向站内台账页', /PROV_PAGE/.test(sc) && /PROV_PAGE\s*=\s*'provenance\.html'/.test(arch));
     /* 分区与许可须与发布 catalog 一致 */
     ok('lakh 标注为 C3 学习研究（zone=study）', /id:'lakh'[\s\S]{0,220}?zone:'study'/.test(arch));
     ok('emopia 标注为 C2 非商用（CC BY-NC-SA）',

@@ -5,7 +5,7 @@
    └─ 音源 (sf2/sf2.gz)：cache-first —— 30MB 只下载一次，之后秒开                     */
 const V = 'midicn-v6';
 const CORE = ['./', './index.html', './manifest.json', './assets/style.css',
-  './download.html', './sources.html', './licenses.html',
+  './download.html', './sources.html', './licenses.html', './provenance.html',
   './vendor/Tone.js', './vendor/Midi.js', './soundfont/engine/js-synthesizer.min.js'];
 
 self.addEventListener('install', e => {

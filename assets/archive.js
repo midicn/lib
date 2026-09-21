@@ -283,6 +283,7 @@ const EXCLUDED = [
    规则：每源只登记一个地址，且必须是我们实际取得数据的位置；档位须与发布 catalog 一致。 */
 const SRC_VERIFIED = '2026-09-21';
 const PROV_DOC = 'https://github.com/midicn/midi-lib/blob/main/docs/PROVENANCE.md';
+const PROV_PAGE = 'provenance.html';   /* 站内台账页（不依赖 GitHub）*/
 
 /* ── 本库自身许可（供页脚与许可页引用）─────────────── */
 const LIB_LICENCE = {

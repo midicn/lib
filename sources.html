@@ -121,9 +121,11 @@ function render(){
   );
   $('prov').innerHTML = t(
     '来源核验 <b>'+SRC_VERIFIED+'</b> · 每个地址的取得方式、证据文件与整包校验值见 '+
-    '<a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a>（附可执行复核脚本）',
+    '<a href="'+PROV_PAGE+'">来源台账</a>'+
+    '（<a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a> · 附可执行复核脚本）',
     'Provenance verified <b>'+SRC_VERIFIED+'</b> · how each address was obtained, its evidence file and package '+
-    'checksums: <a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a>');
+    'checksums: <a href="'+PROV_PAGE+'">provenance ledger</a> '+
+    '(<a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a> · with a re-runnable verifier)');
   $('srcCount').textContent = t(SOURCES.length+' 个来源 · 合计 '+fmt(total)+' 首',
                                 SOURCES.length+' sources · '+fmt(total)+' tracks');
   $('list').innerHTML = SOURCES.map(srcCard).join('');
