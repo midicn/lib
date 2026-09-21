@@ -279,6 +279,11 @@ const EXCLUDED = [
          en:'Its licence (clauses 4 and 5) explicitly forbids redistribution, so it is excluded from every download pack.'} },
 ];
 
+/* ── 来源核验（台账：docs/PROVENANCE.md · 机器可读版 docs/provenance.json）──
+   规则：每源只登记一个地址，且必须是我们实际取得数据的位置；档位须与发布 catalog 一致。 */
+const SRC_VERIFIED = '2026-09-21';
+const PROV_DOC = 'https://github.com/midicn/midi-lib/blob/main/docs/PROVENANCE.md';
+
 /* ── 本库自身许可（供页脚与许可页引用）─────────────── */
 const LIB_LICENCE = {
   code:  { id: 'MIT',        text: 'MIT' },

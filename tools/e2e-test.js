@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.1（61 项：引擎解耦 + 来源地址核验）*/
+/* midicn-lib 端到端回归 v11.2（63 项：引擎解耦 + 来源地址/台账核验）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -331,6 +331,11 @@ function makeFetch(realFetch){
     ok('无臆造/无关地址复现', back.length === 0, back.join(' '));
     /* 不再保留多余的「站点」链接（只要一个原始地址）*/
     ok('来源条目仅保留原始地址（无 site 字段）', !/\bsite:'/.test(arch));
+    /* 可复核：来源页须给出核验日期与台账入口，且台账文件必须真实存在 */
+    const sc = await assetText('sources.html');
+    ok('来源页标注核验日期与台账入口', /id="prov"/.test(sc) && /SRC_VERIFIED/.test(sc) && /PROV_DOC/.test(sc));
+    ok('核验日期已填且台账指向 PROVENANCE.md',
+       /SRC_VERIFIED\s*=\s*'\d{4}-\d{2}-\d{2}'/.test(arch) && /PROVENANCE\.md/.test(arch));
     /* 分区与许可须与发布 catalog 一致 */
     ok('lakh 标注为 C3 学习研究（zone=study）', /id:'lakh'[\s\S]{0,220}?zone:'study'/.test(arch));
     ok('emopia 标注为 C2 非商用（CC BY-NC-SA）',

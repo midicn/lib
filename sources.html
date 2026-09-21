@@ -26,6 +26,7 @@
   <p class="meta" data-zh="档案 · 来源志" data-en="ARCHIVE · PROVENANCE">档案 · 来源志</p>
   <h1 data-zh="数据来源" data-en="Sources">数据来源</h1>
   <p class="lede" id="lede"></p>
+  <p class="meta" id="prov"></p>
   <div class="stitle">
     <h2 data-zh="已收录来源" data-en="Included sources">已收录来源</h2>
     <span class="spacer"></span><span class="meta" id="srcCount"></span>
@@ -118,6 +119,11 @@ function render(){
     '本库每一首 MIDI 都来自公开、可核查的上游来源。本页逐源说明：<em>它是什么</em>、<em>我们从何处取得</em>、<em>依据什么条款使用</em>，并给出原始地址以便回溯与致谢。',
     'Every MIDI here comes from a public, verifiable upstream. For each source: <em>what it is</em>, <em>where we got it</em>, <em>under which terms we use it</em> — with a link back to the original.'
   );
+  $('prov').innerHTML = t(
+    '来源核验 <b>'+SRC_VERIFIED+'</b> · 每个地址的取得方式、证据文件与整包校验值见 '+
+    '<a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a>（附可执行复核脚本）',
+    'Provenance verified <b>'+SRC_VERIFIED+'</b> · how each address was obtained, its evidence file and package '+
+    'checksums: <a href="'+PROV_DOC+'" target="_blank" rel="noopener">PROVENANCE.md</a>');
   $('srcCount').textContent = t(SOURCES.length+' 个来源 · 合计 '+fmt(total)+' 首',
                                 SOURCES.length+' sources · '+fmt(total)+' tracks');
   $('list').innerHTML = SOURCES.map(srcCard).join('');
