@@ -290,6 +290,10 @@ function render(){
   const allow = z.id==='main' ? t('商业使用 · 再分发 · 修改','Commercial · redistribute · modify')
     : z.id==='piano' ? t('非商业使用（须同许可方式）','Non-commercial (share-alike)')
     : t('仅学习研究 · 不得再分发','Study/research only · no redistribution');
+  /* TheSession 附加条款（数据仓 LICENSE.md §2.2 · NOTICE · 台账口径一致） */
+  const extraTerm = (src && src.id === 'thesession') ? t(
+    '<dt>附加条款</dt><dd><b>禁止用于大语言模型（LLM）</b>——不得训练大模型、借助 LLM 工具处理，或并入 LLM 相关应用（无障碍方案除外）</dd>',
+    '<dt>Additional term</dt><dd><b>Prohibition on LLM use</b> — no LLM training, no processing with LLM tools, and no incorporation into LLM-related applications (accessibility excepted)</dd>') : '';
   $('licbox').innerHTML =
     '<div class="panel"><div class="panel-hd">'+
       '<span class="lic '+z.cls+'">'+z.code+' '+z[LANG]+'</span>'+
@@ -299,6 +303,7 @@ function render(){
       '<dl class="dl" style="margin-bottom:var(--s4)">'+
         '<dt>'+t('可以做','ALLOWED')+'</dt><dd>'+allow+'</dd>'+
         '<dt>'+t('须署名','CREDIT')+'</dt><dd>'+t('本库与上游来源均需标注','credit both this library and the upstream')+'</dd>'+
+        extraTerm+
       '</dl>'+
       '<div class="attr" id="attrtxt">'+esc(attr)+'</div>'+
       '<div class="actions" style="margin-top:var(--s3)">'+

@@ -11,7 +11,7 @@ concurrency:
   group: pages
   cancel-in-progress: true
 env:
-  RELEASE_TAG: v1.19
+  GITHUB_REPO: midicn/midi-lib
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,6 +20,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Resolve release tag (single source: meta/version.json)
+        run: |
+          TAG=$(curl -sL --retry 3 "https://raw.githubusercontent.com/midicn/midi-lib/main/meta/version.json" | python3 -c "import sys,json;print(json.load(sys.stdin)['version'])")
+          if [ -z "$TAG" ]; then echo "version.json 未取到版本号"; exit 1; fi
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=$TAG"
       - name: Download & assemble from Release
         run: |
           mkdir -p site

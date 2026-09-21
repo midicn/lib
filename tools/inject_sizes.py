@@ -79,6 +79,8 @@ def main() -> int:
         n += k
     txt = re.sub(r'(<b id="relTotal")>[^<]*(</b>)', lambda m: m.group(1) + '>' + mb(total) + m.group(2), txt)
     txt = re.sub(r'(<b id="relTotalEn")>[^<]*(</b>)', lambda m: m.group(1) + '>' + mb(total) + m.group(2), txt)
+    txt = re.sub(r"(const VER\s*=\s*')[^']*(')",
+                 lambda m: m.group(1) + tag + m.group(2), txt)
     if pub:
         txt = re.sub(r'(<b id="relDate")>[^<]*(</b>)', lambda m: f'{m.group(1)}>{pub}{m.group(2)}', txt)
         txt = re.sub(r'(<b id="relDateEn")>[^<]*(</b>)', lambda m: f'{m.group(1)}>{pub}{m.group(2)}', txt)

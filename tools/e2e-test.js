@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.5（70 项：虚拟滚动）*/
+/* midicn-lib 端到端回归 v11.6（批次 2）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -240,6 +240,18 @@ function makeFetch(realFetch){
     ok('数据记录含文件路径', /\.mid/.test((dd.getElementById('rec')||{}).textContent || ''));
     ok('相关作品列出', dd.querySelectorAll('#recs a').length > 0, dd.querySelectorAll('#recs a').length + ' 项');
     ok('下载按钮指向 .mid', /\.mid$/.test((dd.getElementById('dl')||{}).getAttribute('href') || ''));
+    /* TheSession 附加条款（批次 2 · 与数据仓 LICENSE.md §2.2 一致）*/
+    try {
+      const sdom = new JSDOM(dhtml, { url: ORIGIN + 'detail.html?id=thesession-000000',
+        runScripts:'dangerously', pretendToBeVisual:true, virtualConsole: vc, resources:'usable', beforeParse: stub });
+      let slic = '';
+      for (let i = 0; i < 16; i++){
+        await wait(600);
+        slic = (sdom.window.document.getElementById('licbox')||{textContent:''}).textContent || '';
+        if (slic.includes('附加条款')) break;
+      }
+      ok('thesession 详情含 LLM 附加条款', slic.includes('禁止用于大语言模型'), slic.slice(0,60));
+    } catch (e) { ok('thesession 详情含 LLM 附加条款', false, String(e).slice(0,60)); }
   }catch(e){ ok('详情页测试', false, String(e).slice(0, 90)); }
 
   /* 【9】内容页 */
