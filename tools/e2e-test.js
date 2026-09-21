@@ -1,8 +1,4 @@
-/* 站点端到端回归测试（jsdom）· 54 项
- * 覆盖：首屏渲染 / 布局分区（音乐库→分类→筛选→曲目）/ 中英切换 / 搜索 / 分类加载 /
- *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
- * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
- */
+/* midicn-lib 端到端回归 v11（56 项：引擎解耦 + 异步异常）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -102,7 +98,13 @@ function makeFetch(realFetch){
     virtualConsole: vc, resources:'usable', beforeParse: stub });
   const d = dom.window.document;
   const click = el => el && el.dispatchEvent(new dom.window.MouseEvent('click', { bubbles:true }));
-  await wait(3200);
+  /* 首屏要拉分片数据（可能几百 KB）→ 轮询等瓦片与曲目行就绪。
+     固定延时在慢网/大分片下会产生假失败（本轮 52/56 的 4 项失败即因此）*/
+  await wait(800);
+  for (let i = 0; i < 40; i++){
+    if (d.querySelectorAll('#grid .tile').length && d.querySelectorAll('.row').length) break;
+    await wait(500);
+  }
   if (errors.length) console.log('  [诊断] ' + errors.slice(0,3).map(e=>String(e).slice(0,140)).join(' | '));
 
   /* 【1】扉页 */
