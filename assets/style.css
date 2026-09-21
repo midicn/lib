@@ -48,7 +48,7 @@
   --r:2px; --r-lg:3px;
 
   /* ── 容器 ── */
-  --wrap:min(88vw,1440px);
+  --wrap:min(92vw,1560px);
   --wrap-wide:var(--wrap);
   --wrap-read:var(--wrap);
 
