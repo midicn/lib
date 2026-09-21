@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.4（TheSession 条款披露）*/
+/* midicn-lib 端到端回归 v11.5（70 项：虚拟滚动）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -154,6 +154,12 @@ function makeFetch(realFetch){
      (d.querySelector('#list .row .dur')||{}).textContent);
   ok('表头 6 列（含详情列）', d.querySelectorAll('.listhead span').length === 6, d.querySelectorAll('.listhead span').length + ' 列');
   ok('行内有明确「详情」入口', !!d.querySelector('#list .row .detbtn'));
+    ok('列表窗口化（上下占位）', d.querySelectorAll('#list .vsp').length === 2,
+       d.querySelectorAll('#list .vsp').length + ' 个');
+    ok('DOM 精简（窗口行 ≤ 60）', (() => { const n = d.querySelectorAll('#list .row').length; return n > 0 && n <= 60; })(),
+       d.querySelectorAll('#list .row').length + ' 行');
+    ok('总数标注 aria-rowcount', d.getElementById('list').getAttribute('aria-rowcount') === '500',
+       d.getElementById('list').getAttribute('aria-rowcount'));
   ok('状态栏显示计数', /加载|loaded/.test((d.querySelector('#status')||{}).textContent || ''));
 
   /* 【4】筛选 */

@@ -89,6 +89,7 @@
   gap:var(--s3);padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule-2);
   font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);letter-spacing:.06em}
 #list{list-style:none}
+  #list .vsp{list-style:none}
 .row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 60px;gap:var(--s3);
   align-items:center;padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule);cursor:pointer}
 .row:hover{background:var(--ink-3)}
@@ -587,8 +588,11 @@ function applyFilter(){
   if (sort === 't') filtered.sort((a,b)=>String(a.t).localeCompare(String(b.t)));
   if (sort === 'c') filtered.sort((a,b)=>String(a.cn).localeCompare(String(b.cn)));
   if (sort === 'd') filtered.sort((a,b)=>(a.du||0)-(b.du||0));
-  shown = 0; $('list').innerHTML = '';
-  renderMore();
+  shown = filtered.length;                     /* 全量视为已展示（窗口化按需渲染） */
+  winFirst = winLast = -1; winCur = -2;
+  $('list').innerHTML = '<li class="vsp"></li><li class="vsp"></li>';
+  try { window.scrollTo({ top: Math.max(0, listTopDoc() - 72) }); } catch(e) {}
+  renderWindow(true);
   const n = activeCount();
   $('fbadge').hidden = n === 0; $('fbadge').textContent = n;
   $('status').textContent = t('已加载 '+fmt(filtered.length)+' / '+fmt(rows.length)+' 首',
@@ -598,13 +602,37 @@ function activeCount(){
   return ['fComp','fPeriod','fInst','fGenre','fCountry','fForm','fZone','fDur']
     .filter(id=> $(id) && $(id).value).length;
 }
-function renderMore(){
+/* ═══ 窗口化渲染（虚拟滚动）：只保留可视区 ± 缓冲，上下占位撑起总高 ═══ */
+let ROWH = 44, winFirst = -1, winLast = -1, winCur = -2, scrollQueued = false;
+const VBUFFER = 8;
+function listTopDoc(){
+  const r = $('list').getBoundingClientRect();
+  return r.top + (window.scrollY || window.pageYOffset || 0);
+}
+function visRange(){
+  const vh = window.innerHeight || 800;
+  const y = window.scrollY || window.pageYOffset || 0;
+  const top = listTopDoc();
+  let a = Math.max(0, Math.floor((y - top) / ROWH) - VBUFFER);
+  let b = Math.min(filtered.length, Math.ceil((y + vh - top) / ROWH) + VBUFFER);
+  if (b <= a) b = Math.min(a + VBUFFER * 2, filtered.length);   /* 列表在视口外也保底渲染 */
+  return [a, b];
+}
+function renderWindow(force){
+  if (!filtered.length){ $('list').innerHTML = ''; $('more').hidden = true; return; }
+  const [a, b] = visRange();
+  if (!force && a === winFirst && b === winLast && winCur === curIdx &&
+      $('list').querySelector('.row')) return;
+  winFirst = a; winLast = b; winCur = curIdx;
   const ul = $('list');
-  const end = Math.min(shown + PAGE, filtered.length);
+  ul.setAttribute('aria-rowcount', String(filtered.length));
   const frag = document.createDocumentFragment();
-  for (let i = shown; i < end; i++){
+  const spT = document.createElement('li'); spT.className = 'vsp';
+  spT.style.height = (a * ROWH) + 'px'; frag.appendChild(spT);
+  for (let i = a; i < b; i++){
     const x = filtered[i], el = document.createElement('li');
-    el.className = 'row'; el.dataset.id = x.id;
+    el.className = 'row' + (i === curIdx ? ' on' : '');
+    el.dataset.id = x.id;
     const src = SOURCES.find(s=>x.id.startsWith(s.id + '-')) || null;
     const srcLabel = src ? src.name[LANG] : (x.id.split('-')[0]);
     el.innerHTML =
@@ -620,10 +648,20 @@ function renderMore(){
     el.onclick = ()=> play(x, i);
     frag.appendChild(el);
   }
-  ul.appendChild(frag);
-  shown = end;
-  $('more').hidden = shown >= filtered.length;
+  const spB = document.createElement('li'); spB.className = 'vsp';
+  spB.style.height = Math.max(0, (filtered.length - b) * ROWH) + 'px'; frag.appendChild(spB);
+  ul.innerHTML = ''; ul.appendChild(frag);
+  $('more').hidden = true;
+  /* 行高实测校准（首次渲染或视口尺寸变化后） */
+  const li = ul.querySelector('.row');
+  if (li){ const h = li.offsetHeight || 0;
+    if (h > 20 && Math.abs(h - ROWH) > 1){ ROWH = h; renderWindow(true); } }
 }
+function renderMore(){ renderWindow(true); }
+function queueRenderWindow(){ if (scrollQueued) return; scrollQueued = true;
+  requestAnimationFrame(()=>{ scrollQueued = false; renderWindow(false); }); }
+addEventListener('scroll', queueRenderWindow, { passive:true });
+addEventListener('resize', ()=>{ ROWH = 44; queueRenderWindow(); }, { passive:true });
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 const mmss = s => !s ? '—' : Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
 function skeleton(n){ $('list').innerHTML = '<li class="sk"></li>'.repeat(n); $('more').hidden = true; }
@@ -642,7 +680,10 @@ async function focusTrack(id){
       i = filtered.findIndex(x => x.id === id);
     }
     if (i >= 0){
-      while (shown <= i && shown < filtered.length) renderMore();   // 加载到该行
+      /* 窗口化：滚到该行位置（滚动/强制渲染会把它带进 DOM），再定位高亮 */
+      window.scrollTo({ top: Math.max(0, listTopDoc() + i * ROWH -
+        ((window.innerHeight || 800) / 2)) });
+      renderWindow(true);
       const li = document.querySelector('.row[data-id="'+id+'"]');
       if (li){
         li.classList.add('on');
