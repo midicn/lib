@@ -90,6 +90,8 @@
 <script src="assets/archive.js"></script>
 <script>
 /* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const LIC_TEXT = { zh:'代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可',
+                  en:'Code MIT · metadata CC BY 4.0 · material per source' };
 const store = {
   get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -270,7 +272,7 @@ function render(){
     'Contact: <a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">open-source project issue</a> (public and traceable). Every adjustment is recorded publicly.'
   );
   $('footNote').innerHTML = t('本页为使用条款说明，不构成法律意见。','This page explains terms of use; it is not legal advice.');
-  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
+  $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
     '数据版本 v1.19 · 许可信息随数据一同发布（meta/catalog.json 的 <code>l</code> 字段）',
     'Data v1.19 · licence metadata ships with the data (<code>l</code> field in meta/catalog.json)'

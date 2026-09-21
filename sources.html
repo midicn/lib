@@ -63,6 +63,8 @@
 <script src="assets/archive.js"></script>
 <script>
 /* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const LIC_TEXT = { zh:'代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可',
+                  en:'Code MIT · metadata CC BY 4.0 · material per source' };
 const store = {
   get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -158,7 +160,7 @@ function render(){
     '本库是<strong>整理与转译</strong>项目：原始素材的权利属于各来源方，我们只做格式统一、元数据补全与许可标注。',
     'This library is a <strong>curation and conversion</strong> project; rights in the source material belong to the respective sources.'
   );
-  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
+  $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
     '署名与商用指引见 <a href="licenses.html">许可与法律</a> · 数据版本 v1.19',
     'Attribution &amp; commercial guidance: <a href="licenses.html">Licence &amp; legal</a> · data v1.19'

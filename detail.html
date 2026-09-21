@@ -131,6 +131,8 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
 <script src="assets/archive.js"></script>
 <script>
 /* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const LIC_TEXT = { zh:'代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可',
+                  en:'Code MIT · metadata CC BY 4.0 · material per source' };
 const store = {
   get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -310,7 +312,7 @@ function render(){
   $('dl').href = x.f || '#';
   $('inlib').href = './?cat=' + encodeURIComponent(CAT) + '&play=' + encodeURIComponent(x.id);
   $('inlib').textContent = t('在音乐库中定位此曲','Locate this track in the library');
-  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
+  $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
     '数据版本 v1.19 · 本页信息随数据自动生成 · <a href="licenses.html">许可与法律</a>',
     'Data v1.19 · generated from the data · <a href="licenses.html">Licence &amp; legal</a>'

@@ -1,3 +1,20 @@
+/* 全局错误上报：任何脚本异常都显示在页面状态区（不再静默失败）*/
+(function(){
+  function show(msg){
+    ['status','np','times','ttl'].some(function(id){
+      var el = document.getElementById(id);
+      if (el){ el.textContent = '脚本错误：' + msg; return true; }
+      return false;
+    });
+  }
+  window.addEventListener('error', function(e){
+    try{ show((e && e.message) || 'unknown'); }catch(_){}
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    try{ show(((e && e.reason && e.reason.message) || (e && e.reason) || 'promise rejected') + ''); }catch(_){}
+  });
+})();
+
 /* ═══════════════════════════════════════════════════════════════════════
    midicn-lib · archive.js
    全站共享层：来源档案（说明 / 原始链接 / 许可 / 上游整理方式 / 致谢）
