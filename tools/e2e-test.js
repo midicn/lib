@@ -3,8 +3,6 @@
  *       筛选器 / 多维分面（作曲家·地域·来源）/ 可折叠筛选区 / 下载条 / 播放器 / 运行时错误
  * 用法：NODE_PATH=C:/Users/chenhua/.workbuddy/binaries/node/workspace/node_modules  *       node tools/e2e-test.js [本地index.html路径]
  */
-/* midicn-lib 端到端回归 v10（谱面档案版）
-   用法：node diag-e2e.js [本地 index.html 路径]  · 不带参数 → 测线上 */
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -21,22 +19,27 @@ function ok(name, cond, extra){
 }
 const wait = ms => new Promise(r=>setTimeout(r, ms));
 
-/* 本地模式：把本地 assets/archive.js 内联进 HTML，并移除 vendor 脚本（Tone/JSSynth 已 stub）*/
-function localize(html, htmlPath){
-  if (!LOCAL) return html;
-  const dir = path.dirname(htmlPath);
-  let arch = '', plr = '';
-  try{ arch = fs.readFileSync(path.join(dir, 'assets', 'archive.js'), 'utf-8'); }catch(e){}
-  try{ plr = fs.readFileSync(path.join(dir, 'assets', 'player.js'), 'utf-8'); }catch(e){}
-  let css = '';
-  try{ css = fs.readFileSync(path.join(dir, 'assets', 'style.css'), 'utf-8'); }catch(e){}
+/* 把共享模块内联进 HTML，并移除 vendor 引擎脚本（Tone/JSSynth 已 stub）。
+   本地模式读盘；在线模式从源站抓取 —— 两路统一，测试不再受 CDN 抖动影响 */
+async function inlineAssets(html, htmlPath){
+  const dir = htmlPath ? path.dirname(htmlPath) : null;
+  const grab = async rel => {
+    if (dir){
+      try{ return fs.readFileSync(path.join(dir, rel.replace('/', path.sep)), 'utf-8'); }catch(e){}
+    }
+    try{ return await (await fetch(ORIGIN + rel)).text(); }catch(e){}
+    return '';
+  };
+  const [arch, plr, css] = await Promise.all([
+    grab('assets/archive.js'), grab('assets/player.js'), grab('assets/style.css')]);
   return html
-    .replace(/<script src="vendor\/[^"]+"><\/script>/g, '')
-    .replace(/<script src="assets\/archive\.js"><\/script>/g,
+    .replace(/<script[^>]*src="vendor\/[^"]+"[^>]*><\/script>/g, '')
+    .replace(/<script[^>]*src="soundfont\/[^"]+"[^>]*><\/script>/g, '')
+    .replace(/<script[^>]*src="assets\/archive\.js"[^>]*><\/script>/g,
       arch ? '<script>' + arch + '</script>' : '')
-    .replace(/<script src="assets\/player\.js"><\/script>/g,
+    .replace(/<script[^>]*src="assets\/player\.js"[^>]*><\/script>/g,
       plr ? '<script>' + plr + '</script>' : '')
-    .replace(/<link rel="stylesheet" href="assets\/style\.css">/g,
+    .replace(/<link[^>]*href="assets\/style\.css"[^>]*>/g,
       css ? '<style>' + css + '</style>' : '');
 }
 
@@ -67,16 +70,27 @@ function makeFetch(realFetch){
 
 (async ()=>{
   await preload();
-  const html = LOCAL ? localize(fs.readFileSync(LOCAL, 'utf-8'), LOCAL) : await (await fetch(BASE)).text();
+  const RAW = LOCAL ? fs.readFileSync(LOCAL, 'utf-8') : await (await fetch(BASE)).text();
+  const html = await inlineAssets(RAW, LOCAL || null);
   console.log('=== 测试对象: ' + (LOCAL || BASE) + ' · ' + (html.length/1024).toFixed(1) + 'KB ===');
 
   const vc = new VirtualConsole();
   const errors = [];
+  const asyncErrs = [];
   vc.on('jsdomError', e=>errors.push(String(e.message || e)));
   vc.on('error', (...a)=>errors.push(a.join(' ')));
 
   const stub = w => {
     w.fetch = makeFetch(globalThis.fetch);
+    /* 异步异常必须被捕获：async boot() 里的 throw 只会变成 unhandledrejection，
+       若不监听就会"零错误却零渲染"（本轮 bug 正是如此藏了三轮）*/
+    w.addEventListener('unhandledrejection', e => {
+      const r = e.reason;
+      asyncErrs.push('unhandledrejection: ' + ((r && (r.stack || r.message)) || String(r)));
+    });
+    w.addEventListener('error', e => {
+      asyncErrs.push('error: ' + (e.message || (e.error && e.error.stack) || '?'));
+    });
     w.Tone = { start(){}, getContext(){ return { rawContext:{} }; },
       getDestination(){ return { volume:{ value:0 } }; }, Transport:{ start(){}, pause(){} } };
     w.JSSynth = { AudioWorkletNodeSynthesizer: function(){
@@ -175,14 +189,15 @@ function makeFetch(realFetch){
   console.log('\n【7】运行时');
   const real = errors.filter(e=>!/Not implemented|Could not parse CSS|Unsupported|fetch|NetworkError|XHR/i.test(e));
   ok('无脚本错误', real.length === 0, real.slice(0,2).join(' | '));
+  const realAsync = asyncErrs.filter(e=>!/Not implemented|Could not parse CSS|Unsupported|fetch|NetworkError|XHR|load_engine|音频引擎/i.test(e));
+  ok('无未捕获的异步异常', realAsync.length === 0, realAsync.slice(0,2).join(' | ').slice(0,220));
 
   /* 【8】详情页 */
   console.log('\n【8】详情页');
   try{
     const dPath = LOCAL ? path.join(path.dirname(LOCAL), 'detail.html') : null;
-    const dhtml = LOCAL
-      ? localize(fs.readFileSync(dPath, 'utf-8'), dPath)
-      : await (await fetch(ORIGIN + 'detail.html')).text();
+    const dhtml = await inlineAssets(LOCAL ? fs.readFileSync(dPath, 'utf-8')
+      : await (await fetch(ORIGIN + 'detail.html')).text(), LOCAL ? dPath : null);
     const ddom = new JSDOM(dhtml, {
       url: ORIGIN + 'detail.html?id=aria-000004&cat=piano&chunk=0',
       runScripts:'dangerously', pretendToBeVisual:true, virtualConsole: vc, resources:'usable', beforeParse: stub
@@ -222,9 +237,9 @@ function makeFetch(realFetch){
       let h;
       if (LOCAL){
         const fp = path.join(path.dirname(LOCAL), file);
-        h = localize(fs.readFileSync(fp, 'utf-8'), fp);
+        h = await inlineAssets(fs.readFileSync(fp, 'utf-8'), fp);
       } else {
-        h = await (await fetch(ORIGIN + file)).text();
+        h = await inlineAssets(await (await fetch(ORIGIN + file)).text(), null);
       }
       try{ h += await (await fetch(ORIGIN + 'assets/archive.js')).text(); }catch(e){}
       const txt = h.replace(/<[^>]+>/g, ' ');
@@ -232,6 +247,43 @@ function makeFetch(realFetch){
       ok(file + ' 关键内容齐备', miss.length === 0, miss.length ? '缺: ' + miss.join(' ') : '');
     }catch(e){ ok(file + ' 可访问', false, String(e).slice(0, 60)); }
   }
+
+  /* 【10】引擎解耦：渲染路径不依赖音频引擎（本轮真因修复的回归防线）*/
+  console.log('\n【10】引擎解耦（渲染不依赖音频引擎）');
+  try{
+    ok('引擎脚本使用 defer（不阻塞解析）', /<script defer src="vendor\/Tone\.js">/.test(RAW));
+    ok('存在按需加载入口 loadEngine/withEngine',
+       /function loadEngine\(/.test(html) && /withEngine\(/.test(html));
+    /* 剥掉全部引擎脚本，只留共享模块与页面脚本 → 仍须渲染出瓦片与曲目行 */
+    let noEng = html
+      .replace(/<script[^>]*src="vendor\/[^"]+"[^>]*><\/script>/g, '')
+      .replace(/<script[^>]*src="soundfont\/[^"]+"[^>]*><\/script>/g, '')
+      .replace(/<script[^>]*src="assets\/player\.js"[^>]*><\/script>/g, '');
+    const eDom = new JSDOM(await inlineAssets(noEng, LOCAL || null), {
+      url: BASE, runScripts:'dangerously', pretendToBeVisual:true,
+      virtualConsole: vc, resources:'usable', beforeParse: stub });
+    const ed = eDom.window.document;
+    /* 数据分片可能几百 KB → 轮询等待（不用固定延时，避免抖动误报）*/
+    for (let i = 0; i < 30; i++){
+      if (ed.querySelectorAll('#grid .tile').length && ed.querySelectorAll('.row').length) break;
+      await wait(500);
+    }
+    const tiles = ed.querySelectorAll('#grid .tile').length;
+    const rows  = ed.querySelectorAll('.row').length;
+    ok('引擎缺席时分类瓦片仍渲染', tiles > 0, tiles + ' 个');
+    ok('引擎缺席时列表仍渲染', rows > 0, rows + ' 行');
+    ok('引擎缺席时状态栏不报错', !/引擎加载失败|Error/i.test((ed.getElementById('status')||{}).textContent || ''),
+       (ed.getElementById('status')||{}).textContent || '');
+    /* 点播放：应给出可见提示而不是静默失败或未捕获异常 */
+    const before = asyncErrs.length;
+    const firstRow = ed.querySelector('.row');
+    if (firstRow){
+      firstRow.dispatchEvent(new eDom.window.MouseEvent('click', { bubbles:true }));
+      await wait(1200);
+    }
+    ok('引擎缺席时点播放只提示、不抛未捕获异常', asyncErrs.length === before,
+       asyncErrs.slice(before, before+1).join(' ').slice(0,150));
+  }catch(e){ ok('引擎解耦测试', false, String(e).slice(0, 90)); }
 
   console.log('\n===== 结果 (' + (pass + fail) + ' 项): ' + pass + '/' + (pass + fail) + ' 通过 =====');
   if (fails.length) console.log('失败项:\n  - ' + fails.join('\n  - '));
