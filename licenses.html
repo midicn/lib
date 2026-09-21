@@ -1,166 +1,247 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#070706">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>许可与法律 · midicn-lib</title>
-<meta name="description" content="midicn-lib 的许可结构、使用义务、二次分发规则、免责声明与权利救济说明。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
+<meta name="description" content="midicn-lib 的许可体系（C1 可商用 / C2 非商用 / C3 学习研究）、逐源许可矩阵、署名要求与法律声明。">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0C'/%3E%3Crect x='14' y='30' width='4' height='14' fill='%23CE4A32'/%3E%3Crect x='24' y='20' width='4' height='24' fill='%23CE4A32'/%3E%3Crect x='34' y='26' width='4' height='18' fill='%23C9A227'/%3E%3Crect x='44' y='16' width='4' height='28' fill='%23C9A227'/%3E%3C/svg%3E">
 </head>
 <body>
+
 <header><div class="hbar">
-  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#070706"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0B0B0C"/><rect x="14" y="30" width="4" height="14" fill="#CE4A32"/><rect x="24" y="20" width="4" height="24" fill="#CE4A32"/><rect x="34" y="26" width="4" height="18" fill="#C9A227"/><rect x="44" y="16" width="4" height="28" fill="#C9A227"/></svg><b>midicn-lib</b><i>archive</i></a>
   <nav class="nav">
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
-    <a href="licenses.html" class="on" data-zh="许可与法律" data-en="License">许可与法律</a>
-    <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
+    <a href="licenses.html" class="on" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
-  <button class="iconbtn" id="theme" title="切换主题"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
   <button class="iconbtn langbtn" id="lang">EN</button>
 </div></header>
 
 <main class="doc">
-<div data-lang="zh">
-  <h1>许可与法律</h1>
-  <p class="lead">midicn-lib 是 19 个已发布来源数据集的系统性二次整理。<b>我们不重新授权任何 MIDI 文件</b>——每个文件遵循其原始来源的许可。本页说明使用义务、二次分发规则与我们的责任边界。</p>
+  <p class="meta" data-zh="档案 · 权利与义务" data-en="ARCHIVE · RIGHTS">档案 · 权利与义务</p>
+  <h1 data-zh="许可与法律" data-en="Licence &amp; Legal">许可与法律</h1>
+  <p class="lede" id="lede"></p>
 
-  <h2>准入门槛与三级分类</h2>
-  <div class="card hi">
-    <p><b>准入门槛（一票否决）</b>：只收录许可明确<b>允许二次分发</b>的内容。声明「仅个人使用」或「禁止再分发」的源一律不收。</p>
-    <table>
-      <tr><th style="width:24%">级别</th><th style="width:26%">使用范围</th><th>说明</th></tr>
-      <tr><td><span class="tag c1">C1 可商用</span></td><td>任何目的，含商业</td><td>CC BY / CC BY-SA / CC0 / 公有领域</td></tr>
-      <tr><td><span class="tag c2">C2 不可商用</span></td><td>一切非商业用途</td><td>CC BY-NC / CC BY-NC-SA（个人欣赏、教育、非商业站点）</td></tr>
-      <tr><td><span class="tag c3">C3 研究/学习</span></td><td>研究 / 教学 / 学习</td><td>允许在研究目的下共享，但不得用于产品或公开表演</td></tr>
-    </table>
-    <div class="note">C2 与 C3 的区别不是「能否再分发」（都允许），而是<b>用途范围</b>。</div>
+  <div class="rule double"></div>
+
+  <!-- ① 三档许可体系 -->
+  <div class="stitle"><h2 data-zh="许可档位体系" data-en="Licence tiers">许可档位体系</h2></div>
+  <div id="zones" style="display:grid;gap:var(--s3)"></div>
+
+  <!-- ② 逐源许可矩阵 -->
+  <div class="stitle">
+    <h2 data-zh="逐源许可矩阵" data-en="Per-source licence matrix">逐源许可矩阵</h2>
+    <span class="spacer"></span><span class="meta" data-zh="含排除说明" data-en="incl. exclusions">含排除说明</span>
   </div>
+  <div class="tw"><table id="matrix"></table></div>
 
-  <h2>使用义务</h2>
-  <table>
-    <tr><th style="width:30%">许可</th><th style="width:16%">署名</th><th style="width:16%">相同方式共享</th><th>说明</th></tr>
-    <tr><td>public domain</td><td>建议</td><td>—</td><td>自由使用</td></tr>
-    <tr><td>CC BY</td><td>必须</td><td>—</td><td>注明作者、来源、许可链接与修改说明</td></tr>
-    <tr><td>CC BY-SA</td><td>必须</td><td>必须</td><td>演绎作品须以相同许可发布</td></tr>
-    <tr><td>CC BY-NC-SA</td><td>必须</td><td>必须</td><td><b>禁止商用</b></td></tr>
-    <tr><td>开放声明</td><td>建议</td><td>视声明</td><td>详见各来源说明</td></tr>
-    <tr><td>TRADITIONAL-STUDY</td><td>必须</td><td>—</td><td>传统民歌旋律（公有领域素材），但转录底本受版权保护 → <b>仅限研究/教学/学习</b>，禁止商用与公开表演</td></tr>
-  </table>
-  <p class="lead"><b>署名最低要求</b>：在显著位置注明「来源：midicn-lib」及对应原始数据集名称。</p>
+  <!-- ③ 如何署名 -->
+  <div class="stitle"><h2 data-zh="如何署名" data-en="How to attribute">如何署名</h2></div>
+  <p id="attrIntro"></p>
+  <pre><code id="attrTmpl"></code></pre>
+  <p class="meta" id="attrNote"></p>
 
-  <h2>二次分发规则</h2>
-  <ul>
-    <li>允许再分发全部或部分内容，前提是：<b>保留许可标注</b>（逐曲许可字段）· 遵守每首曲目的许可义务 · 不暗示内容为你原创</li>
-    <li><b>禁止</b>：去除或篡改许可标注后分发 · 将非商用内容用于商业用途 · 声称对整理成果拥有排他性权利</li>
-  </ul>
+  <!-- ④ 对来源方的立场 -->
+  <div class="stitle"><h2 data-zh="我们与来源方的关系" data-en="Our stance toward sources">我们与来源方的关系</h2></div>
+  <div id="respect" style="display:grid;gap:var(--s3)"></div>
 
-  <h2>免责声明</h2>
-  <div class="card">
-    <p><b>本数据按「现状」提供，不附任何明示或默示担保。</b></p>
-    <ul>
-      <li><b>不保证准确性</b>：MIDI 来自各来源数据集的既有转录。我们完成了文件完整性、结构合规与统计级音乐内容验证（调性相关中位 0.83），但未逐音符比对原始乐谱</li>
-      <li><b>不保证可用性</b>：不保证适用于任何特定用途</li>
-      <li><b>不保证权利链完整</b>：我们核实了各来源数据集自身的许可声明，但无法穿透验证上游转录者的授权链</li>
-      <li><b>责任限制</b>：对于因使用本数据产生的任何损失，项目及其贡献者不承担责任</li>
-    </ul>
-  </div>
+  <!-- ⑤ 使用指引 -->
+  <div class="stitle"><h2 data-zh="使用指引" data-en="What you may do">使用指引</h2></div>
+  <div class="tw"><table id="usage"></table></div>
 
-  <h2>权利救济（Takedown）</h2>
-  <p>如你认为本站内容侵犯你的权利，请通过项目 Issues 提交通知（注明曲目 ID、权利依据、联系方式），我们将在<b>核实后 7 个工作日内</b>移除或隔离相关内容。</p>
+  <!-- ⑥ 法律声明 -->
+  <div class="stitle"><h2 data-zh="法律声明" data-en="Legal notices">法律声明</h2></div>
+  <div id="legal"></div>
 
-  <h2>引用格式</h2>
-  <div class="card">
-    <p style="font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.75;color:var(--dim)">
-      @dataset{midicn_lib_2026,<br>
-      &nbsp;&nbsp;title = {midicn-lib: A Curated Multi-Source MIDI Library},<br>
-      &nbsp;&nbsp;author = {midicn.com}, year = {2026}, version = {v1.3},<br>
-      &nbsp;&nbsp;url = {https://lib.midicn.com}}
-    </p>
-  </div>
-</div>
-
-<div data-lang="en" hidden>
-  <h1>License &amp; Legal</h1>
-  <p class="lead">midicn-lib is a systematic re-curation of 19 published source datasets. <b>We do not re-license any MIDI file</b> — every file follows the license of its original source. This page explains your obligations, redistribution rules, and our limits of responsibility.</p>
-
-  <h2>Admission &amp; Three Tiers</h2>
-  <div class="card hi">
-    <p><b>Admission rule</b>: only content whose license explicitly <b>permits redistribution</b> is included. Sources marked "personal use only" or "no redistribution" are excluded.</p>
-    <table>
-      <tr><th style="width:24%">Tier</th><th style="width:26%">Scope</th><th>Notes</th></tr>
-      <tr><td><span class="tag c1">C1 Commercial</span></td><td>Any purpose incl. commercial</td><td>CC BY / CC BY-SA / CC0 / public domain</td></tr>
-      <tr><td><span class="tag c2">C2 Non-commercial</span></td><td>All non-commercial use</td><td>CC BY-NC / CC BY-NC-SA</td></tr>
-      <tr><td><span class="tag c3">C3 Research/Study</span></td><td>Research / teaching / study</td><td>Sharing within research is allowed; products and public performance are not</td></tr>
-    </table>
-    <div class="note">C2 and C3 differ in <b>scope of use</b>, not in whether redistribution is allowed (both permit it).</div>
-  </div>
-
-  <h2>Obligations</h2>
-  <table>
-    <tr><th style="width:30%">License</th><th style="width:16%">Attribution</th><th style="width:16%">Share-alike</th><th>Notes</th></tr>
-    <tr><td>public domain</td><td>appreciated</td><td>—</td><td>free to use</td></tr>
-    <tr><td>CC BY</td><td>required</td><td>—</td><td>credit author, source, license link, indicate changes</td></tr>
-    <tr><td>CC BY-SA</td><td>required</td><td>required</td><td>derivatives under the same license</td></tr>
-    <tr><td>CC BY-NC-SA</td><td>required</td><td>required</td><td><b>no commercial use</b></td></tr>
-    <tr><td>open declaration</td><td>appreciated</td><td>varies</td><td>see per-source notes</td></tr>
-    <tr><td>TRADITIONAL-STUDY</td><td>required</td><td>—</td><td>Traditional folk melodies (public-domain material), but transcribed from a copyrighted edition → <b>research / teaching / study only</b>, no commercial use or public performance</td></tr>
-  </table>
-  <p class="lead"><b>Minimum attribution</b>: prominently credit "Source: midicn-lib" plus the original dataset name.</p>
-
-  <h2>Redistribution</h2>
-  <ul>
-    <li>Permitted provided you: <b>preserve license annotations</b> (per-track license field) · comply with each track's license · do not imply the content is your original work</li>
-    <li><b>Prohibited</b>: redistributing with license annotations removed or altered · commercial use of non-commercial content · claiming exclusive rights over this curation</li>
-  </ul>
-
-  <h2>Disclaimer</h2>
-  <div class="card">
-    <p><b>The data is provided "AS IS", without warranty of any kind.</b></p>
-    <ul>
-      <li><b>No accuracy warranty</b>: MIDI files come from existing transcriptions. We performed file-integrity, structural and statistical music-content verification (tonality correlation median 0.83), but did not compare notes against original scores</li>
-      <li><b>No fitness warranty</b> for any particular purpose</li>
-      <li><b>No complete rights-chain warranty</b>: we verified each source dataset's own license, but cannot verify upstream transcribers' authorization</li>
-      <li><b>Limitation of liability</b>: the project and its contributors are not liable for any damages arising from use of this data</li>
-    </ul>
-  </div>
-
-  <h2>Takedown</h2>
-  <p>If you believe any content infringes your rights, please file a notice via the project Issues (track ID, basis of claim, contact), and we will remove or quarantine it within <b>7 business days</b> after verification.</p>
-
-  <h2>Citation</h2>
-  <div class="card">
-    <p style="font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.75;color:var(--dim)">
-      @dataset{midicn_lib_2026,<br>
-      &nbsp;&nbsp;title = {midicn-lib: A Curated Multi-Source MIDI Library},<br>
-      &nbsp;&nbsp;author = {midicn.com}, year = {2026}, version = {v1.3},<br>
-      &nbsp;&nbsp;url = {https://lib.midicn.com}}
-    </p>
-  </div>
-</div>
+  <div class="note" id="contact"></div>
 </main>
 
-<footer>
-  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 124,179 首 / 19 个来源数据集" data-en="midicn-lib · Open MIDI Library · 124,179 tracks / 19 source datasets">midicn-lib · 开放 MIDI 音乐库 · 124,179 首 / 19 个来源数据集</span>
-</footer>
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div><h4 data-zh="数据" data-en="DATA">数据</h4>
+      <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+      <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
+      <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
+    <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">数据仓库 · midi-lib</a>
+      <a href="https://github.com/midicn/midi-lib-site" target="_blank" rel="noopener">站点仓库 · midi-lib-site</a></div>
+    <div><h4 data-zh="说明" data-en="NOTES">说明</h4><p class="meta" id="footNote"></p></div>
+  </div>
+  <div class="fnote" id="footLegal"></div>
+</div></footer>
 
+<script src="assets/archive.js"></script>
 <script>
+/* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+
+let LANG = store.get('midicn-lang', null) || 'zh';
+function t(zh, en){ return LANG === 'zh' ? zh : en; }
 const $ = id => document.getElementById(id);
-if (localStorage.getItem('midicn-theme')) document.documentElement.dataset.theme = localStorage.getItem('midicn-theme');
-$('theme').onclick = () => { const c = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-  document.documentElement.dataset.theme = c; localStorage.setItem('midicn-theme', c); };
-let LANG = localStorage.getItem('midicn-lang') || 'zh';
+
 function applyLang(){
-  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
-  document.documentElement.dataset.lang = LANG;
-  document.querySelectorAll('[data-lang]').forEach(el => el.hidden = el.dataset.lang !== LANG);
-  document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
+  document.documentElement.lang = LANG === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll('[data-zh]').forEach(el=>{
+    const v = el.getAttribute('data-' + LANG); if (v != null) el.innerHTML = v;
+  });
   $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
+  render();
 }
-$('lang').onclick = () => { LANG = LANG === 'zh' ? 'en' : 'zh'; localStorage.setItem('midicn-lang', LANG); applyLang(); };
+$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh';
+  store.set('midicn-lang', LANG); applyLang(); };
+const themeBtn = $('theme');
+function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
+setTheme(store.get('midicn-theme', null) || 'dark');
+themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+function render(){
+  /* 导语 */
+  $('lede').innerHTML = t(
+    '本库把开放许可的 MIDI 汇集、统一格式并补全元数据。我们的立场很明确：<em>素材的权利属于来源方</em>，使用者必须遵守各来源的原始条款；本页把每一条款写清楚，并提供可直接使用的署名模板。',
+    'This library gathers openly licensed MIDI, normalises the format and enriches metadata. Our position is plain: <em>rights belong to the sources</em>, and users must follow each source\u2019s terms. This page states them precisely and provides a ready attribution template.'
+  );
+
+  /* ① 档位 */
+  const zoneOrder = ['main','piano','study'];
+  const allow = {
+    main:  {zh:['商业项目、应用、游戏、视频配乐','再分发与修改','训练数据与研究'], en:['Commercial projects, apps, games, video','Redistribution and modification','Training data and research']},
+    piano: {zh:['个人练习、学习与创作','非公开演出','研究与非商业发布'], en:['Personal practice, study, creation','Non-public performance','Research and non-commercial release']},
+    study: {zh:['学习、教学、研究引用','古籍与传统音乐的学术研究'], en:['Study, teaching, research citation','Scholarly work on traditional music']},
+  };
+  const deny = {
+    main:  {zh:['移除或更改来源署名','声称对原始素材拥有权利'], en:['Removing or altering attribution','Claiming rights over the source material']},
+    piano: {zh:['任何商业用途（需另行取得授权）','以相同方式许可的再分发之外的使用'], en:['Any commercial use (requires separate permission)','Uses beyond share-alike redistribution']},
+    study: {zh:['再分发、二次发布任何形式','商业用途','用于训练商业模型'], en:['Redistribution in any form','Commercial use','Use in commercial model training']},
+  };
+  $('zones').innerHTML = zoneOrder.map(k=>{
+    const z = ZONES[k];
+    const cnt = SOURCES.filter(s=>s.zone===k).reduce((a,s)=>a+s.count,0);
+    return '<div class="panel"><div class="panel-hd">'+
+      '<span class="lic '+z.cls+'">'+z.code+' '+z[LANG]+'</span>'+
+      '<span class="meta">'+fmt(cnt)+t(' 首',' tracks')+'</span>'+
+      '<span style="margin-left:auto"></span>'+
+      '<span class="meta">'+SOURCES.filter(s=>s.zone===k).length+t(' 个来源',' sources')+'</span></div>'+
+      '<div class="panel-bd"><p style="margin-bottom:var(--s3)">'+z[LANG==='zh'?'zhDesc':'enDesc']+'</p>'+
+      '<dl class="dl">'+
+        '<dt>'+t('可以做','ALLOWED')+'</dt><dd>'+allow[k][LANG].join(' · ')+'</dd>'+
+        '<dt>'+t('不可以','NOT ALLOWED')+'</dt><dd>'+deny[k][LANG].join(' · ')+'</dd>'+
+      '</dl></div></div>';
+  }).join('');
+
+  /* ② 矩阵 */
+  $('matrix').innerHTML =
+    '<thead><tr><th>'+t('来源','Source')+'</th><th>'+t('许可','Licence')+'</th><th>'+t('档位','Tier')+
+    '</th><th>'+t('商用','Commercial')+'</th><th>'+t('再分发','Redistribute')+'</th><th>'+t('原始地址','Home')+'</th></tr></thead><tbody>'+
+    SOURCES.map(s=>{
+      const z = zoneOf(s.zone);
+      const l = s.license.toLowerCase();
+      const comm = s.zone==='main' ? t('允许','Yes') : t('禁止','No');
+      const redis = (l.includes('traditional')||l.includes('study')) ? t('禁止','No')
+        : (s.zone==='main' ? t('允许（须署名）','Yes (attribute)') : t('限同许可方式','Share-alike only'));
+      return '<tr><td><b>'+s.name[LANG]+'</b></td><td>'+s.license+'</td>'+
+        '<td><span class="lic '+z.cls+'">'+z.code+'</span></td><td>'+comm+'</td><td>'+redis+'</td>'+
+        '<td><a href="'+s.url+'" target="_blank" rel="noopener">'+t('访问','open')+'</a></td></tr>';
+    }).join('') +
+    EXCLUDED.map(s=>'<tr><td><b>'+s.name[LANG]+'</b></td><td>'+s.license+'</td>'+
+      '<td><span class="lic no">'+t('排除','EXCLUDED')+'</span></td><td colspan="2">'+t('未收录，不在任何下载包内','Not included in any pack')+'</td>'+
+      '<td><a href="'+s.url+'" target="_blank" rel="noopener">'+t('访问','open')+'</a></td></tr>').join('') +
+    '</tbody>';
+
+  /* ③ 署名 */
+  $('attrIntro').innerHTML = t(
+    '使用本库数据时，请同时注明<strong>本库</strong>与<strong>上游来源</strong>。多数条目标注了来源与许可，可直接取用；下方模板可直接复制进你的项目。',
+    'When you use this data, credit both <strong>this library</strong> and the <strong>upstream source</strong>. Each track carries its source and licence; copy the template below.'
+  );
+  $('attrTmpl').textContent = t(
+    '音乐素材来自 midicn-lib（https://lib.midicn.com），原始来源：{来源名}（{原始地址}），'
+      + '许可：{许可}。本作品按原许可条款使用。',
+    'Music material from midicn-lib (https://lib.midicn.com). Original source: {source name} ({home URL}), '
+      + 'licence: {licence}. Used under the terms of that licence.'
+  );
+  $('attrNote').innerHTML = t(
+    '示例：音乐素材来自 midicn-lib，原始来源：The Session（https://thesession.org/），许可：CC BY-SA 4.0。',
+    'Example: Music from midicn-lib; original source: The Session (https://thesession.org/); licence CC BY-SA 4.0.'
+  );
+
+  /* ④ 对来源方的立场 */
+  const respect = LANG === 'zh' ? [
+    ['整理者而非权利人', '本库是整理与转译项目。我们不主张对任何原始素材享有权利，也不替代来源网站的功能——请在可能的情况下直接访问并支持原站。'],
+    ['署名优先', '我们为每一首曲目保留来源与许可字段，并在来源页写明采集方式与致谢。若你发现署名缺失或不准确，请告知，我们会立即修正。'],
+    ['来源优先', '当上游更新、变更许可或要求调整收录方式时，我们以来源方的意愿为准，包括完整移除相关数据。'],
+    ['不做商业转售', '本库及其下载包本身免费提供，不用于转售素材；C2/C3 档位数据尤其不得用于任何商业用途。'],
+    ['尊重社区劳动', '许多来源由志愿者社群长期维护（The Session、Mutopia、OpenScore、Norbeck 等）。请在其条款范围内使用，并为社区回馈力所能及的贡献。'],
+  ] : [
+    ['Custodians, not rights holders', 'This is a curation project. We claim no rights over source material and do not replace the upstream sites — where possible, visit and support the originals.'],
+    ['Attribution first', 'Source and licence are kept per track, with acquisition notes and credit on the sources page. If any attribution is missing or wrong, tell us and we fix it immediately.'],
+    ['Sources come first', 'If an upstream updates, changes licence, or asks us to adjust, their wish governs — including full removal of the affected data.'],
+    ['No resale', 'The library and its packs are free and are not used to resell material; C2/C3 data in particular must not be used commercially.'],
+    ['Respect community labour', 'Many sources are maintained by volunteers (The Session, Mutopia, OpenScore, Norbeck…). Use within their terms and give back where you can.'],
+  ];
+  $('respect').innerHTML = respect.map(([h,b])=>(
+    '<div class="panel"><div class="panel-hd"><b style="font-size:var(--fs-14)">'+h+'</b></div>'+
+    '<div class="panel-bd"><p style="margin:0">'+b+'</p></div></div>'
+  )).join('');
+
+  /* ⑤ 使用指引 */
+  $('usage').innerHTML =
+    '<thead><tr><th>'+t('场景','Use case')+'</th><th>C1 '+ZONES.main[LANG]+'</th><th>C2 '+ZONES.piano[LANG]+'</th><th>C3 '+ZONES.study[LANG]+'</th></tr></thead><tbody>'+
+    (LANG==='zh' ? [
+      ['练习 / 学习','可以','可以','可以'],
+      ['个人创作（不发布）','可以','可以','可以'],
+      ['发布作品（免费）','可以（署名）','可以（非商用 + 同许可方式）','不可以'],
+      ['商业产品 / 广告 / 游戏','可以（署名）','需取得授权','不可以'],
+      ['作为机器学习训练数据（非商业）','可以','可以（非商业）','需先咨询'],
+      ['作为机器学习训练数据（商业）','可以（署名）','需取得授权','不可以'],
+      ['再分发给第三方','可以（保留署名与许可）','仅同许可方式','不可以'],
+    ] : [
+      ['Practice / study','Yes','Yes','Yes'],
+      ['Personal creation (unpublished)','Yes','Yes','Yes'],
+      ['Release a work (free)','Yes (attribute)','Yes (non-commercial, share-alike)','No'],
+      ['Commercial product / ads / games','Yes (attribute)','Permission required','No'],
+      ['ML training data (non-commercial)','Yes','Yes (non-commercial)','Ask first'],
+      ['ML training data (commercial)','Yes (attribute)','Permission required','No'],
+      ['Redistribute to third parties','Yes (keep attribution)','Share-alike only','No'],
+    ]).map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join('')+
+    '</tbody>';
+
+  /* ⑥ 法律声明 */
+  const legal = LANG === 'zh' ? [
+    ['素材权利归属', 'MIDI 文件的权利状态取决于其上游：乐谱排版、转录、录音与数据集编译各自可能产生权利。我们按来源标注许可，但不构成法律意见。使用者应自行核实具体用途的合规性。'],
+    ['作品本身可能另有版权', '许多古典作品已进入公有领域，但<strong>特定编订版、转录或演奏录音</strong>可能仍受保护。C2/C3 档位的数据即属此类情形，请特别留意。'],
+    ['元数据准确性', '我们尽力核对作曲家、作品编号、时期等字段（含 IMSLP 官方目录交叉验证），但元数据可能存在错误或遗漏。发现错误请提交 issue，我们会修正。'],
+    ['无担保', '本库按「现状」提供，不附带任何明示或默示担保，包括可商售性与特定用途适用性。因使用本库数据产生的任何后果由使用者自行承担。'],
+    ['商标与名称', '各来源名称、机构名称与商标归其各自所有者；本库在来源页与许可页的引用属于说明性使用，不表示任何赞助或背书关系。'],
+    ['下架与异议流程', '权利人若认为某项内容侵犯其权利，请通过数据仓库 issue 或邮件提供：作品标识（id 或文件名）、权利依据、诉求。我们会在核实后 <strong>48 小时内</strong>下架相关数据并更新发布版本。'],
+  ] : [
+    ['Rights in the material', 'The rights status of a MIDI file depends on its upstream: typesetting, transcription, performance and dataset compilation may each create rights. We label licences as recorded by sources, but this is not legal advice.'],
+    ['Works may carry separate rights', 'Many works are public domain, yet <strong>specific editions, transcriptions or recordings</strong> may still be protected — which is exactly the case for C2/C3 data.'],
+    ['Metadata accuracy', 'We verify composers, catalogue numbers and periods (including IMSLP cross-checks), but errors are possible. Report them and we will fix them.'],
+    ['No warranty', 'The library is provided "as is", without warranty of any kind, express or implied, including merchantability or fitness for a particular purpose.'],
+    ['Trademarks and names', 'Source, institution and product names belong to their owners; references here are descriptive and imply no sponsorship or endorsement.'],
+    ['Takedown and objections', 'Rights holders may open an issue or email us with the track id or filename, the basis of the claim and the requested action. Verified requests are honoured within <strong>48 hours</strong>.'],
+  ];
+  $('legal').innerHTML = legal.map(([h,b])=>
+    '<h3>'+h+'</h3><p>'+b+'</p>').join('');
+
+  $('contact').innerHTML = t(
+    '联系与异议：<a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">数据仓库 issue</a>（推荐，公开可追溯）。我们会公开记录每一次调整。',
+    'Contact: <a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">data repository issue</a> (public and traceable). Every adjustment is recorded publicly.'
+  );
+  $('footNote').innerHTML = t('本页为使用条款说明，不构成法律意见。','This page explains terms of use; it is not legal advice.');
+  $('footLegal').innerHTML = t(
+    '数据版本 v1.19 · 许可信息随数据一同发布（meta/catalog.json 的 <code>l</code> 字段）',
+    'Data v1.19 · licence metadata ships with the data (<code>l</code> field in meta/catalog.json)'
+  );
+}
 applyLang();
 </script>
 </body>

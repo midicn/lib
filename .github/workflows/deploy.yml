@@ -11,7 +11,7 @@ concurrency:
   group: pages
   cancel-in-progress: true
 env:
-  RELEASE_TAG: v1.18
+  RELEASE_TAG: v1.19
 jobs:
   deploy:
     runs-on: ubuntu-latest

@@ -1,920 +1,661 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#070706">
-<title>midicn-lib · MIDI 音乐库</title>
-<meta name="description" content="124,179 首 MIDI 在线试听：爱尔兰传统、赞美诗曲调、世界民谣、古典钢琴、中国民歌、游戏音乐等 19 个来源数据集，统一整理、质量验证、许可分区。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
-<link rel="manifest" href="manifest.json">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>midicn-lib · 开放 MIDI 音乐库</title>
+<meta name="description" content="124,179 首开放许可 MIDI：古典钢琴、民谣、赞美诗、中国民歌等，覆盖 19 个来源、14 个分类，逐曲标注来源与许可。">
 <link rel="stylesheet" href="assets/style.css">
-<script src="vendor/Tone.js"></script>
-<script src="vendor/Midi.js"></script>
-<script src="soundfont/engine/js-synthesizer.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0C'/%3E%3Crect x='14' y='30' width='4' height='14' fill='%23CE4A32'/%3E%3Crect x='24' y='20' width='4' height='24' fill='%23CE4A32'/%3E%3Crect x='34' y='26' width='4' height='18' fill='%23C9A227'/%3E%3Crect x='44' y='16' width='4' height='28' fill='%23C9A227'/%3E%3C/svg%3E">
 <style>
-/* ═══ 主页样式 · 设计系统 v9（继承 assets/style.css 令牌）═══ */
+/* ═══ 主页专属：档案版式 ═══ */
 
-/* ── 顶栏搜索（桌面居中，移动端独占一行）── */
-.search-wrap{position:relative;flex:1;max-width:420px;min-width:0}
-.search-wrap svg{position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:15px;height:15px;fill:var(--tx-3);pointer-events:none;margin-left:var(--s3)}
-#q{width:100%;height:36px;padding:0 var(--s3) 0 34px;background:var(--bg-elev);
-  border:var(--bw) solid var(--line);border-radius:var(--r-sm);color:var(--tx);
-  font-size:var(--fs-13);transition:var(--t)}
-#q::placeholder{color:var(--tx-3)}
-#q:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+/* 首屏：像一本档案的扉页 */
+.hero{padding:var(--s7) 0 var(--s5);border-bottom:1px solid var(--rule)}
+.hero .kick{font-family:var(--mono);font-size:var(--fs-11);color:var(--vermilion);
+  letter-spacing:.18em;margin-bottom:var(--s4)}
+.hero h1{font-size:var(--fs-46);line-height:1.08;letter-spacing:-.01em;margin-bottom:var(--s4)}
+.hero h1 span{display:block;font-family:var(--mono);font-size:var(--fs-13);
+  color:var(--paper-3);letter-spacing:.08em;margin-top:var(--s3)}
+.hero .lede{max-width:60ch}
+.hero .figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s4) var(--s6);
+  margin-top:var(--s6)}
+.fig{border-top:1px solid var(--rule-2);padding-top:var(--s2)}
+.fig b{font-family:var(--mono);font-size:var(--fs-26);font-weight:500;letter-spacing:-.02em;
+  display:block;line-height:1.1}
+.fig span{font-size:var(--fs-11);color:var(--paper-3);letter-spacing:.06em;font-family:var(--mono)}
 
-/* ── 应用外壳：1280 起为「侧栏 + 内容 + 播放面板」三区 ── */
-main.app{display:block;width:100%;max-width:var(--wrap);margin:0 auto;
-  padding:var(--s5) clamp(var(--s4),3vw,var(--s5)) var(--s7)}
-.app-grid{display:block}
+/* 浏览轴切换 */
+.axes{display:flex;gap:var(--s2);flex-wrap:wrap;margin:var(--s5) 0 var(--s4)}
+.axis{border:1px solid var(--rule);padding:var(--s2) var(--s3);font-size:var(--fs-12);
+  color:var(--paper-2);min-height:36px;display:inline-flex;align-items:center;gap:var(--s2)}
+.axis:hover{border-color:var(--rule-2);color:var(--paper)}
+.axis.on{border-color:var(--vermilion);color:var(--paper);background:var(--vermilion-soft)}
+.axis i{font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);font-style:normal}
 
-/* ── Hero + 统计 ── */
-.blk.hero{padding-bottom:var(--s5);border-bottom:var(--bw) solid var(--line);margin-bottom:var(--s5)}
-.blk.hero h1{margin-bottom:var(--s3);font-size:var(--fs-28)}
-.stats{display:flex;flex-wrap:wrap;gap:var(--s5);margin-top:var(--s4)}
-.stat{display:flex;flex-direction:column;gap:2px}
-.stat b{font-size:var(--fs-22);font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.stat span{font-size:var(--fs-11);color:var(--tx-3);letter-spacing:.04em}
+/* 瓦片网格 */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
+@media(min-width:768px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media(min-width:1100px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.grid .tile{padding:var(--s3) var(--s4) var(--s4);cursor:pointer;text-align:left}
+.tile .tt{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
+.tile .tt b{font-family:var(--serif);font-size:var(--fs-14);font-weight:600}
+.tile .tt .n{margin-left:auto;font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3)}
+.tile .tsig{margin:var(--s2) 0 var(--s3)}
+.tile .td{font-size:var(--fs-11);color:var(--paper-3);line-height:1.6;min-height:2.6em}
+.tile .tlic{margin-top:var(--s2);display:flex;flex-wrap:wrap;gap:var(--s1)}
 
-/* ── 分类：宽屏走侧栏，窄屏走网格（同一组件、同一描边语言）── */
-.cats{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s3)}
-.cat{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s3);min-height:64px;
-  background:var(--bg-elev);border:var(--bw) solid var(--line);border-radius:var(--r-md);
-  cursor:pointer;transition:var(--t);text-align:left}
-.cat:hover{border-color:var(--line-strong)}
-.cat.on{border-color:var(--accent);background:var(--accent-soft)}
-.cat .ico{width:30px;height:30px;flex:none;display:grid;place-items:center;
-  border:var(--bw) solid var(--line);border-radius:var(--r-sm)}
-.cat .ico svg{width:15px;height:15px;fill:var(--accent)}
-.cat b{display:block;font-size:var(--fs-13);font-weight:600;color:var(--tx);line-height:1.35}
-.cat span{display:block;font-size:var(--fs-11);color:var(--tx-3);line-height:1.4;margin-top:2px}
-
-/* ── 区块头 ── */
-.blkhead{display:flex;align-items:center;gap:var(--s3);margin:var(--s6) 0 var(--s3);flex-wrap:wrap}
-.blkhead h2{margin:0}
-.blkhead .spacer{margin-left:auto}
-.blkhint,.blkstatus{font-size:var(--fs-12);color:var(--tx-3)}
-#status{font-variant-numeric:tabular-nums}
-
-/* ── 筛选：内联手风琴（所有断点同一形态，无抽屉、无内滚）── */
-.ftoggle{display:flex;align-items:center;gap:var(--s2);width:100%;min-height:var(--tap);
-  padding:0 var(--s4);background:var(--bg-elev);border:var(--bw) solid var(--line);
-  border-radius:var(--r-md);color:var(--tx-2);font-size:var(--fs-13);transition:var(--t)}
-.ftoggle:hover{border-color:var(--line-strong);color:var(--tx)}
-.ftoggle[aria-expanded="true"]{border-color:var(--accent);color:var(--tx);border-bottom-left-radius:0;border-bottom-right-radius:0}
-.ftoggle svg{width:15px;height:15px;fill:var(--tx-3)}
-.ftoggle .chev{margin-left:auto;font-family:var(--mono);font-size:var(--fs-12);transition:var(--t)}
+/* 筛选：内联手风琴 */
+.fbar{margin:var(--s5) 0 0}
+.ftoggle{display:flex;align-items:center;gap:var(--s3);width:100%;min-height:var(--tap);
+  padding:0 var(--s4);border:1px solid var(--rule);background:var(--ink-2);
+  color:var(--paper-2);font-size:var(--fs-13)}
+.ftoggle:hover{border-color:var(--rule-2);color:var(--paper)}
+.ftoggle[aria-expanded="true"]{border-color:var(--vermilion);color:var(--paper);
+  border-bottom-color:var(--rule)}
+.ftoggle svg{width:14px;height:14px;fill:currentColor}
+.ftoggle .chev{margin-left:auto;font-family:var(--mono);font-size:var(--fs-11);transition:var(--t)}
 .ftoggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
-.fbadge{font-family:var(--mono);font-size:var(--fs-11);padding:1px 6px;border-radius:var(--r-sm);
-  background:var(--accent);color:#0A0A0A;font-weight:700}
-.bar{background:var(--bg-elev);border:var(--bw) solid var(--accent);border-top:0;
-  border-radius:0 0 var(--r-md) var(--r-md);padding:var(--s4);
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--s3) var(--s4)}
-.bar[hidden]{display:none}
-.bar .fld{display:flex;flex-direction:column;gap:5px;min-width:0}
-.bar label{font-size:var(--fs-11);color:var(--tx-3);letter-spacing:.04em}
-.bar select,.bar input[type=search],.bar input[type=text]{height:36px;padding:0 var(--s3);
-  background:var(--bg);border:var(--bw) solid var(--line);border-radius:var(--r-sm);
-  color:var(--tx);font-size:var(--fs-13);width:100%;transition:var(--t)}
-.bar select:focus,.bar input:focus{outline:none;border-color:var(--accent)}
-.bar .chk{display:flex;align-items:center;gap:var(--s2);min-height:36px;font-size:var(--fs-13);color:var(--tx-2)}
-.bar .chk input{width:16px;height:16px;accent-color:var(--accent)}
-.bar .factions{display:flex;align-items:flex-end;gap:var(--s2);grid-column:1/-1}
+.fbadge{font-family:var(--mono);font-size:var(--fs-10);background:var(--vermilion);color:#fff;
+  padding:1px 6px;min-width:18px;text-align:center}
+.fpanel{border:1px solid var(--vermilion);border-top:0;background:var(--ink-2);
+  padding:var(--s4);display:grid;gap:var(--s4) var(--s5);align-items:end;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.fpanel[hidden]{display:none}
+.fld{display:flex;flex-direction:column;gap:var(--s1);min-width:0}
+.fld label{font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);letter-spacing:.06em}
+.fld select,.fld input{height:38px;padding:0 var(--s3);background:var(--ink);border:1px solid var(--rule);
+  color:var(--paper);font-size:var(--fs-13);width:100%}
+.fld select:focus,.fld input:focus{outline:none;border-color:var(--vermilion)}
+.fpanel .acts{grid-column:1/-1;display:flex;gap:var(--s2);flex-wrap:wrap}
 
-/* ── 曲目列表：网格对齐（列宽在断点间只变密度）── */
-#list{list-style:none;margin:var(--s3) 0 0;padding:0}
-.row{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:var(--s3);
-  min-height:var(--tap);padding:var(--s2) var(--s3);border-bottom:var(--bw) solid var(--line);
-  cursor:pointer;transition:var(--t)}
-.row:first-child{border-top:var(--bw) solid var(--line)}
-.row:hover{background:var(--bg-hover)}
-.row.on{background:var(--accent-soft)}
-.row.on .tt .ttl{color:var(--accent)}
-.row .pl{width:28px;height:28px;display:grid;place-items:center;flex:none;color:var(--tx-3);
-  border:var(--bw) solid transparent;border-radius:var(--r-sm);font-size:11px}
-.row:hover .pl,.row.on .pl{border-color:var(--line-strong);color:var(--accent)}
+/* 搜索 */
+.search{position:relative;display:flex;gap:var(--s2);margin-top:var(--s4);flex-wrap:wrap}
+.search .sw{position:relative;flex:1;min-width:220px}
+.search svg{position:absolute;left:var(--s3);top:50%;transform:translateY(-50%);
+  width:15px;height:15px;fill:var(--paper-3)}
+#q{width:100%;height:44px;padding:0 var(--s3) 0 38px;background:var(--ink-2);
+  border:1px solid var(--rule);color:var(--paper);font-size:var(--fs-14)}
+#q:focus{outline:none;border-color:var(--vermilion)}
+
+/* 列表：档案表格化 */
+.listhead{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px;
+  gap:var(--s3);padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule-2);
+  font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);letter-spacing:.06em}
+#list{list-style:none}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px;gap:var(--s3);
+  align-items:center;padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule);cursor:pointer}
+.row:hover{background:var(--ink-3)}
+.row.on{background:var(--vermilion-soft)}
+.row .no{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3)}
 .row .tt{min-width:0}
-.row .tt .ttl{display:block;color:var(--tx);font-size:var(--fs-13);font-weight:500;
+.row .tt b{display:block;font-size:var(--fs-13);font-weight:500;color:var(--paper);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .tt .sub{display:block;font-size:var(--fs-11);color:var(--tx-3);
+.row .tt s{display:block;font-size:var(--fs-11);color:var(--paper-3);text-decoration:none;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .meta{display:flex;align-items:center;gap:var(--s3);font-size:var(--fs-11);
-  color:var(--tx-3);font-family:var(--mono)}
-.row .meta .pill{font-family:-apple-system,"PingFang SC",sans-serif}
-.spacer{list-style:none;padding:0;margin:0;pointer-events:none}
+.row .src,.row .per,.row .dur{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .per{color:var(--paper-2)}
+.sk{height:52px;background:var(--ink-4);border-bottom:1px solid var(--rule);animation:shim 1.5s infinite linear;
+  background-image:linear-gradient(90deg,transparent,var(--ink-3),transparent);
+  background-size:220px 100%;background-repeat:no-repeat}
+@keyframes shim{0%{background-position:-220px 0}100%{background-position:calc(100% + 220px) 0}}
+@media(prefers-reduced-motion:reduce){ .sk{animation:none} }
 
-/* ── 骨架屏 ── */
-.sk{height:52px;background:var(--bg-inset);border-bottom:var(--bw) solid var(--line);
-  position:relative;overflow:hidden;animation:shim 1.4s infinite linear;
-  background-image:linear-gradient(90deg,transparent,var(--bg-hover),transparent);
-  background-size:240px 100%;background-repeat:no-repeat}
-@keyframes shim{0%{background-position:-240px 0}100%{background-position:calc(100% + 240px) 0}}
-.cat.sk{height:64px}
-
-/* ── 播放器：底部 dock（所有断点同一结构，移动端压成两行）── */
-#player{position:sticky;bottom:0;z-index:var(--z-play);background:var(--bg);
-  border-top:var(--bw) solid var(--line);padding-bottom:var(--sa-b)}
-.pwrap{max-width:var(--wrap);margin:0 auto;padding:var(--s2) clamp(var(--s4),3vw,var(--s5));
-  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:var(--s4);
-  min-height:var(--play-h)}
-.ptop{display:flex;align-items:center;gap:var(--s2);min-width:0;font-size:var(--fs-13)}
-#np{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);font-weight:500}
-.ptime{font-size:var(--fs-11);color:var(--tx-3)}
-#prog{width:min(34vw,360px);height:4px;-webkit-appearance:none;appearance:none;
-  background:var(--line-strong);border-radius:2px;cursor:pointer}
-#prog::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;
-  background:var(--accent);border:0}
-#prog::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--accent)}
+/* 播放条 */
+#player{position:sticky;bottom:0;z-index:var(--z-play);background:var(--ink);
+  border-top:1px solid var(--rule);padding-bottom:var(--sa-b)}
+.pw{max-width:var(--wrap);margin:0 auto;padding:var(--s2) clamp(var(--s4),3vw,var(--s6));
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  gap:var(--s4);min-height:var(--play)}
+.pmeta{min-width:0}
+#np{display:block;font-size:var(--fs-13);color:var(--paper);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.ptime{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3)}
+#prog{width:min(34vw,380px);height:3px;-webkit-appearance:none;appearance:none;
+  background:var(--rule-2);cursor:pointer}
+#prog::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;background:var(--vermilion);border:0}
+#prog::-moz-range-thumb{width:11px;height:11px;border:0;background:var(--vermilion)}
 .pctl{display:flex;align-items:center;gap:var(--s1);justify-content:flex-end}
-.pctl button{min-width:34px;height:34px;border-radius:var(--r-sm);border:var(--bw) solid transparent;
-  color:var(--tx-2);font-size:13px;transition:var(--t);display:grid;place-items:center}
-.pctl button:hover{border-color:var(--line-strong);color:var(--tx)}
-.pctl button.on{border-color:var(--accent);color:var(--accent)}
-.pctl select{height:32px;background:var(--bg-elev);border:var(--bw) solid var(--line);
-  border-radius:var(--r-sm);color:var(--tx-2);font-size:var(--fs-12);padding:0 var(--s2)}
-#vol{width:78px;height:4px;-webkit-appearance:none;appearance:none;background:var(--line-strong);border-radius:2px}
-#vol::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--tx-2)}
-#vol::-moz-range-thumb{width:10px;height:10px;border:0;border-radius:50%;background:var(--tx-2)}
-.viz{display:flex;align-items:flex-end;gap:2px;height:18px;width:52px;flex:none}
-.viz i{flex:1;background:var(--line-strong);border-radius:1px;height:20%;transition:height .2s}
-.viz.on i{background:var(--accent);animation:bounce .9s infinite ease-in-out}
+.pctl button{min-width:36px;height:36px;display:grid;place-items:center;color:var(--paper-2);
+  border:1px solid transparent}
+.pctl button:hover{border-color:var(--rule-2);color:var(--paper)}
+.pctl button.on{border-color:var(--vermilion);color:var(--vermilion)}
+.pctl select{height:32px;background:var(--ink-2);border:1px solid var(--rule);color:var(--paper-2);
+  font-size:var(--fs-11);padding:0 var(--s2)}
+#vol{width:76px;height:3px;-webkit-appearance:none;appearance:none;background:var(--rule-2)}
+#vol::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;background:var(--paper-3);border:0}
+#vol::-moz-range-thumb{width:10px;height:10px;border:0;background:var(--paper-3)}
+.viz{display:flex;align-items:flex-end;gap:2px;height:16px;width:44px;flex:none}
+.viz i{flex:1;background:var(--rule-2);height:20%;transition:height .2s}
+.viz.on i{background:var(--vermilion);animation:bnc .9s infinite ease-in-out}
 .viz.on i:nth-child(2){animation-delay:.1s}.viz.on i:nth-child(3){animation-delay:.2s}
 .viz.on i:nth-child(4){animation-delay:.3s}.viz.on i:nth-child(5){animation-delay:.4s}
-.viz.on i:nth-child(6){animation-delay:.5s}.viz.on i:nth-child(7){animation-delay:.6s}
-@keyframes bounce{0%,100%{height:22%}50%{height:96%}}
-@media(prefers-reduced-motion:reduce){ .viz.on i{animation:none;height:60%} .sk{animation:none} }
+@keyframes bnc{0%,100%{height:22%}50%{height:96%}}
+@media(prefers-reduced-motion:reduce){ .viz.on i{animation:none;height:60%} }
 
-/* ── 侧栏：仅 ≥1280 显示；sticky 但不设内滚（关键：无拖拉框）── */
-.side,.nowp{display:none}
-.sidehd{font-size:var(--fs-11);color:var(--tx-3);letter-spacing:.08em;
-  padding:0 var(--s3) var(--s2);border-bottom:var(--bw) solid var(--line);margin-bottom:var(--s2)}
-.sideitem{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;
-  gap:var(--s2);width:100%;min-height:38px;padding:0 var(--s3);
-  border:0;border-left:2px solid transparent;background:transparent;color:var(--tx-2);
-  font-size:var(--fs-13);text-align:left;transition:var(--t);cursor:pointer}
-.sideitem:hover{background:var(--bg-hover);color:var(--tx)}
-.sideitem[aria-current="true"]{color:var(--tx);font-weight:600;border-left-color:var(--accent);
-  background:var(--accent-soft)}
-.sideitem svg{width:15px;height:15px;fill:currentColor;opacity:.85}
-.sideitem .si-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sideitem .si-c{font-size:var(--fs-11);color:var(--tx-3)}
-
-/* ── 正在播放面板：仅 ≥1440 ── */
-.nowp .np-hd{font-size:var(--fs-11);color:var(--tx-3);letter-spacing:.08em;
-  padding-bottom:var(--s2);border-bottom:var(--bw) solid var(--line)}
-.nowp .np-t{font-size:var(--fs-16);font-weight:600;line-height:1.35;word-break:break-word}
-.nowp .np-m{font-size:var(--fs-12);color:var(--tx-2);line-height:1.7}
-.nowp .np-acts{display:flex;flex-wrap:wrap;gap:var(--s2)}
-.nowp .np-acts a,.nowp .np-acts button{min-height:32px;padding:0 var(--s3);display:inline-flex;
-  align-items:center;gap:5px;border:var(--bw) solid var(--line);border-radius:var(--r-sm);
-  background:transparent;color:var(--tx-2);font-size:var(--fs-12);transition:var(--t);cursor:pointer}
-.nowp .np-acts a:hover,.nowp .np-acts button:hover{border-color:var(--accent);color:var(--accent)}
-.nowp .np-sim{display:flex;flex-direction:column;gap:1px;margin-top:var(--s2)}
-.nowp .np-sim button{text-align:left;padding:var(--s2) var(--s3);border:0;background:transparent;
-  color:var(--tx-2);font-size:var(--fs-12);border-radius:var(--r-sm);cursor:pointer;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:var(--t)}
-.nowp .np-sim button:hover{background:var(--bg-hover);color:var(--tx)}
-
-/* ═══ 断点：同一结构，只变列数与密度 ═══ */
-/* 平板：分类 3 列 */
-@media(min-width:768px){
-  .cats{grid-template-columns:repeat(3,1fr)}
-  .bar{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-}
-/* 窄桌面：分类 4 列 */
-@media(min-width:1024px){
-  .cats{grid-template-columns:repeat(4,1fr)}
-  .blk.hero h1{font-size:clamp(24px,2.4vw,32px)}
-}
-/* ≥1280：应用式三区（侧栏替代分类网格；无内滚，侧栏随页面滚动）*/
-@media(min-width:1280px){
-  main.app{display:grid;grid-template-columns:232px minmax(0,1fr);gap:var(--s6);align-items:start}
-  .side{display:block;grid-column:1;grid-row:1/span 99;
-    /* 注意：sticky 定位 + 不设 max-height/overflow → 不会出现内部滚动条 */
-    position:sticky;top:calc(var(--hdr-h) + var(--s4));
-    background:var(--bg-elev);border:var(--bw) solid var(--line);border-radius:var(--r-lg);
-    padding:var(--s3) 0}
-  .app-grid{grid-column:2;min-width:0}
-  .cats{display:none}                      /* 侧栏已承载分类（DOM 保留） */
-  .blkhead h2{font-size:var(--fs-18)}
-}
-/* ≥1440：加入右侧正在播放面板 */
-@media(min-width:1440px){
-  main.app{grid-template-columns:232px minmax(0,1fr) 300px}
-  .nowp{display:flex;flex-direction:column;gap:var(--s3);grid-column:3;grid-row:1/span 99;
-    position:sticky;top:calc(var(--hdr-h) + var(--s4));
-    background:var(--bg-elev);border:var(--bw) solid var(--line);border-radius:var(--r-lg);
-    padding:var(--s4)}
-}
-/* 手机：紧凑但不改形态 */
-@media(max-width:767px){
-  main.app{padding:var(--s4) var(--s4) var(--s6)}
-  .bar{grid-template-columns:1fr}
-  .blk.hero{padding-bottom:var(--s4);margin-bottom:var(--s4)}
-  .stats{gap:var(--s4)}
-  .row{min-height:56px;grid-template-columns:32px minmax(0,1fr) auto;
-    grid-template-areas:'pl tt meta' 'pl tt meta'}
-  .row .tt .ttl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .row .meta .pill{display:none}
-  .row .meta{flex-direction:column;align-items:flex-end;gap:2px}
-  .pwrap{grid-template-columns:1fr auto;gap:var(--s3);min-height:0;padding:var(--s3) var(--s4)}
-  .ptop{grid-column:1/-1}
+@media(max-width:900px){
+  .listhead{display:none}
+  .row{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"no tt dur" "no meta src";
+    row-gap:2px;padding:var(--s3)}
+  .row .no{grid-area:no;align-self:start;padding-top:2px}
+  .row .tt{grid-area:tt}
+  .row .dur{grid-area:dur;text-align:right}
+  .row .src{grid-area:src;text-align:right}
+  .row .per{grid-area:meta;color:var(--paper-3);font-size:var(--fs-10)}
+  .row .tt b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .pw{grid-template-columns:1fr auto;gap:var(--s2);min-height:0;padding:var(--s3) var(--s4)}
+  .pmeta{grid-column:1/-1}
   #prog{grid-column:1;width:100%}
   .pctl{grid-column:2}
   #vol,.viz{display:none}
   .pctl button{min-width:var(--tap);height:var(--tap)}
-  .fclose{display:flex}
+  .hero{padding:var(--s5) 0 var(--s4)}
+  .hero .figs{grid-template-columns:1fr 1fr;gap:var(--s3)}
 }
-.fclose{display:none;align-items:center;justify-content:center;min-height:var(--tap);
-  border:var(--bw) solid var(--line);border-radius:var(--r-sm);color:var(--tx-2);
-  font-size:var(--fs-13);width:100%;margin-top:var(--s1)}
 </style>
 </head>
 <body>
+
 <header><div class="hbar">
-  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#070706"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input id="q" type="search" placeholder="搜索曲目 · 作曲家 · 按 / 聚焦" data-ph-zh="搜索曲目 · 作曲家 · 按 / 聚焦" data-ph-en="Search tracks &amp; composers · / to focus">
-  </div>
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0B0B0C"/><rect x="14" y="30" width="4" height="14" fill="#CE4A32"/><rect x="24" y="20" width="4" height="24" fill="#CE4A32"/><rect x="34" y="26" width="4" height="18" fill="#C9A227"/><rect x="44" y="16" width="4" height="28" fill="#C9A227"/></svg><b>midicn-lib</b><i>archive</i></a>
   <nav class="nav">
     <a href="./" class="on" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
-    <a href="licenses.html" data-zh="许可与法律" data-en="License">许可与法律</a>
-    <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
+    <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
-  <button class="iconbtn" id="theme" title="主题"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
   <button class="iconbtn langbtn" id="lang">EN</button>
 </div></header>
 
-<main class="app">
-<aside class="side" id="side" aria-label="分类导航 / Categories"></aside>
-<aside class="nowp" id="nowp" aria-label="正在播放 / Now playing"></aside>
-  <div class="app-grid">
-<!-- ① 音乐库 -->
-  <section class="blk hero">
-    <h1 data-zh="MIDI 音乐库" data-en="MIDI Music Library">MIDI 音乐库</h1>
-    <p class="lead" id="heroSub">…</p>
-    <div class="stats" id="stats"></div>
-  </section>
-  <!-- ② 分类区 -->
-  <section class="blk">
-    <div class="blkhead">
-      <h2 data-zh="分类浏览" data-en="Browse by Category">分类浏览</h2>
-      <span class="blkhint" data-zh="点一个分类开始浏览" data-en="Pick a category to start">点一个分类开始浏览</span>
-    </div>
-    <div class="cats" id="cats"></div>
+<main>
+  <!-- 扉页 -->
+  <section class="hero wrap">
+    <p class="kick" data-zh="开放 MIDI 音乐档案 · MIDICN-LIB" data-en="OPEN MIDI ARCHIVE · MIDICN-LIB">开放 MIDI 音乐档案 · MIDICN-LIB</p>
+    <h1 data-zh="开放许可的 MIDI 音乐档案" data-en="An archive of openly licensed MIDI">开放许可的 MIDI 音乐档案<span data-zh="19 个来源 · 14 个分类 · 逐曲标注来源与许可" data-en="19 sources · 14 categories · per-track provenance &amp; licence">19 个来源 · 14 个分类 · 逐曲标注来源与许可</span></h1>
+    <p class="lede" data-zh="汇集古典钢琴、爱尔兰民谣、赞美诗、中国民歌、爵士标准曲与游戏音乐等开放素材，统一格式、补全元数据、逐曲标注来源与许可档位，便于检索、试听与取用。"
+       data-en="Classical piano, Irish folk, hymns, Chinese folk songs, jazz standards and game music — normalised, metadata-enriched, and labelled per track with provenance and licence tier.">汇集古典钢琴、爱尔兰民谣、赞美诗、中国民歌、爵士标准曲与游戏音乐等开放素材，统一格式、补全元数据、逐曲标注来源与许可档位，便于检索、试听与取用。</p>
+    <div class="figs" id="figs"></div>
   </section>
 
-  <!-- ③ 筛选区（可折叠，默认收起） -->
-  <section class="blk">
-    <button class="ftoggle" id="ftoggle" aria-expanded="false" aria-controls="fpanel">
-      <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h10v2H7v-2zm3 6h4v2h-4v-2z"/></svg>
-      <span data-zh="筛选" data-en="Filters">筛选</span>
-      <span class="fbadge" id="fbadge" hidden>0</span>
-      <span class="chev">▾</span>
-    </button>
-    <div class="bar" id="fpanel" hidden>
-      <div class="fld"><label data-zh="时期" data-en="Period">时期</label>
-        <select id="period"><option value="">—</option></select></div>
-      <div class="fld"><label data-zh="时长" data-en="Length">时长</label>
-        <select id="dur">
-          <option value="" data-zh="全部时长" data-en="Any length">全部时长</option>
+  <div class="wrap">
+    <!-- 浏览轴 -->
+    <div class="stitle" style="margin-top:var(--s6)">
+      <h2 data-zh="选择浏览维度" data-en="Browse by">选择浏览维度</h2>
+      <span class="spacer"></span>
+      <span class="meta" data-zh="点选后下方列表即随之变化" data-en="the list below follows your choice">点选后下方列表即随之变化</span>
+    </div>
+    <div class="axes" id="axes"></div>
+    <div class="grid" id="grid"></div>
+
+    <!-- 搜索 + 筛选 -->
+    <div class="search">
+      <div class="sw">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg>
+        <input id="q" type="search" data-ph-zh="搜索标题 / 作曲家（全库）" data-ph-en="Search title / composer (whole library)" placeholder="搜索标题 / 作曲家（全库）">
+      </div>
+      <button class="btn" id="rand" data-zh="随机一曲" data-en="Shuffle">随机一曲</button>
+    </div>
+
+    <div class="fbar">
+      <button class="ftoggle" id="ftoggle" aria-expanded="false" aria-controls="fpanel">
+        <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h10v2H7v-2zm3 6h4v2h-4v-2z"/></svg>
+        <span data-zh="筛选" data-en="Filter">筛选</span>
+        <span class="fbadge" id="fbadge" hidden>0</span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="fpanel" id="fpanel" hidden>
+        <div class="fld"><label data-zh="作曲家" data-en="COMPOSER">作曲家</label><input id="fComp" type="search" list="compList" data-ph-zh="输入姓氏" data-ph-en="Surname"><datalist id="compList"></datalist></div>
+        <div class="fld"><label data-zh="时期" data-en="PERIOD">时期</label><select id="fPeriod"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="乐器 / 编制" data-en="INSTRUMENT">乐器 / 编制</label><select id="fInst"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="风格" data-en="GENRE">风格</label><select id="fGenre"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="国家 / 地域" data-en="COUNTRY">国家 / 地域</label><select id="fCountry"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="曲式" data-en="FORM">曲式</label><select id="fForm"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="许可档位" data-en="LICENCE TIER">许可档位</label><select id="fZone"><option value="">—</option></select></div>
+        <div class="fld"><label data-zh="时长" data-en="LENGTH">时长</label><select id="fDur">
+          <option value="" data-zh="全部" data-en="Any">全部</option>
           <option value="0-30" data-zh="30 秒内" data-en="Under 30s">30 秒内</option>
-          <option value="30-120" data-zh="30 秒 – 2 分钟" data-en="30s – 2min">30 秒 – 2 分钟</option>
-          <option value="120-300" data-zh="2 – 5 分钟" data-en="2 – 5min">2 – 5 分钟</option>
-          <option value="300-99999" data-zh="5 分钟以上" data-en="Over 5min">5 分钟以上</option>
+          <option value="30-120" data-zh="30 秒–2 分" data-en="30s–2min">30 秒–2 分</option>
+          <option value="120-300" data-zh="2–5 分" data-en="2–5min">2–5 分</option>
+          <option value="300-99999" data-zh="5 分以上" data-en="Over 5min">5 分以上</option>
         </select></div>
-      <div class="fld"><label data-zh="排序" data-en="Sort">排序</label>
-        <select id="sort">
-          <option value="" data-zh="默认排序" data-en="Default order">默认排序</option>
-          <option value="t" data-zh="按标题" data-en="By title">按标题</option>
-          <option value="c" data-zh="按作曲家" data-en="By composer">按作曲家</option>
-          <option value="p" data-zh="按时期" data-en="By period">按时期</option>
+        <div class="fld"><label data-zh="排序" data-en="SORT">排序</label><select id="fSort">
+          <option value="" data-zh="默认" data-en="Default">默认</option>
+          <option value="t" data-zh="标题" data-en="Title">标题</option>
+          <option value="c" data-zh="作曲家" data-en="Composer">作曲家</option>
+          <option value="d" data-zh="时长" data-en="Length">时长</option>
         </select></div>
-      <div class="fld"><label data-zh="作曲家" data-en="Composer">作曲家</label>
-        <input id="composer" type="search" list="compList" placeholder="作曲家" data-ph-zh="作曲家" data-ph-en="Composer">
-        <datalist id="compList"></datalist></div>
-      <div class="fld"><label data-zh="地域" data-en="Region">地域</label>
-        <select id="region"><option value="">—</option></select></div>
-      <div class="fld"><label data-zh="来源" data-en="Source">来源</label>
-        <select id="source"><option value="">—</option></select></div>
-      <div class="fld"><label aria-hidden="true">&nbsp;</label>
-        <label class="chk"><input type="checkbox" id="mainOnly">
-          <span data-zh="只看可商用" data-en="Commercial only">只看可商用</span></label></div>
-      <div class="factions">
-        <button class="btn" id="clear" data-zh="清空筛选" data-en="Clear filters">清空筛选</button>
-        <button class="btn" id="fclose" type="button" data-zh="收起" data-en="Close">收起</button>
+        <div class="acts">
+          <button class="btn" id="clear" data-zh="清空筛选" data-en="Clear">清空筛选</button>
+          <button class="btn ghost" id="fclose" data-zh="收起" data-en="Close">收起</button>
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- ④ 曲目区 -->
-  <section class="blk">
-    <div class="blkhead">
-      <h2 data-zh="曲目" data-en="Tracks">曲目</h2>
-      <span id="status" class="blkstatus"></span>
+    <!-- 列表 -->
+    <div class="stitle" style="margin-top:var(--s6)">
+      <h2 id="listTitle" data-zh="曲目" data-en="Tracks">曲目</h2>
       <span class="spacer"></span>
-      <button class="btn primary" id="rand" data-zh="🎲 随机试听" data-en="🎲 Shuffle">🎲 随机试听</button>
+      <span class="meta" id="status"></span>
     </div>
-    <ul id="list"></ul>
-    <div id="sentinel" style="height:1px"></div>
-  </section>
-
-  <!-- 打包下载（移到底部，不占首屏） -->
-  <div class="dls">
-    <span class="dltitle" data-zh="打包下载 · v1.18" data-en="Packaged download · v1.18">打包下载 · v1.18</span>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-main.zip"><b>main</b> 69,197<span data-zh="首 · ~250MB" data-en=" · ~250MB">首 · ~250MB</span></a>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-piano-special.zip"><b>piano-special</b> 34,869<span data-zh="首 · 304.5MB" data-en=" · 304.5MB">首 · 304.5MB</span></a>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-study.zip"><b>study</b> 20,113<span data-zh="首 · 59.2MB" data-en=" · 59.2MB">首 · 59.2MB</span></a>
-    <a class="dlchip" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-meta.zip"><b>meta</b> <span data-zh="全库索引 · 5.5MB" data-en="full index · 5.5MB">全库索引 · 5.5MB</span></a>
-    <a class="dlmore" href="download.html" data-zh="下载说明 →" data-en="Details →">下载说明 →</a>
+    <div class="tw">
+      <div class="listhead">
+        <span>#</span><span data-zh="标题 / 作曲家" data-en="TITLE / COMPOSER">标题 / 作曲家</span>
+        <span data-zh="来源" data-en="SOURCE">来源</span>
+        <span data-zh="时期" data-en="PERIOD">时期</span>
+        <span data-zh="时长" data-en="LEN">时长</span>
+      </div>
+      <ul id="list"></ul>
+    </div>
+    <div style="display:flex;justify-content:center;padding:var(--s5) 0">
+      <button class="btn" id="more" data-zh="加载更多" data-en="Load more">加载更多</button>
+    </div>
   </div>
-</div>
 </main>
 
-<footer>
-  <span data-zh="音色引擎：FluidSynth (WASM) + GeneralUser GS 采样音源（作者授权自由使用，含商用）· 实时合成回退。" data-en="Sound engine: FluidSynth (WASM) + GeneralUser GS SoundFont (licensed for unrestricted use, incl. commercial) with live-synthesis fallback.">音色引擎：FluidSynth (WASM) + GeneralUser GS 采样音源（作者授权自由使用，含商用）· 实时合成回退。</span><br>
-  <span data-zh="音乐内容来自 19 个公开数据集，逐曲标注许可。" data-en="Music content comes from 19 public datasets, license-annotated per track.">音乐内容来自 19 个公开数据集，逐曲标注许可。</span>
-  <a href="licenses.html" data-zh="许可与法律" data-en="License &amp; Legal">许可与法律</a> ·
-  <a href="sources.html" data-zh="数据来源" data-en="Data Sources">数据来源</a><br>
-  <span data-zh="键盘：空格 播放/暂停 · ←/→ 上一首/下一首 · / 搜索 · Esc 停止" data-en="Keyboard: Space play/pause · ←/→ prev/next · / search · Esc stop">键盘：空格 播放/暂停 · ←/→ 上一首/下一首 · / 搜索 · Esc 停止</span>
-</footer>
-
 <div id="player">
-  <div class="pwrap">
-    <div class="ptop">
+  <div class="pw">
+    <div class="pmeta">
       <span id="np">—</span>
-      <span class="ptime" id="tcur">0:00</span><span class="ptime">/</span><span class="ptime" id="ttot">0:00</span>
+      <span class="ptime" id="tcur">0:00</span> <span class="ptime">/</span> <span class="ptime" id="ttot">0:00</span>
+      <span class="pill" id="sfbadge">—</span>
     </div>
-    <input type="range" id="prog" min="0" max="1000" value="0">
+    <input type="range" id="prog" min="0" max="1000" value="0" aria-label="Progress">
     <div class="pctl">
-      <button id="play" title="Play/Pause">▶</button>
-      <button id="prev" title="Previous">⟨</button>
+      <button id="prev" title="Prev">⟨</button>
+      <button id="play" title="Play">▶</button>
       <button id="next" title="Next">⟩</button>
       <button id="loop" title="Loop">↻</button>
-      <select id="rate" title="Speed" style="padding:.26rem .45rem">
-        <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
-        <option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option>
-      </select>
-      <span class="viz" id="viz"></span>
-      <span class="spacer"></span>
-      <input type="range" id="vol" min="0" max="100" value="78" title="Volume">
-      <span class="pill" id="sfbadge">—</span>
-      <span class="pill" id="tag"></span>
+      <select id="rate"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select>
+      <span class="viz" id="viz"><i></i><i></i><i></i><i></i><i></i></span>
+      <input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume">
     </div>
   </div>
 </div>
 
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div><h4 data-zh="数据" data-en="DATA">数据</h4>
+      <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+      <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
+      <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
+    <div><h4 data-zh="取用" data-en="ACCESS">取用</h4>
+      <a href="download.html" data-zh="按使用方式打包" data-en="Packs by usage">按使用方式打包</a>
+      <a href="download.html" data-zh="按来源打包" data-en="Packs by source">按来源打包</a>
+      <a href="https://github.com/midicn/midi-lib/releases" target="_blank" rel="noopener">Releases</a></div>
+    <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">数据仓库 · midi-lib</a>
+      <a href="https://midicn.com" target="_blank" rel="noopener">midicn.com</a></div>
+    <div><h4 data-zh="说明" data-en="NOTES">说明</h4>
+      <p class="meta" id="footNote"></p></div>
+  </div>
+  <div class="fnote" id="footLegal"></div>
+</div></footer>
+
+<script src="vendor/tone.js"></script>
+<script src="vendor/js-synthesizer.js"></script>
+<script src="assets/archive.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-const PAGE = 80;
-let SUMMARY=null, curCat=null, chunkIdx=0, buf=[], flat=[], rendered=0, curIdx=-1;
-let SEARCH=null, searchReady=false, playing=false, looping=false, curTotal=1, booted=false;
-let FACETS=null, autoLoaded=0;      /* 分面（作曲家/地域）与「自动续载分片」计数 */
-
-/* ── 国际化 ── */
-const I18N = {
-  zh:{ load:'加载', playing:'采样音源', synth:'合成音源', loadingSF:'音源加载中', noTitle:'(无题)',
-       hint:'点击分类开始浏览，或直接搜索', total:'共', tracks:'首', loaded:'已加载',
-       searching:'首次搜索：加载全库索引…', found:'搜索「', hit:'」命中', entries:'条', matched:'命中',
-       shuffling:'随机试听：', failed:'播放失败：', noNotes:'该曲无音符',
-       tracksUnit:'曲目', sourcesUnit:'来源', commercialUnit:'可商用', catsUnit:'分类',
-       commercial:'可商用', study:'研究学习', nc:'非商用',
-       hero:'收录 {n} 首 · {s} 个来源数据集 · 统一整理 / 质量验证 / 许可分区 · GM 采样音源' },
-  en:{ load:'Loading', playing:'SoundFont', synth:'Synth', loadingSF:'Loading soundfont', noTitle:'(untitled)',
-       hint:'Pick a category or search', total:'', tracks:'tracks', loaded:'loaded',
-       searching:'First search: loading index…', found:'"', hit:'" matched', entries:'', matched:'matched',
-       shuffling:'Shuffle: ', failed:'Playback failed: ', noNotes:'No notes in this track',
-       tracksUnit:'Tracks', sourcesUnit:'Sources', commercialUnit:'Commercial', catsUnit:'Categories',
-       commercial:'Commercial', study:'Study', nc:'Non-comm.',
-       hero:'{n} tracks · {s} source datasets · unified, verified, license-zoned · GM SoundFont' }
+/* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
 };
-let LANG = localStorage.getItem('midicn-lang') || 'zh';
-const t = k => I18N[LANG][k];
-const catName = c => { const p = c.name.split(' · '); return LANG === 'zh' ? p[0] : (p[1] || p[0]); };
 
-/* 声波可视化条 */
-(function(){ const v=$('viz'); for(let i=0;i<14;i++){ const b=document.createElement('i');
-  b.style.animationDelay=(i*0.07)+'s'; v.appendChild(b); } })();
+/* ═══ 状态 ═══ */
+let LANG = store.get('midicn-lang', null) || 'zh';
+const $ = id => document.getElementById(id);
+function t(zh, en){ return LANG === 'zh' ? zh : en; }
+let SUMMARY = null, BROWSE = null;
+let AXIS = 'category';                 // category | source | tier
+let COLL = { kind:'category', id:null }; // 当前浏览集合
+let rows = [], shown = 0, filtered = [];
+let playing = false, curIdx = -1, sfReady = false;
+const PAGE = 80;
 
-/* 主题 */
-if (localStorage.getItem('midicn-theme')) document.documentElement.dataset.theme = localStorage.getItem('midicn-theme');
-$('theme').onclick = () => { const c = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-  document.documentElement.dataset.theme = c; localStorage.setItem('midicn-theme', c); };
+/* 分类说明（编辑导语；每类点明内容与来源）*/
+const CAT_DESC = {
+  'piano':{zh:'Aria-MIDI 与 MAESTRO：古典钢琴演奏录音的转录，含作曲家、编号与难度。',en:'Aria-MIDI and MAESTRO: piano performance transcriptions with composer, opus and difficulty.'},
+  'folk-ireland':{zh:'The Session：爱尔兰传统曲调，含曲式（reel / jig / hornpipe）与调式。',en:'The Session: Irish traditional tunes with form and key.'},
+  'hymn':{zh:'Cyber Hymnal：公有领域赞美诗，附曲调名与年代。',en:'Cyber Hymnal: public-domain hymns with tune names and years.'},
+  'folk-world':{zh:'ESAC 与 Norbeck：欧洲与世界各地民谣，标注地域与国家。',en:'ESAC and Norbeck: folk songs from Europe and beyond, with region and country.'},
+  'folk-china':{zh:'《中国民间歌曲集成》：号子、山歌、小调等，精确到省份与采录地。',en:'Anthology of Chinese Folk Songs: work songs, mountain songs, xiaodiao, down to province.'},
+  'piano-performance':{zh:'GiantMIDI-Piano：大规模古典钢琴演奏，附作曲家国籍与生卒。',en:'GiantMIDI-Piano: large-scale classical piano with composer nationality and dates.'},
+  'classical-traditional':{zh:'Lakh 合集：多来源古典与流行 MIDI，文件名含编号线索。',en:'Lakh collection: mixed classical and popular MIDI with catalogue clues in file names.'},
+  'classical-open':{zh:'music21 / Mutopia / OpenScore：开放乐谱语料，公有领域与 CC0 为主。',en:'music21 / Mutopia / OpenScore: open score corpora, mostly public domain and CC0.'},
+  'klezmer-balkan':{zh:'John Chambers 的 ABC 合集：克莱兹梅尔、巴尔干、以色列曲调。',en:'John Chambers\u2019 ABC collections: klezmer, Balkan and Israeli tunes.'},
+  'maestro':{zh:'MAESTRO：钢琴演奏与 MIDI 精确对齐的基准数据集。',en:'MAESTRO: benchmark dataset with precisely aligned piano performances.'},
+  'drum':{zh:'Groove：专业鼓手演奏的鼓组 MIDI，含速度、拍号与风格。',en:'Groove: studio drum MIDI with tempo, meter and style.'},
+  'emopia':{zh:'EMOPIA：带四象限情绪标注的钢琴曲，用于情感识别研究。',en:'EMOPIA: piano pieces with four-quadrant emotion annotations.'},
+  'folk-british':{zh:'Nottingham 数据集：民谣 ABC 曲集，含曲式与调式。',en:'Nottingham dataset: folk ABC tunes with form and key.'},
+  'game':{zh:'OpenGameArt：开源游戏音乐素材，许可逐曲不同。',en:'OpenGameArt: open game music, licences vary per piece.'},
+};
 
-/* ── 音频 ── */
-let ready=false, syn=null, bass=null, perc=null, part=null;
-let sfSynth=null, sfReady=false, sfLoading=false, sfFailed=false;
-/* 网络韧性：超时 + 重试（境内访问 GH Pages 常见停滞，不再永久卡死） */
-function fetchT(url, opt){
-  opt=opt||{}; const tries=opt.tries||3, to=opt.timeout||20000;
-  return (async function(){
-    let last=null;
-    for(let a=0;a<tries;a++){
-      const ac=new AbortController(); const tm=setTimeout(()=>ac.abort(),to);
+/* ═══ 语言 / 主题 ═══ */
+function applyLang(){
+  document.documentElement.lang = LANG === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll('[data-zh]').forEach(el=>{
+    const v = el.getAttribute('data-' + LANG); if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll('[data-ph-zh]').forEach(el=>{
+    const v = el.getAttribute('data-ph-' + LANG); if (v) el.placeholder = v;
+  });
+  $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
+  renderShell(); renderAxis();
+}
+$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh'; store.set('midicn-lang', LANG); applyLang(); };
+const themeBtn = $('theme');
+function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
+setTheme(store.get('midicn-theme', null) || 'dark');
+themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+/* ═══ 启动 ═══ */
+(async function boot(){
+  skeleton(10);
+  try{
+    SUMMARY = await (await fetch('data/summary.json')).json();
+  }catch(e){
+    $('status').textContent = t('数据加载失败：','Load failed: ') + e.message; return;
+  }
+  try{ BROWSE = await (await fetch('data/browse.json')).json(); }catch(e){ BROWSE = null; }
+  buildFilters();
+  renderShell(); renderAxis();
+  const first = (SUMMARY.categories || [])[0];
+  if (first) pick('category', first.id, first.name);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+
+function renderShell(){
+  if (!SUMMARY) return;
+  const nsrc = Object.keys(SUMMARY.sources || {}).length;
+  const cats = (SUMMARY.categories || []).length;
+  $('figs').innerHTML =
+    fig(fmt(SUMMARY.total), t('首曲目','TRACKS')) +
+    fig(String(nsrc), t('个来源','SOURCES')) +
+    fig(String(cats), t('个分类','CATEGORIES')) +
+    fig(t('100%','100%'), t('时长覆盖','DURATION COVERED'));
+  $('footNote').innerHTML = t(
+    '本库为整理与转译项目，素材权利属于各来源方；逐曲标注来源与许可。',
+    'A curation project; rights belong to the sources. Provenance and licence are labelled per track.'
+  );
+  $('footLegal').innerHTML = t(
+    '数据版本 v1.19 · 曲目 ' + fmt(SUMMARY.total) + ' 首 · <a href="licenses.html">许可与法律</a>',
+    'Data v1.19 · ' + fmt(SUMMARY.total) + ' tracks · <a href="licenses.html">Licence &amp; legal</a>'
+  );
+}
+const fig = (v, l) => '<div class="fig"><b>'+v+'</b><span>'+l+'</span></div>';
+
+/* ═══ 浏览轴 ═══ */
+function renderAxis(){
+  if (!SUMMARY) return;      /* 首屏数据未到时不渲染，避免空引用 */
+  const ax = [
+    ['category', t('按分类','By category'), (SUMMARY.categories||[]).length],
+    ['source',   t('按来源','By source'),   SOURCES.length],
+    ['tier',     t('按使用方式','By tier'), 3],
+  ];
+  $('axes').innerHTML = ax.map(([k,label,n])=>
+    '<button class="axis'+(AXIS===k?' on':'')+'" data-axis="'+k+'">'+label+'<i>'+n+'</i></button>').join('');
+  $('axes').querySelectorAll('.axis').forEach(b=> b.onclick = ()=>{ AXIS = b.dataset.axis; renderAxis(); paintGrid(); });
+
+  // 填充行的第三列（来源）与筛选下拉
+  paintGrid();
+}
+
+function paintGrid(){
+  const g = $('grid');
+  if (!SUMMARY) return;
+  if (AXIS === 'category'){
+    g.innerHTML = (SUMMARY.categories||[]).map(c=>{
+      const d = CAT_DESC[c.id] || {};
+      const srcNames = (c.sources||[]).map(id=>{
+        const s = SOURCES.find(x=>x.id===id); return s ? s.name[LANG] : id;
+      }).join(' · ');
+      return '<button class="tile'+(COLL.id===c.id?' is-on':'')+'" data-kind="category" data-id="'+c.id+'">'+
+        '<span class="tt"><b>'+catName(c)+'</b><span class="n">'+fmt(c.count)+'</span></span>'+
+        '<span class="tsig">'+sigHTML(c.id + c.count, 26)+'</span>'+
+        '<span class="td">'+(d[LANG]||'')+'</span>'+
+        '<span class="tlic meta">'+t('来源：','Source: ')+srcNames+'</span>'+
+      '</button>';
+    }).join('');
+  } else if (AXIS === 'source'){
+    g.innerHTML = SOURCES.map(s=>{
+      const z = zoneOf(s.zone);
+      return '<button class="tile'+(COLL.id===s.id?' is-on':'')+'" data-kind="source" data-id="'+s.id+'">'+
+        '<span class="tt"><b>'+s.name[LANG]+'</b><span class="n">'+fmt(s.count)+'</span></span>'+
+        '<span class="tsig">'+sigHTML(s.id + s.count, 26)+'</span>'+
+        '<span class="td">'+s.kind[LANG]+'</span>'+
+        '<span class="tlic"><span class="lic '+z.cls+'">'+z.code+' '+z[LANG]+'</span>'+
+          '<span class="meta">'+s.license+'</span></span>'+
+      '</button>';
+    }).join('');
+  } else {
+    g.innerHTML = ['main','piano','study'].map(k=>{
+      const z = ZONES[k];
+      const list = SOURCES.filter(s=>s.zone===k);
+      const n = list.reduce((a,s)=>a+s.count,0);
+      return '<button class="tile'+(COLL.id===k?' is-on':'')+'" data-kind="tier" data-id="'+k+'">'+
+        '<span class="tt"><b>'+z.code+' '+z[LANG]+'</b><span class="n">'+fmt(n)+'</span></span>'+
+        '<span class="tsig">'+sigHTML(k + n, 26)+'</span>'+
+        '<span class="td">'+(LANG==='zh'?z.zhDesc:z.enDesc)+'</span>'+
+        '<span class="tlic meta">'+t('含 ','Sources: ')+list.length+t(' 个来源','')+'</span>'+
+      '</button>';
+    }).join('');
+  }
+  g.querySelectorAll('.tile').forEach(b=> b.onclick = ()=> pick(b.dataset.kind, b.dataset.id));
+}
+
+function catName(c){ return (c.name||'').split(' · ')[LANG === 'zh' ? 0 : 1] || c.name; }
+
+/* ═══ 选择集合 → 加载曲目 ═══ */
+async function pick(kind, id){
+  COLL = { kind, id };
+  paintGrid();
+  const meta = collectionMeta(kind, id);
+  $('listTitle').textContent = meta.title;
+  rows = []; filtered = []; shown = 0; $('list').innerHTML = ''; skeleton(8);
+  const cats = meta.categories;
+  for (const c of cats){
+    for (let i = 0; i < (c.chunks||0); i++){
       try{
-        const r=await fetch(url,Object.assign({},opt,{signal:ac.signal}));
-        clearTimeout(tm);
-        if(!r.ok&&r.status>=500&&a<tries-1){ await new Promise(z=>setTimeout(z,700*(a+1))); continue; }
-        return r;
-      }catch(e){ clearTimeout(tm); last=e;
-        if(a<tries-1) await new Promise(z=>setTimeout(z,700*(a+1))); }
+        const arr = await (await fetch('data/cat-' + c.id + '-' + i + '.json')).json();
+        rows = rows.concat(arr.map(x=>({ ...x, _cat:c.id, _chunk:i })));
+      }catch(e){}
+      if (rows.length >= 400) break;
     }
-    throw last||new Error('fetch failed');
-  })();
+    if (rows.length >= 400) break;
+  }
+  applyFilter();
+  loadFacets(cats.map(c=>c.id));
 }
-async function fetchBuf(url,onPct){
-  const r=await fetchT(url);
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  const len=+r.headers.get('Content-Length')||0;
-  if(!r.body||!len) return await r.arrayBuffer();
-  const rd=r.body.getReader(); const chunks=[]; let got=0;
-  for(;;){ const st=await rd.read(); if(st.done) break;
-    chunks.push(st.value); got+=st.value.length;
-    if(onPct) onPct(Math.min(99,Math.round(got/len*100))); }
-  if(onPct) onPct(100);
-  const out=new Uint8Array(got); let o=0;
-  for(const c of chunks){ out.set(c,o); o+=c.length; }
-  return out.buffer;
+function collectionMeta(kind, id){
+  if (kind === 'category'){
+    const c = (SUMMARY.categories||[]).find(x=>x.id===id) || {};
+    return { title: catName(c) || t('曲目','Tracks'), categories: c.id ? [c] : [] };
+  }
+  if (kind === 'source'){
+    const cats = (SUMMARY.categories||[]).filter(c=>(c.sources||[]).includes(id));
+    const s = SOURCES.find(x=>x.id===id);
+    return { title: (s ? s.name[LANG] : id) + t(' · 来源',' · source'), categories: cats };
+  }
+  const cats = (SUMMARY.categories||[]).filter(c=>{
+    const z = c.id === 'piano' ? 'piano' : (c.id === 'study' ? 'study' : 'main');
+    return z === id;
+  });
+  const z = ZONES[id];
+  return { title: z.code + ' ' + z[LANG], categories: cats };
 }
-const volDb = () => -36 + ($('vol').value/100)*36;
-function initAudio(){
-  if(ready) return;
-  const verb = new Tone.Reverb({decay:3.0,preDelay:.015,wet:.26}).connect(Tone.Destination);
-  const filt = new Tone.Filter({type:'lowpass',frequency:5200,rolloff:-12}).connect(verb);
-  const comp = new Tone.Compressor({threshold:-20,ratio:2.6,attack:.01,release:.25}).connect(filt);
-  syn = new Tone.PolySynth(Tone.Synth,{oscillator:{type:'amtriangle',harmonicity:2.02,modulationType:'sine'},
-    envelope:{attack:.004,decay:1.35,sustain:.1,release:2.0},volume:-9}).connect(comp);
-  bass = new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},
-    envelope:{attack:.012,decay:1.1,sustain:.16,release:1.6},volume:-11}).connect(comp);
-  perc = new Tone.PolySynth(Tone.MembraneSynth,{volume:-6}).connect(comp);
-  Tone.Destination.volume.value = volDb();
-  ready=true;
+
+/* ═══ 筛选 ═══ */
+function buildFilters(){
+  const dims = BROWSE && BROWSE.dims ? BROWSE.dims : null;
+  const fill = (sel, list, labelFn)=>{
+    const el = $(sel); if (!el) return;
+    el.innerHTML = '<option value="">—</option>' + (list||[]).map(v=>
+      '<option value="'+v.k+'">'+labelFn(v)+'</option>').join('');
+  };
+  const zhName = { baroque:'巴洛克', renaissance:'文艺复兴', classical:'古典', romantic:'浪漫',
+    modern:'现代', contemporary:'当代', impressionist:'印象派', traditional:'传统' };
+  const instZh = { piano:'钢琴', melody:'旋律乐器', organ:'管风琴', voice:'人声', ensemble:'合奏',
+    voice_piano:'人声与钢琴', drums:'打击乐', guitar:'吉他' };
+  const genZh = { classical:'古典', folk:'民谣', hymn:'赞美诗', drum:'鼓乐', pop:'流行',
+    christmas:'圣诞', game:'游戏', jazz:'爵士', atonal:'无调性', ragtime:'拉格泰姆',
+    soundtrack:'原声', blues:'布鲁斯', rock:'摇滚' };
+  if (dims){
+    fill('fPeriod', dims.period, v=> (LANG==='zh' ? (zhName[v.k]||v.k) : v.k) + ' · ' + fmt(v.n));
+    fill('fInst', dims.instrument, v=> (LANG==='zh' ? (instZh[v.k]||v.k) : v.k) + ' · ' + fmt(v.n));
+    fill('fGenre', dims.genre, v=> (LANG==='zh' ? (genZh[v.k]||v.k) : v.k) + ' · ' + fmt(v.n));
+    fill('fCountry', dims.country, v=> v.k + ' · ' + fmt(v.n));
+    fill('fForm', dims.form, v=> v.k + ' · ' + fmt(v.n));
+  }
+  $('fZone').innerHTML = '<option value="">—</option>' + ['main','piano','study'].map(k=>
+    '<option value="'+k+'">'+ZONES[k].code+' '+ZONES[k][LANG]+'</option>').join('');
+  $('compList').innerHTML = ((BROWSE && BROWSE.composers) || []).map(c=>
+    '<option value="'+c.k+'">'+c.n+' · '+fmt(c.n2)+'</option>').join('');
 }
-$('vol').oninput = () => { if(ready) Tone.Destination.volume.value = volDb(); };
-$('rate').onchange = e => { if(ready) Tone.Transport.timeScale = parseFloat(e.target.value); };
-function setBadge(txt, cls){ const el=$('sfbadge'); el.textContent=txt; el.className='pill '+(cls||''); }
-async function ensureSoundFont(){
-  if(sfReady||sfLoading) return;
-  sfLoading=true; setBadge(t('loadingSF'));
+function applyFilter(){
+  const q = ($('q').value || '').trim().toLowerCase();
+  const comp = ($('fComp').value || '').trim().toLowerCase();
+  const per = $('fPeriod').value, inst = $('fInst').value, gen = $('fGenre').value;
+  const ctry = $('fCountry').value, form = $('fForm').value, zone = $('fZone').value, dur = $('fDur').value;
+  filtered = rows.filter(x=>{
+    if (comp && !((x.cn||'').toLowerCase().includes(comp) || (x.c||'').includes(comp))) return false;
+    if (per && x.p !== per) return false;
+    if (inst && x.i !== inst) return false;
+    if (gen && x.g !== gen) return false;
+    if (ctry && x.ctry !== ctry) return false;
+    if (form && x.form !== form) return false;
+    if (zone && (x.z||'main') !== zone) return false;
+    if (dur){
+      const [a,b] = dur.split('-').map(Number);
+      if (!(x.du >= a && x.du < b)) return false;
+    }
+    if (q && !((x.t||'').toLowerCase().includes(q) || (x.cn||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const sort = $('fSort').value;
+  if (sort === 't') filtered.sort((a,b)=>String(a.t).localeCompare(String(b.t)));
+  if (sort === 'c') filtered.sort((a,b)=>String(a.cn).localeCompare(String(b.cn)));
+  if (sort === 'd') filtered.sort((a,b)=>(a.du||0)-(b.du||0));
+  shown = 0; $('list').innerHTML = '';
+  renderMore();
+  const n = activeCount();
+  $('fbadge').hidden = n === 0; $('fbadge').textContent = n;
+  $('status').textContent = t('已加载 '+fmt(filtered.length)+' / '+fmt(rows.length)+' 首',
+                              fmt(filtered.length)+' / '+fmt(rows.length)+' loaded');
+}
+function activeCount(){
+  return ['fComp','fPeriod','fInst','fGenre','fCountry','fForm','fZone','fDur']
+    .filter(id=> $(id) && $(id).value).length;
+}
+function renderMore(){
+  const ul = $('list');
+  const end = Math.min(shown + PAGE, filtered.length);
+  const frag = document.createDocumentFragment();
+  for (let i = shown; i < end; i++){
+    const x = filtered[i], el = document.createElement('li');
+    el.className = 'row'; el.dataset.id = x.id;
+    const src = SOURCES.find(s=>x.id.startsWith(s.id + '-')) || null;
+    const srcLabel = src ? src.name[LANG] : (x.id.split('-')[0]);
+    el.innerHTML =
+      '<span class="no">'+String(i+1).padStart(3,'0')+'</span>'+
+      '<span class="tt"><b>'+esc(x.t||x.id)+'</b><s>'+esc(x.cn||'')+(x.opus?(' · Op. '+esc(String(x.opus))):'')+'</s></span>'+
+      '<span class="src">'+esc(srcLabel)+'</span>'+
+      '<span class="per">'+esc(x.p||'')+'</span>'+
+      '<span class="dur">'+mmss(x.du)+'</span>';
+    el.onclick = ()=> play(x, i);
+    frag.appendChild(el);
+  }
+  ul.appendChild(frag);
+  shown = end;
+  $('more').hidden = shown >= filtered.length;
+}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const mmss = s => !s ? '—' : Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+function skeleton(n){ $('list').innerHTML = '<li class="sk"></li>'.repeat(n); $('more').hidden = true; }
+
+/* ═══ 交互绑定 ═══ */
+$('more').onclick = renderMore;
+$('q').addEventListener('input', debounce(()=>{ applyFilter(); }, 220));
+['fComp','fPeriod','fInst','fGenre','fCountry','fForm','fZone','fDur','fSort'].forEach(id=>{
+  const el = $(id); if (el) el.addEventListener('change', applyFilter);
+  if (el) el.addEventListener('input', debounce(applyFilter, 220));
+});
+function debounce(fn, ms){ let h; return (...a)=>{ clearTimeout(h); h = setTimeout(()=>fn(...a), ms); }; }
+$('clear').onclick = ()=>{
+  ['fComp','fPeriod','fInst','fGenre','fCountry','fForm','fZone','fDur','fSort'].forEach(id=>{ if ($(id)) $(id).value = ''; });
+  $('q').value = ''; applyFilter();
+};
+function setPanel(open){
+  const p = $('fpanel'); p.hidden = !open; p.classList.toggle('open', open);
+  $('ftoggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+$('ftoggle').onclick = ()=> setPanel($('fpanel').hidden);
+$('fclose').onclick = ()=> setPanel(false);
+document.addEventListener('keydown', e=>{ if (e.key === 'Escape') setPanel(false); });
+$('rand').onclick = ()=>{ if (filtered.length) play(filtered[Math.floor(Math.random()*filtered.length)]); };
+
+/* 全库搜索（走 search-lite 索引）*/
+let SL = null;
+async function searchAll(q){
+  if (!q || q.length < 2) return null;
+  if (!SL){ try{ SL = await (await fetch('data/search-lite.json')).json(); }catch(e){ return null; } }
+  const lq = q.toLowerCase();
+  return SL.filter(r=>String(r[1]).toLowerCase().includes(lq) || String(r[2]).toLowerCase().includes(lq)).slice(0, 200);
+}
+
+/* ═══ 浅层分面（地域/来源选项）═══ */
+async function loadFacets(catIds){
+  // 分面文件按分类生成；此处仅填充可选值，不阻塞
+  for (const id of catIds.slice(0,1)){
+    try{
+      const f = await (await fetch('data/facets-' + id + '.json')).json();
+      if (f && f.r && f.r.length){
+        $('fCountry').innerHTML = '<option value="">—</option>' + f.r.slice(0,120).map(([k,n])=>
+          '<option value="'+k+'">'+k+' · '+fmt(n)+'</option>').join('');
+      }
+    }catch(e){}
+  }
+}
+
+/* ═══ 播放（沿用 Tone + js-synthesizer 音源）═══ */
+let sfSynth = null, sfLoading = false;
+async function ensureSF(){
+  if (sfReady || sfLoading) return; sfLoading = true;
   try{
     const AC = Tone.getContext().rawContext;
     sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
     await sfSynth.init(AC);
-    /* 音源走 gz（传输更小）+ 解压 + 进度%；失败回落原始 sf2；SW cache-first 只下一次 */
-    let ab=null;
-    if('DecompressionStream' in window){
-      try{ ab=await fetchBuf('soundfont/GeneralUser-GS.sf2.gz', p=>setBadge(t('loadingSF')+' '+p+'%')); }catch(e){}
+    let ab = null;
+    if ('DecompressionStream' in window){
+      try{ ab = await (await fetch('soundfont/GeneralUser-GS.sf2.gz')).arrayBuffer(); }catch(e){}
     }
-    if(!ab) ab=await fetchBuf('soundfont/GeneralUser-GS.sf2', p=>setBadge(t('loadingSF')+' '+p+'%'));
-    await sfSynth.loadSFont(ab);
-    sfReady=true; setBadge(t('playing'),'sf');
-  }catch(e){ sfFailed=true; setBadge(t('synth'),'nc'); }
-  sfLoading=false;
+    if (!ab) ab = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
+    await sfSynth.loadSFont(ab); sfReady = true; $('sfbadge').textContent = t('音源就绪','SF ready');
+  }catch(e){ $('sfbadge').textContent = t('合成器','synth'); }
+  sfLoading = false;
 }
-const fmt = s => { s=Math.max(0,Math.round(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
-let uiTimer=null;
-function ticker(){
-  clearInterval(uiTimer);
-  uiTimer=setInterval(()=>{ if(!playing||!ready) return;
-    const pos=Tone.Transport.seconds;
-    $('tcur').textContent=fmt(pos);
-    const p=Math.min(1000,(pos/Math.max(curTotal,.1))*1000);
-    $('prog').value=p; $('prog').style.setProperty('--p',(p/10)+'%');
-    if(pos>=curTotal) onEnded();
-  },250);
-}
-function stop(){
-  clearInterval(uiTimer);
-  if(sfSynth){ try{ sfSynth.stop(); }catch(e){} }
-  if(part){ try{part.stop();part.dispose();}catch(e){} part=null; }
-  try{ Tone.Transport.stop(); Tone.Transport.cancel(); }catch(e){}
-  if(ready){ syn.releaseAll(); bass.releaseAll(); perc.releaseAll(); }
-  playing=false; $('play').textContent='▶'; $('viz').classList.remove('on');
-}
-function onEnded(){ if(looping && curIdx>=0 && flat[curIdx]) play(flat[curIdx],curIdx); else stop(); }
-function zoneLabel(z){ return z==='main'?t('commercial'):(z==='study'?t('study'):(z?t('nc'):'')); }
-
 async function play(x, idx){
-  stop();
-  if(idx!==undefined) curIdx=idx;
+  if (idx != null) curIdx = idx;
   document.querySelectorAll('.row.on').forEach(e=>e.classList.remove('on'));
-  const li=document.querySelector('.row[data-id="'+x.id+'"]'); if(li) li.classList.add('on');
-  $('np').textContent = t('load')+' ' + (x.t || x.id) + ' …';
-  updateNowPlaying(x, (flat||[]).filter(y=>y.cn && y.cn===x.cn && y.id!==x.id));
-  $('tag').textContent = zoneLabel(x.z);
-  $('tag').className = 'pill ' + (x.z==='main' ? 'st' : (x.z==='study' ? '' : 'nc'));
-  if(sfReady){
-    try{
-      await Tone.start();
-      const ab = await fetchBuf(x.f, p=>{ $('np').textContent=(x.t||x.id)+' · '+t('load')+' '+p+'%'; });
-      sfSynth.stop(); await sfSynth.playNewMIDI(ab);
-      playing=true; $('play').textContent='⏸'; $('viz').classList.add('on');
-      $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+t('playing');
-      setBadge(t('playing'),'sf');
-      updateNowPlaying(x, (flat||[]).filter(y=>y.cn && y.cn===x.cn && y.id!==x.id));
-      return;
-    }catch(e){}
-  }
-  ensureSoundFont();
+  const li = document.querySelector('.row[data-id="'+x.id+'"]'); if (li) li.classList.add('on');
+  $('np').textContent = x.t || x.id;
+  if (!sfReady){ await ensureSF(); }
   try{
-    initAudio(); await Tone.start();
-    const ab = await fetchBuf(x.f, p=>{ $('np').textContent=(x.t||x.id)+' · '+t('load')+' '+p+'%'; });
-    const midi = new Midi(ab);
-    const notes=[];
-    midi.tracks.forEach(tr => tr.notes.forEach(n => notes.push({
-      time:n.time, name:n.name, dur:Math.max(n.duration,.05), vel:n.velocity, pitch:n.midi })));
-    if(!notes.length){ $('np').textContent=t('noNotes'); return; }
-    const isPerc = (x.g==='drum') || /drum|perc/i.test(x.i||'');
-    Tone.Transport.stop(); Tone.Transport.cancel(); Tone.Transport.position=0;
-    part = new Tone.Part((time,n)=>{
-      const v=Math.min(1,Math.max(.15,n.vel||.7));
-      if(isPerc) perc.triggerAttackRelease(n.pitch<50?'C1':'G2',.12,time,v*.9);
-      else if(n.pitch<48) bass.triggerAttackRelease(n.name,n.dur,time,v*.85);
-      else syn.triggerAttackRelease(n.name,n.dur,time,v);
-    }, notes);
-    part.start(0);
-    curTotal=Math.round(midi.duration)||1; $('ttot').textContent=fmt(curTotal);
-    part.stop(curTotal+1.5); Tone.Transport.start('+0.08');
-    playing=true; $('play').textContent='⏸'; $('viz').classList.add('on');
-    $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · '+fmt(curTotal);
-    ticker();
-  }catch(e){ $('np').textContent=t('failed')+((e&&e.message)||e); }
+    Tone.start();
+    const buf = await (await fetch(x.f)).arrayBuffer();
+    if (sfSynth){ sfSynth.stop(); await sfSynth.playNewMIDI(buf); }
+    playing = true; $('play').textContent = '⏸'; $('viz').classList.add('on');
+  }catch(e){ $('np').textContent = t('播放失败：','Playback failed: ') + e.message; }
 }
+$('play').onclick = ()=>{ if (playing){ Tone.Transport.pause(); playing = false; $('play').textContent = '▶'; } else { Tone.Transport.start(); playing = true; $('play').textContent = '⏸'; } };
+$('prev').onclick = ()=>{ if (curIdx > 0) play(filtered[curIdx-1], curIdx-1); };
+$('next').onclick = ()=>{ if (curIdx < filtered.length-1) play(filtered[curIdx+1], curIdx+1); };
 
-const ICONS = {
-  'folk-ireland':'M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9a2 2 0 110-4 2 2 0 010 4z',
-  'folk-world':'M12 2a10 10 0 100 20 10 10 0 000-20zm0 3c1.7 0 3 1.3 3 3s-1.3 3-3 3-3-1.3-3-3 1.3-3 3-3zm0 14c-2.5 0-4.7-1.3-6-3.2.2-1.9 2.5-3.3 6-3.3s5.8 1.4 6 3.3c-1.3 1.9-3.5 3.2-6 3.2z',
-  'piano':'M4 4h16v16H4V4zm2 2v8h2V6H6zm4 0v8h2V6h-2zm4 0v8h2V6h-2zm4 0v8h2V6h-2z',
-  'classical-traditional':'M12 3v10.55A4 4 0 1014 17V7h4V3h-6z',
-  'classical-open':'M6 3v12a3 3 0 003 3 3 3 0 100-6 3 3 0 00-1 .2V6l10-2v9a3 3 0 003 3 3 3 0 100-6 3 3 0 00-1 .2V3L6 5z',
-  'klezmer-balkan':'M12 2l4 6h-2v6h2l-4 8-4-8h2V8H8l4-6z',
-  'drum':'M12 4c-4.4 0-8 1.3-8 3v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7c0-1.7-3.6-3-8-3zm0 5c-3.3 0-6-.9-6-2s2.7-2 6-2 6 .9 6 2-2.7 2-6 2z',
-  'folk-british':'M10 2v14.6a4 4 0 101.5 3.1V6h2V2h-3.5z',
-  'game':'M6 6h12a4 4 0 014 4v4a4 4 0 01-4 4h-1l-2-2h-6l-2 2H6a4 4 0 01-4-4v-4a4 4 0 014-4zm1 3v2H5v2h2v2h2v-2h2v-2H9V9H7zm8.5 1a1.5 1.5 0 100 3 1.5 1.5 0 000-3z'
-};
-function skeleton(n){ const box=$('cats'); for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='cat sk'; box.appendChild(d); } }
-function skList(n){ $('list').innerHTML='<li class="sk"></li>'.repeat(n); }
-
-/* 首页静态骨架 + 汇总数据的两段式渲染：
-   fetch 汇总 → renderHead()（统计/分类/筛选器），语言切换时只重放 renderHead()，不再重复请求。 */
-/* ═══ 阶段二：侧栏分类导航 ═══ */
-function renderSidebar(){
-  if(!SUMMARY) return;
-  const box=$('side'); if(!box) return;
-  box.innerHTML = '<div class="sidehd">'+t('catsUnit')+'</div>' + SUMMARY.categories.map(c=>(
-    '<button class="sideitem" type="button" data-id="'+c.id+'" aria-current="false">'+
-      '<svg viewBox="0 0 24 24"><path d="'+(ICONS[c.id]||ICONS['classical-traditional'])+'"/></svg>'+
-      '<span class="si-n">'+catName(c)+'</span>'+
-      '<span class="si-c">'+c.count.toLocaleString()+'</span>'+
-    '</button>')).join('');
-  box.querySelectorAll('.sideitem').forEach(b=>{
-    b.onclick=()=>{
-      const c=SUMMARY.categories.find(x=>x.id===b.dataset.id);
-      if(!c) return;
-      selectCat(c,null);
-      const l=$('list'); if(l && l.scrollIntoView) l.scrollIntoView({behavior:'smooth',block:'start'});
-    };
-  });
-  syncSidebar();
-}
-function syncSidebar(){
-  const on = curCat ? curCat.id : '';
-  document.querySelectorAll('#side .sideitem').forEach(b=>{
-    b.setAttribute('aria-current', b.dataset.id===on ? 'true' : 'false');
-  });
-}
-/* ═══ 阶段二：正在播放面板（≥1440）═══ */
-let npCur = null;
-function updateNowPlaying(x, similar){
-  npCur = x || npCur;
-  const box=$('nowp'); if(!box || !npCur) return;
-  const ttl = npCur.t || npCur.id;
-  const zone = zoneLabel(npCur.z);
-  const dur = npCur.du ? Math.floor(npCur.du/60)+':'+String(Math.floor(npCur.du%60)).padStart(2,'0') : '';
-  const durl = 'detail.html?id='+encodeURIComponent(npCur.id)+(curCat?'&cat='+encodeURIComponent(curCat.id):'')+((npCur._ch!=null)?'&chunk='+npCur._ch:'');
-  const sim = (similar||[]).slice(0,5);
-  box.innerHTML =
-    '<div class="np-hd">'+t('playing')+'</div>'+
-    '<div class="np-t">'+esc(ttl)+'</div>'+
-    '<div class="np-m">'+esc(npCur.cn||'')+(npCur.opus?(' · Op. '+esc(String(npCur.opus))+(npCur.no?(' No. '+esc(String(npCur.no))):'')):'')+
-      (dur?(' · '+dur):'')+'</div>'+
-    '<div><span class="pill '+(npCur.z==='main'?'st':(npCur.z==='study'?'':'nc'))+'">'+zone+'</span></div>'+
-    '<div class="np-acts">'+
-      '<a href="'+durl+'">'+t('detail')+'</a>'+
-      '<a href="'+esc(npCur.f)+'" download>'+t('dl')+'</a>'+
-      '<button type="button" id="npattr">'+t('copy')+'</button>'+
-    '</div>'+
-    (sim.length?('<div class="np-sim"><div class="np-hd">'+t('similar')+'</div>'+
-      sim.map(y=>'<button type="button" data-id="'+esc(y.id)+'">'+esc((y.t||y.id).slice(0,34))+'</button>').join('')+'</div>'):'');
-  const ab=$('npattr');
-  if(ab) ab.onclick=()=>{ const txt=attribution(npCur);
-    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{ab.textContent=t('copied');setTimeout(()=>{ab.textContent=t('copy');},1500);}).catch(()=>{}); };
-  box.querySelectorAll('.np-sim button').forEach(b=>{
-    b.onclick=()=>{ const y=(flat||[]).find(z=>z.id===b.dataset.id); if(y) play(y); };
-  });
-}
-function attribution(x){
-  return (x.t||x.id)+' — '+(x.cn||'')+'. Source: midicn-lib (midicn/midi-lib). License: '+(x.l||'')+'.';
-}
-/* ═══ 阶段二：列表窗口化（DOM 上限，超限回收远端行）═══ */
-const MAX_ROWS = 1200, TRIM_ROWS = 300;
-function maybeWindow(){
-  const ul=$('list'); if(!ul) return;
-  if(ul.querySelectorAll('li.row').length <= MAX_ROWS) return;
-  const rows=[...ul.querySelectorAll('li.row')];
-  const kill=rows.slice(0, TRIM_ROWS);
-  const h=kill.reduce((a,r)=>a+r.offsetHeight,0) || TRIM_ROWS*44;
-  kill.forEach(r=>r.remove());
-  let sp=ul.querySelector('li.spacer');
-  if(!sp){ sp=document.createElement('li'); sp.className='spacer'; ul.insertBefore(sp, ul.firstChild); }
-  sp.style.height=(parseFloat(sp.style.height||0)+h)+'px';
-}
-
-async function boot(){
-  if(booted) return;
-  skeleton(8); skList(6);
-  $('np').textContent = '—';
-  if(!SUMMARY){
-    try{ SUMMARY = await (await fetchT('data/summary.json')).json(); }
-    catch(e){ $('heroSub').textContent = 'Load failed: ' + e.message; return; }
-  }
-  booted = true;
-  renderHead(); renderSidebar();
-  $('status').textContent = t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
-  $('list').innerHTML='';
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-  deepLink();
-}
-/* 深链：?play=<id>&cat=<分类>&chunk=<分片号> —— 定位并高亮（不自动播放，受浏览器手势限制） */
-async function deepLink(){
-  const q=new URLSearchParams(location.search);
-  const pid=q.get('play'); if(!pid) return;
-  let c = q.get('cat') ? SUMMARY.categories.find(x=>x.id===q.get('cat')) : null;
-  let ch = q.get('chunk')!=null ? +q.get('chunk') : null;
-  if(!c || ch==null){
-    const L=await (await fetchT('data/loc.json')).json(); const e=L[pid]; if(!e) return;
-    c=SUMMARY.categories.find(x=>x.id===e[0]); ch=e[1]; if(!c||ch==null) return;
-  }
-  await selectCat(c);
-  while(chunkIdx<=ch && chunkIdx<c.chunks) await loadChunk();
-  const x=buf.find(t=>t.id===pid); if(!x) return;
-  flat=buf.filter(pass);
-  const fi=flat.indexOf(x);
-  while(rendered<=fi && rendered<flat.length) renderNext();
-  const li=document.querySelector('.row[data-id="'+pid+'"]');
-  if(li){ li.classList.add('on'); li.scrollIntoView({block:'center'}); }
-  $('np').textContent=(x.t||x.id)+(x.cn?' · '+x.cn:'')+' · ▶';
-}
-function renderHead(){
-  if(!SUMMARY) return;
-  const cats = SUMMARY.categories || [];
-  const nsrc = Object.keys(SUMMARY.sources||{}).length;
-  $('heroSub').textContent = t('hero').replace('{n}', SUMMARY.total.toLocaleString()).replace('{s}', nsrc);
-  $('stats').innerHTML =
-    '<div class="stat"><b>'+SUMMARY.total.toLocaleString()+'</b><span>'+t('tracksUnit')+'</span></div>'+
-    '<div class="stat"><b>'+nsrc+'</b><span>'+t('sourcesUnit')+'</span></div>'+
-    '<div class="stat"><b>'+(SUMMARY.zones?(SUMMARY.zones.main||0).toLocaleString():'—')+'</b><span>'+t('commercialUnit')+'</span></div>'+
-    '<div class="stat"><b>'+cats.length+'</b><span>'+t('catsUnit')+'</span></div>';
-  $('cats').innerHTML=''; renderCats();
-  const per=[...new Set(cats.flatMap(c=>c.periods||[]))].filter(Boolean);
-  const sel=$('period'), keep=sel.value;
-  sel.innerHTML='<option value="">'+(LANG==='zh'?'全部时期':'All periods')+'</option>';
-  per.sort().forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
-  if(keep) sel.value=keep;
-}
-function renderCats(){
-  SUMMARY.categories.forEach((c,i)=>{
-    const d=document.createElement('div'); d.className='cat'; d.style.animationDelay=(i*.03)+'s';
-    d.innerHTML='<span class="ico"><svg viewBox="0 0 24 24"><path d="'+(ICONS[c.id]||ICONS['classical-traditional'])+'"/></svg></span><span><b>'+catName(c)+'</b><span>'+c.count.toLocaleString()+' '+t('tracks')+' · '+c.sources.length+' '+t('sourcesUnit')+'</span></span>';
-    d.onclick=()=>selectCat(c,d);
-    $('cats').appendChild(d);
-  });
-}
-async function selectCat(c, el){
-  document.querySelectorAll('.cat.on').forEach(e=>e.classList.remove('on'));
-  if(el) el.classList.add('on');
-  curCat=c; chunkIdx=0; buf=[]; flat=[]; rendered=0; curIdx=-1; autoLoaded=0;
-  $('region').value=''; $('source').value='';      /* 地域/来源选项随分类变化，重置 */
-  skList(8);
-  syncSidebar();
-  loadFacets(c);                                    /* 分面异步填充，不阻塞列表 */
-  await loadChunk();
-}
-
-/* ── 分面：作曲家建议（datalist）+ 地域 + 来源 ── */
-async function loadFacets(c, keep){
-  const reg=$('region'), src=$('source'), comp=$('composer'), dl=$('compList');
-  const keepReg = keep ? reg.value : '', keepSrc = keep ? src.value : '';
-  dl.innerHTML=''; FACETS=null;
-  src.innerHTML='<option value="">'+(LANG==='zh'?'全部来源':'All sources')+'</option>';
-  (c.sources||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; src.appendChild(o); });
-  reg.innerHTML='<option value="">'+(LANG==='zh'?'全部地域':'All regions')+'</option>';
-  reg.disabled = comp.disabled = !c.facets;
-  if(!c.facets) return;
-  try{ FACETS = await (await fetchT('data/facets-'+c.id+'.json')).json(); }
-  catch(e){ return; }
-  (FACETS.r||[]).forEach(function(pair){
-    const o=document.createElement('option'); o.value=pair[0];
-    o.textContent=pair[0]+' ('+pair[1]+')'; reg.appendChild(o);
-  });
-  const frag=document.createDocumentFragment();
-  (FACETS.c||[]).slice(0,600).forEach(function(p){
-    const o=document.createElement('option'); o.value=p[1]||p[0];
-    o.label=p[2]+' '+(LANG==='zh'?'首':'tracks'); frag.appendChild(o);
-  });
-  dl.appendChild(frag);
-  if(keepReg) reg.value=keepReg;
-  if(keepSrc) src.value=keepSrc;
-}
-async function loadChunk(){
-  if(!curCat || chunkIdx>=curCat.chunks) return;
-  const r=await fetchT('data/cat-'+curCat.id+'-'+chunkIdx+'.json');
-  const part=await r.json(); const ch=chunkIdx; chunkIdx++;
-  part.forEach(t=>{ t._ch=ch; });
-  buf=buf.concat(part);
-  if(chunkIdx===1) $('list').innerHTML='';
-  flat=buf.filter(pass); rendered=0; renderNext(true);
-  updateStatus();
-}
-function updateStatus(){
-  if(curCat) $('status').textContent = catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+
-    ' / '+curCat.count.toLocaleString()+' · '+t('matched')+' '+flat.length.toLocaleString();
-}
-/* 改变筛选条件：不重新下载，直接在已载入数据上重算；结果不够时自动续载分片 */
-async function refilter(){
-  if(!curCat) return;
-  autoLoaded=0;
-  flat=buf.filter(pass); rendered=0; renderNext(true); updateStatus();
-  while(curCat && (flat.length-rendered)<PAGE && chunkIdx<curCat.chunks && autoLoaded<30){
-    autoLoaded++; await loadChunk();
-  }
-}
-function pass(x){
-  if($('mainOnly').checked && x.z!=='main') return false;
-  const p=$('period').value; if(p && x.p!==p) return false;
-  const d=$('dur').value;
-  if(d){ const [lo,hi]=d.split('-').map(Number); const v=x.du||0;
-    if(v && (v<lo||v>hi)) return false; if(!v && lo>0) return false; }
-  const rg=$('region').value; if(rg && x.r!==rg) return false;
-  const sc=$('source').value; if(sc && String(x.id||'').split('-')[0]!==sc) return false;
-  const cq=$('composer').value.trim().toLowerCase();
-  if(cq && (String(x.c||'')+' '+String(x.cn||'')).toLowerCase().indexOf(cq)<0) return false;
-  return true;
-}
-function renderNext(fresh){
-  const ul=$('list'); if(fresh) ul.innerHTML='';
-  let added=0;
-  while(rendered<flat.length && added<PAGE){ ul.appendChild(rowFor(flat[rendered],rendered)); rendered++; added++; }
-  maybeWindow();
-}
-function rowFor(x, idx){
-  const li=document.createElement('li'); li.className='row'; li.dataset.id=x.id;
-  const tags=[];
-  if(x.z && x.z!=='main') tags.push('<span class="pill '+(x.z==='study'?'':'nc')+'">'+(x.z==='study'?t('study'):'NC')+'</span>');
-  const dcat = x._cat || (curCat ? curCat.id : '');
-  const dchunk = (x._ch!=null) ? '&chunk='+x._ch : '';
-  const durl = 'detail.html?id='+encodeURIComponent(x.id)+(dcat?'&cat='+encodeURIComponent(dcat):'')+dchunk;
-  li.innerHTML='<span class="pl">▶</span><span class="tt"><a class="ttl" href="'+durl+'" onclick="event.stopPropagation()">'+(x.t||t('noTitle')).slice(0,70)+'</a><span class="sub"> '+(x.cn||'').slice(0,26)+'</span></span><span class="meta">'+(x.du?fmt(x.du)+' · ':'')+[x.p,x.r].filter(Boolean).join(' · ')+' '+tags.join('')+'</span>';
-  li.onclick=()=>play(x, idx);
-  return li;
-}
-new IntersectionObserver(async e=>{
-  if(!e[0].isIntersecting) return;
-  /* 按「命中数」而非「已载入数」判断，这样筛选后仍能继续往深处找结果 */
-  if(curCat && (flat.length-rendered)<PAGE*2 && chunkIdx<curCat.chunks && autoLoaded<200){
-    autoLoaded++; await loadChunk();
-  } else renderNext();
-}, {rootMargin:'500px'}).observe($('sentinel'));
-
-$('q').oninput=(function(){ let h; return function(e){ clearTimeout(h); h=setTimeout(async function(){
-  const q=e.target.value.trim().toLowerCase();
-  if(!q){ if(curCat) await selectCat(curCat); else $('list').innerHTML=''; return; }
-  if(!searchReady){ $('status').textContent=t('searching');
-    SEARCH=await (await fetchT('data/search-lite.json')).json(); searchReady=true; }
-  const hits=SEARCH.filter(function(row){
-    const id=row[0],tt=row[1],cn=row[2];
-    return (tt&&tt.toLowerCase().indexOf(q)>=0)||(cn&&cn.toLowerCase().indexOf(q)>=0)||id.indexOf(q)>=0;
-  }).slice(0,400);
-  flat=hits.map(function(row){
-    const id=row[0],tt=row[1],cn=row[2],cat=row[3];
-    const isPiano=cat==='piano';
-    const x={id:id,t:tt,cn:cn,g:cat,z:isPiano?'piano-special':'main',
-            f:(isPiano?'piano-special/piano/':'main/'+cat+'/')+id+'.mid'};
-    x._cat=cat; return x;
-  });
-  $('list').innerHTML=''; rendered=0;
-  $('status').textContent=t('found')+e.target.value.trim()+t('hit')+' '+hits.length+(hits.length>=400?'+':'')+' '+t('entries');
-  flat.forEach(function(x,i){ $('list').appendChild(rowFor(x,i)); });
-  rendered=flat.length;
-},260); }; })();
-
-$('play').onclick=()=>{ if(playing) stop(); else if(flat[curIdx]) play(flat[curIdx],curIdx); else if(flat[0]) play(flat[0],0); };
-$('prev').onclick=()=>{ if(curIdx>0) play(flat[curIdx-1],curIdx-1); };
-$('next').onclick=()=>{ if(curIdx<flat.length-1) play(flat[curIdx+1],curIdx+1); };
-$('loop').onclick=()=>{ looping=!looping; $('loop').classList.toggle('on',looping); };
-$('rand').onclick=async()=>{
-  const c=SUMMARY.categories[Math.floor(Math.random()*SUMMARY.categories.length)];
-  const i=Math.floor(Math.random()*c.chunks);
-  $('status').textContent=t('shuffling')+catName(c)+' …';
-  const arr=await (await fetchT('data/cat-'+c.id+'-'+i+'.json')).json();
-  const x=arr[Math.floor(Math.random()*arr.length)];
-  if(x) play(x);
-};
-$('mainOnly').onchange=refilter;
-$('period').onchange=refilter;
-$('dur').onchange=refilter;
-$('region').onchange=refilter;
-$('source').onchange=refilter;
-$('composer').oninput=(function(){ let h; return function(){ clearTimeout(h); h=setTimeout(function(){ refilter(); syncFilterBadge(); },280); }; })();
-
-/* 筛选区折叠 + 生效条件计数 */
-function activeFilterCount(){
-  let n=0;
-  if($('period').value) n++;
-  if($('dur').value) n++;
-  if($('composer').value.trim()) n++;
-  if($('region').value) n++;
-  if($('source').value) n++;
-  if($('mainOnly').checked) n++;
-  return n;
-}
-function syncFilterBadge(){
-  const n=activeFilterCount(), b=$('fbadge');
-  if(!b) return;
-  b.textContent=String(n); b.hidden = (n===0);
-}
-function setSheet(open){
-  const p=$('fpanel');
-  if(!p) return;
-  p.hidden=!open;
-  p.classList.toggle('open', open);
-  $('ftoggle').setAttribute('aria-expanded', open?'true':'false');
-}
-$('ftoggle').onclick=()=>setSheet($('fpanel').hidden);
-if($('fclose')) $('fclose').onclick=()=>setSheet(false);
-/* 抽屉内点空白/按 Esc 也能收起 */
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') setSheet(false); });
-function refilterSync(){ syncFilterBadge(); refilter(); }
-$('mainOnly').onchange=refilterSync;
-$('period').onchange=refilterSync;
-$('dur').onchange=refilterSync;
-$('region').onchange=refilterSync;
-$('source').onchange=refilterSync;
-$('clear').onclick=()=>{
-  $('period').value=''; $('dur').value=''; $('region').value=''; $('source').value='';
-  $('composer').value=''; $('mainOnly').checked=false;
-  syncFilterBadge();
-  if(curCat) refilter(); else { $('list').innerHTML=''; renderHead(); }
-};
-$('sort').onchange=(e)=>{ const k=e.target.value; if(!k) return;
-  flat.sort((a,b)=>String(a[k]||'~').localeCompare(String(b[k]||'~'))); rendered=0; renderNext(true); };
-
-/* ── 语言切换 ── */
-function applyLang(){
-  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
-  document.title = LANG === 'zh' ? 'midicn-lib · MIDI 音乐库' : 'midicn-lib · MIDI Music Library';
-  document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
-  document.querySelectorAll('[data-ph-zh]').forEach(el => el.placeholder = LANG === 'zh' ? el.dataset.phZh : el.dataset.phEn);
-  if(!booted) return;                     // 首屏未加载时由 boot() 负责，别在这里抢跑
-  renderHead();                           // 分类名 / 统计标签 / 时期下拉
-  if(curCat) loadFacets(curCat, true);    // 重建地域/来源下拉与作曲家建议（保留已选项）
-  $('status').textContent = curCat
-    ? catName(curCat)+' · '+t('loaded')+' '+buf.length.toLocaleString()+' / '+curCat.count.toLocaleString()+
-      ' · '+t('matched')+' '+flat.length.toLocaleString()
-    : t('hint') + ' · ' + SUMMARY.total.toLocaleString() + ' ' + t('tracks');
-  if(flat.length){ rendered=0; renderNext(true); }   // 重画当前列表（行内标签随语言变）
-}
-$('lang').onclick=()=>{ LANG = LANG==='zh'?'en':'zh'; localStorage.setItem('midicn-lang',LANG);
-  $('lang').textContent = LANG==='zh'?'EN':'中'; applyLang(); };
-$('lang').textContent = LANG==='zh'?'EN':'中';
-
-document.addEventListener('pointerdown',()=>ensureSoundFont(),{once:true});
-document.addEventListener('keydown',(e)=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'){ if(e.key==='Escape') e.target.blur(); return; }
-  if(e.key===' '){ e.preventDefault(); $('play').click(); }
-  else if(e.key==='ArrowLeft'){ $('prev').click(); }
-  else if(e.key==='ArrowRight'){ $('next').click(); }
-  else if(e.key==='/'){ e.preventDefault(); $('q').focus(); }
-  else if(e.key==='Escape'){ stop(); }
-});
-/* ── 失败兜底：任何静默失败都要让用户看见，并给出重试入口 ── */
-function fatal(msg){
-  const s=$('status'); if(!s) return;
-  s.innerHTML='<span style="color:#E08A8A">'+msg+'</span>'+
-    '<button class="btn" id="retry" style="margin-left:.6rem;padding:.25rem .7rem">重试</button>';
-  const b=$('retry'); if(b) b.onclick=()=>location.reload();
-}
-window.addEventListener('error', e=>{ if(!booted) fatal('页面脚本出错：'+(e.message||'未知错误')); });
-window.addEventListener('unhandledrejection', e=>{ if(!booted) fatal('数据加载失败：'+((e.reason&&e.reason.message)||'网络异常')); });
-setTimeout(()=>{ if(!booted) fatal('数据加载超时（网络较慢或接口异常）'); }, 8000);
-
+/* 启动：先按当前语言渲染外壳，再加载数据 */
 applyLang();
-boot();          /* 首屏加载汇总数据 —— 必须无条件调用（SUMMARY 初值为 null） */
 </script>
 </body>
 </html>

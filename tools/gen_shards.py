@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 import re
 import sys
 from collections import defaultdict
@@ -164,6 +165,28 @@ def main() -> int:
     # 曲目定位表（详情页直链兜底：id -> [分类, 分片号]）
     (out / "loc.json").write_text(
         json.dumps(loc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    # 多维浏览数据（新首页的「按时期 / 乐器 / 风格 / 国家 / 曲式 / 难度」轴）
+    def dim(field):
+        c = Counter(x.get(field) for x in tracks if x.get(field))
+        return [{"k": k, "n": v} for k, v in c.most_common()]
+
+    comp = Counter()
+    for x in tracks:
+        if x.get("c") and x["c"] != "traditional":
+            comp[x["c"]] += 1
+    browse = {
+        "version": catalog.get("version"),
+        "dims": {
+            "period": dim("p"), "instrument": dim("i"), "genre": dim("g"),
+            "country": dim("ctry"), "form": dim("form"), "region": dim("r"),
+            "difficulty": dim("diff"), "zone": dim("z"), "source": dim("v"),
+        },
+        "composers": [{"k": k, "n": v} for k, v in comp.most_common(300)],
+    }
+    (out / "browse.json").write_text(
+        json.dumps(browse, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"  browse.json: {len(browse['dims'])} 维度 · 作曲家 Top {len(browse['composers'])}", flush=True)
 
     # 概览
     summary = {

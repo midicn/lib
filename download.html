@@ -1,346 +1,213 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#070706">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>数据下载 · midicn-lib</title>
-<meta name="description" content="midicn-lib v1.4 下载：4 个分区包（主库 / 钢琴特区 / 研究学习 / 元数据）、catalog 字段说明、快速上手与完整性校验。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.5'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.75'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
+<meta name="description" content="midicn-lib 下载：按使用方式（可商用/非商用/学习研究）、按来源、按分类三种打包方式，附目录与校验。">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0C'/%3E%3Crect x='14' y='30' width='4' height='14' fill='%23CE4A32'/%3E%3Crect x='24' y='20' width='4' height='24' fill='%23CE4A32'/%3E%3Crect x='34' y='26' width='4' height='18' fill='%23C9A227'/%3E%3Crect x='44' y='16' width='4' height='28' fill='%23C9A227'/%3E%3C/svg%3E">
 </head>
 <body>
+
 <header><div class="hbar">
-  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#070706"/><rect x="14" y="26" width="5" height="15" rx="2.5" fill="#E07A3F" opacity=".5"/><rect x="23" y="18" width="5" height="31" rx="2.5" fill="#E07A3F" opacity=".75"/><rect x="32" y="29" width="5" height="12" rx="2.5" fill="#E8C547"/><path d="M43 16h5v22l-5 4z" fill="#E8C547"/><ellipse cx="41" cy="41" rx="7.5" ry="5.5" transform="rotate(-18 41 41)" fill="#E8C547"/></svg><b>midicn-lib</b></a>
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0B0B0C"/><rect x="14" y="30" width="4" height="14" fill="#CE4A32"/><rect x="24" y="20" width="4" height="24" fill="#CE4A32"/><rect x="34" y="26" width="4" height="18" fill="#C9A227"/><rect x="44" y="16" width="4" height="28" fill="#C9A227"/></svg><b>midicn-lib</b><i>archive</i></a>
   <nav class="nav">
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" class="on" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
-    <a href="licenses.html" data-zh="许可与法律" data-en="License">许可与法律</a>
-    <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
+    <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
-  <button class="iconbtn" id="theme" title="切换主题"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
   <button class="iconbtn langbtn" id="lang">EN</button>
 </div></header>
 
 <main class="doc">
-<div data-lang="zh">
-  <h1>数据下载</h1>
-  <p class="lead">当前版本 <b>v1.18</b> · <b>124,179</b> 首曲目 · <b>19</b> 个来源数据集 · 约 <b>620 MB</b>（未压缩 1,270 MB）。
-  按许可分四个包，<b>按需下载</b>——想要可商用内容只需 <code>main.zip</code>（36.8 MB）。</p>
+  <p class="meta" data-zh="档案 · 取用" data-en="ARCHIVE · ACCESS">档案 · 取用</p>
+  <h1 data-zh="数据下载" data-en="Download">数据下载</h1>
+  <p class="lede" id="lede"></p>
 
-  <h2>四个下载包</h2>
-  <div class="pkgs">
-    <div class="pkg">
-      <div class="pn">main.zip <span class="tag c1">C1 可商用</span></div>
-      <div class="pm"><b>69,197</b> 首 · <span class="sz" data-asset="midicn-lib-v1.18-main.zip">~250 MB</span></div>
-      <div class="pd">可商用主库：爱尔兰民谣 26,689 · <b>赞美诗曲调（Cyber Hymnal）10,945</b> · 世界民谣 10,818 · 古典开放 6,624 · 钢琴演奏（GiantMIDI）10,112 · 克莱兹梅尔/巴尔干 1,487 · 鼓点 1,149 · 英国民谣 1,033 · 游戏配乐 340。</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-main.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>下载 <span class="sz" data-asset="midicn-lib-v1.18-main.zip">36.8 MB</span></a>
-      <div class="plink">GitHub 直链 · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-main.zip">midicn-lib-v1.4-main.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-main.zip">36.8 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">piano-special.zip <span class="tag c2">C2 非商用</span></div>
-      <div class="pm"><b>34,869</b> 首 · <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></div>
-      <div class="pd">钢琴特区：aria-midi 古典钢琴 + MAESTRO（演奏级力度） + EMOPIA（情感标注）。<b>禁止商用</b>，可个人欣赏、教育与非商业项目。</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-piano-special.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>下载 <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></a>
-      <div class="plink">GitHub 直链 · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-piano-special.zip">midicn-lib-v1.4-piano-special.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">study.zip <span class="tag c3">C3 研究/学习</span></div>
-      <div class="pm"><b>20,113</b> 首 · <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></div>
-      <div class="pd">古典与传统（含早期音乐、民歌采录）+ <b>中国民间歌曲集成 10,473 首</b>。许可允许在研究目的下共享，<b>不得用于产品或公开表演</b>；中国民歌部分另需按 TRADITIONAL-STUDY 标注来源。</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-study.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>下载 <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></a>
-      <div class="plink">GitHub 直链 · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-study.zip">midicn-lib-v1.4-study.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">meta.zip</div>
-      <div class="pm"><b>全库索引</b> · <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></div>
-      <div class="pd"><code>catalog.json</code>（124,179 条全字段）+ 四个索引（按作曲家 / 时期 / 地域 / 来源）+ <code>MD5SUMS.txt</code>。不含音频文件——<b>先下这个</b>，看清单再决定下哪个包。</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-meta.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>下载 <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></a>
-      <div class="plink">GitHub 直链 · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-meta.zip">midicn-lib-v1.4-meta.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></div>
-    </div>
+  <div class="rule double"></div>
+
+  <!-- 轴 1：按使用方式 -->
+  <div class="stitle">
+    <h2 data-zh="一 · 按使用方式打包" data-en="1 · By usage tier">一 · 按使用方式打包</h2>
+    <span class="spacer"></span><span class="meta" data-zh="最常用" data-en="most used">最常用</span>
   </div>
-  <div class="note">4 个包合计 <b id="relTotal">406.1 MB</b> · 发布于 <b id="relDate">2026-09-19</b> · 体积为实时读取自 GitHub 的实际值（接口不可用时显示上次记录值）。每张卡下方的 <b>GitHub 直链</b>与「下载」按钮都指向同一个文件，<b>点击即开始下载</b>。也可前往 <a href="https://github.com/midicn/midi-lib/releases/tag/v1.18" target="_blank" rel="noopener">GitHub Release 页面 ↗</a> 查看全部资产与校验信息。</div>
-  <div class="note">只想来听听？不用下载——<a href="./">站内音乐库</a>可直接搜索、筛选并在线播放全部 124,179 首。</div>
+  <p id="axis1Note"></p>
+  <div class="pkgs" id="usagePacks"></div>
 
-  <h2>包内结构</h2>
-<pre><code>midicn-lib-v1.4/
-├── README.md / README.en.md      项目说明（中英）
-├── DATASET-CARD.md              数据集卡片（推荐先读）
-├── LICENSE.md / NOTICE.md       许可汇总与归属声明
-├── SOURCE-CATALOG.md            17 个已发布来源 + 未收录说明
-├── DATA-QUALITY-STATEMENT.md    数据质量声明（验证方法与局限）
-├── schema.md                    catalog 字段定义
-├── meta/
-│   ├── catalog.json             主目录（124,179 条）
-│   ├── index-by-composer.json   按作曲家
-│   ├── index-by-period.json     按时期
-│   ├── index-by-region.json     按地域
-│   ├── index-by-source.json     按来源
-│   └── MD5SUMS.txt              逐文件校验值
-├── main/hymn/…                  10,945 首（Cyber Hymnal™）
-├── main/piano-performance/…     10,112 首（GiantMIDI）
-├── main/folk-ireland/…          .mid 文件（扁平命名，单层目录）
-├── piano-special/…
-└── study/
-    ├── classical-traditional/   9,640 首
-    └── folk-china/              10,473 首（中国民歌，TRADITIONAL-STUDY）</code></pre>
-
-  <h2>catalog 字段说明</h2>
-  <table>
-    <tr><th style="width:12%">字段</th><th style="width:22%">含义</th><th>示例</th></tr>
-    <tr><td><code>id</code></td><td>唯一标识</td><td><code>abcmisc-000000</code></td></tr>
-    <tr><td><code>t</code></td><td>标题</td><td><code>7:40 A.M.</code></td></tr>
-    <tr><td><code>c</code> / <code>cn</code></td><td>作曲家（键 / 显示名）</td><td><code>traditional</code> / <code>Traditional</code></td></tr>
-    <tr><td><code>p</code></td><td>时期</td><td><code>baroque</code> · <code>romantic</code> · <code>traditional</code></td></tr>
-    <tr><td><code>g</code></td><td>分类</td><td><code>folk</code> · <code>classical</code> · <code>game</code> · <code>drum</code></td></tr>
-    <tr><td><code>z</code></td><td>分区</td><td><code>main</code> · <code>piano-special</code> · <code>study</code></td></tr>
-    <tr><td><code>l</code></td><td>许可</td><td><code>CC0-1.0</code> · <code>CC-BY-4.0</code> · <code>CC-BY-NC-SA-4.0</code> · <code>PD</code> · <code>OPEN</code></td></tr>
-    <tr><td><code>f</code></td><td>文件相对路径</td><td><code>main/klezmer-balkan/abcmisc-000000.mid</code></td></tr>
-    <tr><td><code>du</code></td><td>时长（秒）</td><td><code>175.5</code>（覆盖 100%）</td></tr>
-    <tr><td><code>nn</code></td><td>音符数</td><td><code>1163</code></td></tr>
-    <tr><td><code>i</code></td><td>声部 / 类型</td><td><code>melody</code> · <code>piano</code></td></tr>
-    <tr><td><code>r</code> / <code>v</code></td><td>保留字段（可能为 <code>null</code>）</td><td>—</td></tr>
-  </table>
-
-  <h2>快速上手</h2>
-  <ol class="steps">
-    <li>下载 <code>meta.zip</code>，用 <code>catalog.json</code> 按许可 / 时期 / 时长挑出你要的曲目。</li>
-    <li>下载对应的内容包（例如只要可商用就下 <code>main.zip</code>），解压到同一目录。</li>
-    <li>用 <code>f</code> 字段定位文件；<code>du</code>（时长）与 <code>nn</code>（音符数）可直接用于训练集筛选。</li>
-  </ol>
-<pre><code>import json, shutil
-from pathlib import Path
-
-cat = json.load(open('meta/catalog.json', encoding='utf-8'))
-
-# 只要「可商用 + 60~180 秒 + 音符数 &gt; 200」的曲目
-picks = [t for t in cat['tracks']
-         if t['z'] == 'main' and t['l'] in ('CC0-1.0', 'CC-BY-4.0', 'PD', 'OPEN')
-         and 60 &lt;= (t['du'] or 0) &lt;= 180 and (t['nn'] or 0) &gt; 200]
-
-Path('out').mkdir(exist_ok=True)
-for t in picks[:500]:
-    shutil.copy(Path('midicn-lib-v1.4') / t['f'], 'out')
-print(f'挑出 {len(picks):,} 首，已复制 500 首')</code></pre>
-  <div class="note">使用前请阅读 <a href="licenses.html">许可与法律</a>：CC BY 系列必须署名并注明来源；CC BY-NC 系列禁止商用。</div>
-
-  <h2>完整性校验</h2>
-  <p>每个包都可用 <code>MD5SUMS.txt</code> 逐文件核对。解压后校验 MIDI 文件数是否与目录一致：</p>
-<pre><code>python -c "import json,glob;c=json.load(open('meta/catalog.json',encoding='utf-8'));print(c['count'], len(glob.glob('**/*.mid',recursive=True)))"
-# 期望输出: 92649 &lt;对应包的文件数&gt;   —— 元数据与实际文件一一对应</code></pre>
-  <table>
-    <tr><th style="width:34%">包</th><th style="width:22%">文件数</th><th>校验重点</th></tr>
-    <tr><td>main.zip</td><td>48,140</td><td>与 catalog 中 <code>z=="main"</code> 条数一致</td></tr>
-    <tr><td>piano-special.zip</td><td>34,869</td><td>许可一律为 CC-BY-NC-SA-4.0</td></tr>
-    <tr><td>study.zip</td><td>9,640</td><td>与 catalog 中 <code>z=="study"</code> 条数一致</td></tr>
-    <tr><td>meta.zip</td><td>6</td><td><code>catalog.json</code> 的 <code>count</code> 应为 124,179</td></tr>
-  </table>
-
-  <h2>版本历史</h2>
-  <table>
-    <tr><th style="width:16%">版本</th><th style="width:18%">曲目数</th><th>变化</th></tr>
-    <tr><td><b>v1.18</b>（当前）</td><td>124,179</td><td><b>IMSLP 长尾目录全部抓完</b>：971 个作曲家目录 / 56,399 部作品入库，aria 真实作品名 <b>19,742 → 20,160 首（62%）</b>，另 <b>2,526 处标题被更规范的 IMSLP 名称校正/替换</b>。v1.17：lakh 收尾 + 作曲家身份归一：lakh 乐器 0→3,885（从 MIDI program change 挖掘）· 编号 0→2,870 · 时期 2,037→4,036 · 风格 3,998→5,014 · 354 首 IMSLP 真标题；全库作曲家 slug 全名式归一 8,104 处（cyberhymnal/giantmidi/m21…）。v1.16：国家扩展 3 倍：chinafolk 10,479 首→中国 · norbeck 3,244 首（爱尔兰/瑞典/英国…）· abcmisc 785 首；norbeck 地域 LaTeX 残码在数据源层清洗 315 处——全库有国家曲目 <b>7,198 → 21,706</b>。v1.15：aria 标题 61% + 作曲家归并：IMSLP 目录扩展到 503 位作曲家（含 ≥5 首全部），真实作品名 <b>18,375 → 约 21,500 首（66%）</b>；同一作曲家拼写变体归并 1,856 处（czerny/cherny/czerney 等）。v1.14：标题深度抓取：修复分页（pagefrom → cmstartsortkeyprefix 字母扫描）后 Bach 目录 687→1,431 部、Schubert 346→1,023 部、Telemann 1,417 部；aria 真实作品名 <b>14,014 → 约 20,000 首（61%）</b>。v1.13：首次 IMSLP 反查：34,522→ 32,522 首古典钢琴中 <b>14,014 首</b>从 IMSLP 官方作品目录反查出真实作品名（Bach=BWV / Mozart=K. / Schubert=D. / Haydn=Hob. / 其余=Op.，严格体系宁缺勿错）。v1.12：难度 + 时期交叉补全：aria 上游 difficulty 8,707 首（初/中/进阶/演奏级，catalog 新增 <code>diff</code>）· 用官方作曲家生卒表交叉补时期 2,341 首 · 曲式值清洗 2,016。v1.11：essen 地理二级化：从 ESAC 的 O: 字段解析国家层级 7,198 首（中国曲目精确到省，如「中国·陕西」）· 曲式 8；catalog 新增 <code>ctry</code> 字段。上一版（v1.10）：mutopia 官方 .ly 头解析 1,590（正式标题/全名作曲家/编号/乐器/年代）· musicnet 官方元数据 330（作品/乐章/编号/编制）· essen 地域归一 206 · abcmisc 作曲家/曲式 12</td></tr>
-    <tr><td>v1.9</td><td>124,179</td><td><b>时期/风格补全 + 曲式/年代字段</b>：m21 时期与标题规范化 2,898 · lakh genre 补全 3,998 · openscore 时期 486 · cyberhymnal 年代 6,396；catalog 新增 <code>form</code>/<code>yr</code> 字段</td></tr>
-    <tr><td>v1.8</td><td>124,179</td><td><b>全库元数据富化</b>：lakh 作曲家恢复 2,147 首（原全标 Traditional）· giantmidi 补国籍/生卒 2,794 · essen 地域清洗 108 · norbeck 地域修正 2,774 · thesession/nottingham 宽泛地域按「不知道就空」原则置空 24,331</td></tr>
-    <tr><td>v1.7</td><td>124,179</td><td>catalog 新增 <code>opus</code>（作品编号）与 <code>no</code>（曲内序号）字段——<b>每一首作品都可分辨</b>（无标题曲目显示「作曲家 · Op. 编号」，覆盖 aria 全部 32,522 首）</td></tr>
-    <tr><td>v1.6</td><td>124,179</td><td>新增 <b>Cyber Hymnal™</b> 10,945 首赞美诗曲调（C1 可商用，PD，MIDI 元数据逐首核验版权状态）</td></tr>
-    <tr><td>v1.5</td><td>113,234</td><td>新增 <b>GiantMIDI-Piano</b> 10,112 首（C1 可商用，CC BY 4.0，内容重复 742 个已剔除）</td></tr>
-    <tr><td>v1.4</td><td>103,122</td><td>新增<b>中国民间歌曲集成</b> 10,473 首（C3 研究/学习，<code>TRADITIONAL-STUDY</code>）；地域名清洗（LaTeX 转义）；许可字段规范化</td></tr>
-    <tr><td>v1.3</td><td>92,649</td><td>catalog 新增 <code>du</code>（时长）与 <code>nn</code>（音符数），时长覆盖 <b>100%</b>；站点双语化</td></tr>
-    <tr><td>v1.2</td><td>89,302</td><td>扩充来源与曲目，四轴索引完善</td></tr>
-    <tr><td>v1.1</td><td>—</td><td>分区重组（main / piano-special / study）</td></tr>
-    <tr><td>v1.0</td><td>—</td><td>首次发布</td></tr>
-  </table>
-
-  <h2>打包与许可边界</h2>
-  <ul>
-    <li><b>我们不重新授权任何 MIDI 文件</b>——每个文件仍遵循其原始来源的许可，逐曲记录在 catalog 的 <code>l</code> 字段</li>
-    <li>包内 <code>LICENSE.md</code> 与 <code>NOTICE.md</code> 是许可汇总与归属声明的<b>权威文本</b>，站内 <a href="licenses.html">许可与法律</a> 页为其线上呈现</li>
-    <li>重分发时请保留逐曲许可标注，不得暗示内容为你原创</li>
-  </ul>
-</div>
-
-<div data-lang="en" hidden>
-  <h1>Download</h1>
-  <p class="lead">Current release <b>v1.18</b> · <b>124,179</b> tracks · <b>19</b> source datasets · ~<b>620 MB</b> packed (1,270 MB unpacked).
-  Split by license into four packages — <b>download only what you need</b>: for commercial-ready content, <code>main.zip</code> (36.8 MB) is enough.</p>
-
-  <h2>Four Packages</h2>
-  <div class="pkgs">
-    <div class="pkg">
-      <div class="pn">main.zip <span class="tag c1">C1 Commercial</span></div>
-      <div class="pm"><b>69,197</b> tracks · <span class="sz" data-asset="midicn-lib-v1.18-main.zip">~250 MB</span></div>
-      <div class="pd">Commercial-ready core: Irish folk 26,689 · <b>hymn tunes (Cyber Hymnal) 10,945</b> · world folk 10,818 · open classical 6,624 · piano performance (GiantMIDI) 10,112 · klezmer/Balkan 1,487 · drums 1,149 · game music 340.</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-main.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>Download <span class="sz" data-asset="midicn-lib-v1.18-main.zip">36.8 MB</span></a>
-      <div class="plink">Direct from GitHub · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-main.zip">midicn-lib-v1.4-main.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-main.zip">36.8 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">piano-special.zip <span class="tag c2">C2 Non-commercial</span></div>
-      <div class="pm"><b>34,869</b> tracks · <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></div>
-      <div class="pd">Piano zone: aria-midi classical piano + MAESTRO (performance-grade dynamics) + EMOPIA (emotion labels). <b>No commercial use</b>; personal, educational and non-commercial projects are fine.</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-piano-special.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>Download <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></a>
-      <div class="plink">Direct from GitHub · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-piano-special.zip">midicn-lib-v1.4-piano-special.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-piano-special.zip">304.5 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">study.zip <span class="tag c3">C3 Research</span></div>
-      <div class="pm"><b>20,113</b> tracks · <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></div>
-      <div class="pd">Classical and traditional (incl. early music and folk field recordings) plus <b>10,473 Chinese folk songs</b>. Sharing within research is allowed; <b>products and public performance are not</b>. The Chinese folk batch additionally requires TRADITIONAL-STUDY attribution.</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-study.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>Download <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></a>
-      <div class="plink">Direct from GitHub · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-study.zip">midicn-lib-v1.4-study.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-study.zip">59.2 MB</span></div>
-    </div>
-    <div class="pkg">
-      <div class="pn">meta.zip</div>
-      <div class="pm"><b>Full index</b> · <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></div>
-      <div class="pd"><code>catalog.json</code> (124,179 full records) + four indexes (by composer / period / region / source) + <code>MD5SUMS.txt</code>. No audio — <b>start here</b>, then pick the content package you need.</div>
-      <a class="dlbtn" href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-meta.zip"><svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5z"/></svg>Download <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></a>
-      <div class="plink">Direct from GitHub · <a href="https://github.com/midicn/midi-lib/releases/download/v1.18/midicn-lib-v1.18-meta.zip">midicn-lib-v1.4-meta.zip</a> · <span class="sz" data-asset="midicn-lib-v1.18-meta.zip">5.5 MB</span></div>
-    </div>
+  <!-- 轴 2：按来源 -->
+  <div class="stitle">
+    <h2 data-zh="二 · 按来源打包" data-en="2 · By source">二 · 按来源打包</h2>
+    <span class="spacer"></span><span class="meta" id="srcAxisMeta"></span>
   </div>
-  <div class="note">Total across the 4 packages: <b id="relTotalEn">406.1 MB</b> · published <b id="relDateEn">2026-09-19</b>. Sizes are read live from GitHub (last recorded values shown if the API is unavailable). The <b>direct GitHub link</b> under each card and the download button point to the same file — <b>clicking starts the download</b>. You can also open the <a href="https://github.com/midicn/midi-lib/releases/tag/v1.18" target="_blank" rel="noopener">GitHub Release page ↗</a> for all assets and checksums.</div>
-  <div class="note">Just want to listen? No download needed — the <a href="./">in-site library</a> lets you search, filter and play all 124,179 tracks in the browser.</div>
+  <p id="axis2Note"></p>
+  <div class="pkgs" id="srcPacks"></div>
 
-  <h2>Package Layout</h2>
-<pre><code>midicn-lib-v1.4/
-├── README.md / README.en.md      docs (zh/en)
-├── DATASET-CARD.md              dataset card (read first)
-├── LICENSE.md / NOTICE.md       license summary &amp; attribution
-├── SOURCE-CATALOG.md            all 17 published sources + exclusions
-├── DATA-QUALITY-STATEMENT.md    verification method &amp; limits
-├── schema.md                    catalog field definitions
-├── meta/
-│   ├── catalog.json            124,179 records
-│   ├── index-by-composer.json
-│   ├── index-by-period.json
-│   ├── index-by-region.json
-│   ├── index-by-source.json
-│   └── MD5SUMS.txt              per-file checksums
-├── main/hymn/…                  10,945 tracks (Cyber Hymnal™)
-├── main/piano-performance/…     10,112 tracks (GiantMIDI)
-├── main/folk-ireland/…          .mid files (flat, single-level dirs)
-├── piano-special/…
-└── study/
-    ├── classical-traditional/   9,640 tracks
-    └── folk-china/              10,473 tracks (Chinese folk, TRADITIONAL-STUDY)</code></pre>
+  <!-- 轴 3：目录与索引 -->
+  <div class="stitle"><h2 data-zh="三 · 目录与索引（全部打包的前置）" data-en="3 · Catalogue &amp; indexes">三 · 目录与索引</h2></div>
+  <div class="pkgs" id="metaPacks"></div>
+  <p class="note" id="metaNote"></p>
 
-  <h2>catalog Fields</h2>
-  <table>
-    <tr><th style="width:12%">Field</th><th style="width:22%">Meaning</th><th>Example</th></tr>
-    <tr><td><code>id</code></td><td>unique id</td><td><code>abcmisc-000000</code></td></tr>
-    <tr><td><code>t</code></td><td>title</td><td><code>7:40 A.M.</code></td></tr>
-    <tr><td><code>c</code> / <code>cn</code></td><td>composer (key / display)</td><td><code>traditional</code> / <code>Traditional</code></td></tr>
-    <tr><td><code>p</code></td><td>period</td><td><code>baroque</code> · <code>romantic</code> · <code>traditional</code></td></tr>
-    <tr><td><code>g</code></td><td>category</td><td><code>folk</code> · <code>classical</code> · <code>game</code> · <code>drum</code></td></tr>
-    <tr><td><code>z</code></td><td>zone</td><td><code>main</code> · <code>piano-special</code> · <code>study</code></td></tr>
-    <tr><td><code>l</code></td><td>license</td><td><code>CC0-1.0</code> · <code>CC-BY-4.0</code> · <code>CC-BY-NC-SA-4.0</code> · <code>PD</code> · <code>OPEN</code></td></tr>
-    <tr><td><code>f</code></td><td>relative file path</td><td><code>main/klezmer-balkan/abcmisc-000000.mid</code></td></tr>
-    <tr><td><code>du</code></td><td>duration (seconds)</td><td><code>175.5</code> (100% coverage)</td></tr>
-    <tr><td><code>nn</code></td><td>note count</td><td><code>1163</code></td></tr>
-    <tr><td><code>i</code></td><td>voice / type</td><td><code>melody</code> · <code>piano</code></td></tr>
-    <tr><td><code>r</code> / <code>v</code></td><td>reserved (may be <code>null</code>)</td><td>—</td></tr>
-  </table>
+  <div class="stitle"><h2 data-zh="使用步骤" data-en="How to use">使用步骤</h2></div>
+  <ol class="steps" id="steps"></ol>
 
-  <h2>Quick Start</h2>
-  <ol class="steps">
-    <li>Download <code>meta.zip</code> and use <code>catalog.json</code> to select tracks by license / period / duration.</li>
-    <li>Download the matching content package (e.g. <code>main.zip</code> for commercial-ready), unzip into the same directory.</li>
-    <li>Locate files via the <code>f</code> field; <code>du</code> (duration) and <code>nn</code> (note count) are ready for dataset filtering.</li>
-  </ol>
-<pre><code>import json, shutil
-from pathlib import Path
-
-cat = json.load(open('meta/catalog.json', encoding='utf-8'))
-
-# commercial-ready &amp;&amp; 60-180s &amp;&amp; more than 200 notes
-picks = [t for t in cat['tracks']
-         if t['z'] == 'main' and t['l'] in ('CC0-1.0', 'CC-BY-4.0', 'PD', 'OPEN')
-         and 60 &lt;= (t['du'] or 0) &lt;= 180 and (t['nn'] or 0) &gt; 200]
-
-Path('out').mkdir(exist_ok=True)
-for t in picks[:500]:
-    shutil.copy(Path('midicn-lib-v1.4') / t['f'], 'out')
-print(f'{len(picks):,} matched, 500 copied')</code></pre>
-  <div class="note">Read <a href="licenses.html">License &amp; Legal</a> before use: CC BY requires attribution and a source note; CC BY-NC forbids commercial use.</div>
-
-  <h2>Integrity Check</h2>
-  <p>Every package ships <code>MD5SUMS.txt</code> for per-file verification. After unzipping, confirm file counts match the index:</p>
-<pre><code>python -c "import json,glob;c=json.load(open('meta/catalog.json',encoding='utf-8'));print(c['count'], len(glob.glob('**/*.mid',recursive=True)))"
-# expected: 92649 &lt;files in your package&gt;  -- metadata matches files 1:1</code></pre>
-  <table>
-    <tr><th style="width:34%">Package</th><th style="width:22%">Files</th><th>What to check</th></tr>
-    <tr><td>main.zip</td><td>48,140</td><td>equals number of <code>z=="main"</code> records</td></tr>
-    <tr><td>piano-special.zip</td><td>34,869</td><td>license is uniformly CC-BY-NC-SA-4.0</td></tr>
-    <tr><td>study.zip</td><td>9,640</td><td>equals number of <code>z=="study"</code> records</td></tr>
-    <tr><td>meta.zip</td><td>6</td><td><code>count</code> in <code>catalog.json</code> must be 124,179</td></tr>
-  </table>
-
-  <h2>Version History</h2>
-  <table>
-    <tr><th style="width:16%">Version</th><th style="width:18%">Tracks</th><th>Changes</th></tr>
-    <tr><td><b>v1.18</b> (current)</td><td>124,179</td><td><b>full IMSLP catalogue sweep</b>: 971 composer catalogues / 56,399 works; aria real work names 19,742 → 20,160 (62%), plus 2,526 titles corrected/replaced with canonical IMSLP names. v1.17: lakh enrichment + composer merge: lakh instrument 0→3,885 (mined from MIDI program changes), opus 0→2,870, period 2,037→4,036, 354 IMSLP titles; 8,104 full-name composer slugs normalized library-wide. v1.16: country x3: chinafolk x10,479 → 中国; norbeck x3,244 (爱尔兰/瑞典/英国); abcmisc x785; norbeck LaTeX artifacts cleaned x315 — tracks with country 7,198 → 21,706. v1.15: aria titles 61% + composer merge: IMSLP catalogues for 503 composers; real work names 18,375 → ~21,500 (66%); 1,856 composer-spelling variants merged. v1.14: deeper pagination: fixed pagination (letter-prefix sweep), Bach catalogue 687→1,431 works, Schubert 346→1,023; real work names 14,014 → ~20,000 (61%). v1.13: initial IMSLP pass: 14,014 of 32,522 classical piano tracks now carry real work names (catalogue-aware matching: BWV/K./D./Hob./Op.). v1.12: difficulty + period: aria difficulty ×8,707 (catalog gains <code>diff</code>) · period via official composer dates ×2,341 · form cleanup ×2,016. v1.11: essen geographic two-tier: country derived from ESAC O: field ×7,198 (Chinese tracks to province level) · catalog gains <code>ctry</code>. v1.10: mutopia official .ly headers ×1,590 (real titles/composers/opus/instrument/year) · musicnet official metadata ×330 · essen region normalization ×206 · abcmisc ×12</td></tr>
-    <tr><td>v1.9</td><td>124,179</td><td><b>period/genre enrichment + form/yr fields</b>: m21 period & title normalization ×2,898 · lakh genre ×3,998 · openscore period ×486 · cyberhymnal year ×6,396; catalog gains <code>form</code>/<code>yr</code></td></tr>
-    <tr><td>v1.8</td><td>124,179</td><td><b>full metadata enrichment</b>: lakh composer recovered ×2,147 (was all "Traditional") · giantmidi nationality/dates ×2,794 · essen region cleanup ×108 · norbeck region fix ×2,774 · thesession/nottingham blanket regions cleared ×24,331 (unknown → empty)</td></tr>
-    <tr><td>v1.7</td><td>124,179</td><td>catalog gains <code>opus</code> (work number) and <code>no</code> (number within opus) — <b>every track is now identifiable</b> (titleless tracks display "Composer · Op. No.", covering all 32,522 aria tracks)</td></tr>
-    <tr><td>v1.6</td><td>124,179</td><td>adds <b>Cyber Hymnal™</b> 10,945 hymn tunes (C1 commercial, PD; per-file copyright verified from embedded MIDI metadata)</td></tr>
-    <tr><td>v1.5</td><td>113,234</td><td>adds <b>GiantMIDI-Piano</b> 10,112 tracks (C1 commercial, CC BY 4.0; 742 content duplicates removed)</td></tr>
-    <tr><td>v1.4</td><td>103,122</td><td>adds <b>10,473 Chinese folk songs</b> (C3 study, <code>TRADITIONAL-STUDY</code>); region names cleaned of LaTeX escapes; license strings canonicalised</td></tr>
-    <tr><td>v1.3</td><td>92,649</td><td>catalog gains <code>du</code> (duration) and <code>nn</code> (note count), duration coverage <b>100%</b>; bilingual site</td></tr>
-    <tr><td>v1.2</td><td>89,302</td><td>more sources and tracks, completed four-axis indexes</td></tr>
-    <tr><td>v1.1</td><td>—</td><td>zone restructure (main / piano-special / study)</td></tr>
-    <tr><td>v1.0</td><td>—</td><td>initial release</td></tr>
-  </table>
-
-  <h2>Packaging &amp; License Boundary</h2>
-  <ul>
-    <li><b>We do not re-license any MIDI file</b> — every file follows its original source license, recorded per track in the <code>l</code> field</li>
-    <li><code>LICENSE.md</code> and <code>NOTICE.md</code> inside each package are the <b>authoritative</b> license and attribution texts; the in-site <a href="licenses.html">License &amp; Legal</a> page is their online presentation</li>
-    <li>When redistributing, keep per-track license annotations and never imply the content is your original work</li>
-  </ul>
-</div>
+  <div class="stitle"><h2 data-zh="许可提示" data-en="Licence reminder">许可提示</h2></div>
+  <div id="licNote"></div>
 </main>
 
-<footer>
-  <span data-zh="midicn-lib · 开放 MIDI 音乐库 · 124,179 首 / 19 个来源数据集" data-en="midicn-lib · Open MIDI Library · 124,179 tracks / 19 source datasets">midicn-lib · 开放 MIDI 音乐库 · 124,179 首 / 19 个来源数据集</span><br>
-  <a href="sources.html" data-zh="数据来源" data-en="Data Sources">数据来源</a> ·
-  <a href="licenses.html" data-zh="许可与法律" data-en="License &amp; Legal">许可与法律</a> ·
-  <a href="https://github.com/midicn/midi-lib" target="_blank" data-zh="代码仓库" data-en="Repository">代码仓库</a>
-</footer>
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div><h4 data-zh="数据" data-en="DATA">数据</h4>
+      <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+      <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
+      <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
+    <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">数据仓库 · midi-lib</a>
+      <a href="https://github.com/midicn/midi-lib/releases" target="_blank" rel="noopener">全部版本 · Releases</a></div>
+    <div><h4 data-zh="说明" data-en="NOTES">说明</h4><p class="meta" id="footNote"></p></div>
+  </div>
+  <div class="fnote" id="footLegal"></div>
+</div></footer>
 
+<script src="assets/archive.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-if (localStorage.getItem('midicn-theme')) document.documentElement.dataset.theme = localStorage.getItem('midicn-theme');
-$('theme').onclick = () => { const c = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-  document.documentElement.dataset.theme = c; localStorage.setItem('midicn-theme', c); };
-let LANG = localStorage.getItem('midicn-lang') || 'zh';
-function applyLang(){
-  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
-  document.documentElement.dataset.lang = LANG;
-  document.title = LANG === 'zh' ? '数据下载 · midicn-lib' : 'Download · midicn-lib';
-  document.querySelectorAll('[data-lang]').forEach(el => el.hidden = el.dataset.lang !== LANG);
-  document.querySelectorAll('[data-zh]').forEach(el => el.textContent = LANG === 'zh' ? el.dataset.zh : el.dataset.en);
-  $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
-}
-$('lang').onclick = () => { LANG = LANG === 'zh' ? 'en' : 'zh'; localStorage.setItem('midicn-lang', LANG); applyLang(); };
-applyLang();
+/* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
 
-/* 体积实时读取自 GitHub Release 资产（失败则保留页面上的静态值） */
-(function(){
-  var TAG='v1.4', API='https://api.github.com/repos/midicn/midi-lib/releases/tags/'+TAG;
-  fetch(API,{headers:{'Accept':'application/vnd.github+json'}}).then(function(r){return r.ok?r.json():null;})
-  .then(function(d){
-    if(!d||!d.assets) return;
-    var map={}; d.assets.forEach(function(a){ map[a.name]=a.size; });
-    document.querySelectorAll('.sz').forEach(function(el){
-      var n=map[el.dataset.asset]; if(n) el.textContent=(n/1048576).toFixed(1)+' MB';
+let LANG = store.get('midicn-lang', null) || 'zh';
+function t(zh, en){ return LANG === 'zh' ? zh : en; }
+const $ = id => document.getElementById(id);
+
+const VER = 'v1.19';
+const REL = 'https://github.com/midicn/midi-lib/releases/download/' + VER + '/';
+const PAGE = 'https://github.com/midicn/midi-lib/releases/tag/' + VER;
+
+function applyLang(){
+  document.documentElement.lang = LANG === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll('[data-zh]').forEach(el=>{
+    const v = el.getAttribute('data-' + LANG); if (v != null) el.innerHTML = v;
+  });
+  $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
+  render();
+}
+$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh';
+  store.set('midicn-lang', LANG); applyLang(); };
+const themeBtn = $('theme');
+function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
+setTheme(store.get('midicn-theme', null) || 'dark');
+themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+const DL_ICON = '<svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>';
+
+function pkgCard(o){
+  return '<div class="pkg">'+
+    '<div class="pn">'+o.name+'</div>'+
+    '<div class="pm">'+o.meta+'</div>'+
+    '<div class="pd">'+o.desc+'</div>'+
+    (o.href ? '<a class="dlbtn" href="'+o.href+'" download>'+DL_ICON+t('下载','Download')+'</a>'
+            : '<span class="meta">'+(o.note||'')+'</span>')+
+    '</div>';
+}
+
+function render(){
+  const total = SOURCES.reduce((a,s)=>a+s.count,0);
+  $('lede').innerHTML = t(
+    '同一份数据，按<em>三种维度</em>提供打包：以使用方式（最简单）、以来源（便于溯源与致谢）、以目录与索引（自建下游）。包内文件完全一致，只是分组不同。',
+    'The same data, packaged along <em>three axes</em>: by usage tier (simplest), by source (for provenance and credit), and catalogue/indexes (for downstream builds). Contents are identical — only the grouping differs.'
+  );
+
+  /* 轴 1 */
+  $('axis1Note').innerHTML = t(
+    '如果你只想知道「我能不能商用」，用这一轴。C1 可商用、C2 非商用、C3 学习研究，另加完整 meta 包。',
+    'If your only question is "may I use this commercially?", use this axis: C1 commercial, C2 non-commercial, C3 study/research, plus a full meta pack.'
+  );
+  const usage = [
+    { id:'meta', nm:t('目录与索引','Catalogue &amp; indexes'), meta:'6 '+t('文件','files')+' · ~8 MB',
+      desc:t('catalog.json（全库逐曲元数据）+ 三个索引（按作曲家 / 按时期 / 按乐器）+ 校验清单。任何下游构建都应先取此包。',
+             'catalog.json (per-track metadata) + index-by-composer / period / instrument + manifest. Start here for any downstream build.') },
+    { id:'main', nm:t('C1 · 可商用主包','C1 · Commercial main'), meta:'69,197 '+t('首','tracks')+' · ~216 MB',
+      desc:t('许可允许商业使用的全部曲目（民歌、赞美诗、开放乐谱、游戏素材等）。商用须保留来源署名。',
+             'All tracks whose licences permit commercial use. Attribution to sources required.') },
+    { id:'piano-special', nm:t('C2 · 钢琴非商用包','C2 · Piano (non-commercial)'), meta:'34,869 '+t('首','tracks')+' · ~305 MB',
+      desc:t('古典钢琴演奏录音转录（Aria-MIDI、MAESTRO），依 CC BY-NC-SA 4.0 提供，仅限非商业用途。',
+             'Classical piano performance transcriptions (Aria-MIDI, MAESTRO) under CC BY-NC-SA 4.0 — non-commercial only.') },
+    { id:'study', nm:t('C3 · 学习研究包','C3 · Study / research'), meta:'20,113 '+t('首','tracks')+' · ~59 MB',
+      desc:t('中国民歌与部分传统音乐，仅供学习与研究；不得再分发、不得商用。',
+             'Chinese folk songs and traditional material — study/research only; no redistribution, no commercial use.') },
+  ];
+  $('usagePacks').innerHTML = usage.map(u=>pkgCard({
+    name:u.nm, meta:u.meta, desc:u.desc,
+    href: REL + 'midicn-lib-' + VER + '-' + u.id + '.zip'
+  })).join('');
+
+  /* 轴 2 */
+  const srcTotal = SOURCES.reduce((a,s)=>a+s.count,0);
+  $('srcAxisMeta').textContent = t(SOURCES.length + ' 个来源 · ' + fmt(srcTotal) + ' 首',
+                                   SOURCES.length + ' sources · ' + fmt(srcTotal) + ' tracks');
+  $('axis2Note').innerHTML = t(
+    '若你只需某一批素材、或希望在成果中精确致谢某个来源，用这一轴。每包只含单一来源的曲目，许可与 C1/C2/C3 档位标注在包名与包内 manifest 中。',
+    'If you need one collection, or want to credit a specific source precisely, use this axis. Each pack holds a single source; its tier is noted in the pack name and manifest.'
+  );
+  $('srcPacks').innerHTML = SOURCES.map(s=>{
+    const z = zoneOf(s.zone);
+    return pkgCard({
+      name: s.name[LANG],
+      meta: z.code + ' ' + z[LANG] + ' · ' + fmt(s.count) + t(' 首',' tracks') + ' · ' + s.license,
+      desc: s.kind[LANG] + '。' + (LANG==='zh' ? s.what.zh.slice(0, 68) + '…' : s.what.en.slice(0, 92) + '…'),
+      href: REL + 'midicn-lib-' + VER + '-source-' + s.id + '.zip'
     });
-    var tot=d.assets.reduce(function(s,a){return s+a.size;},0), mb=(tot/1048576);
-    ['relTotal','relTotalEn'].forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent=(mb>=1024?(mb/1024).toFixed(2)+' GB':mb.toFixed(0)+' MB');
-    });
-    if(d.published_at){ ['relDate','relDateEn'].forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent=d.published_at.slice(0,10); }); }
-  }).catch(function(){/* 保留静态值 */});
-})();
+  }).join('');
+
+  /* 轴 3 */
+  $('metaPacks').innerHTML = pkgCard({
+    name: t('meta.zip · 目录与索引','meta.zip · catalogue &amp; indexes'),
+    meta:'6 '+t('文件','files')+' · ~8 MB',
+    desc: t('catalog.json 含全库逐曲字段：id / 标题 / 作曲家 / 分类 / 风格 / 时期 / 乐器 / 地域 / 国家 / 许可 / 时长 / 编号 / 曲式 / 年代 / 难度；另附按作曲家、时期、乐器的索引与校验清单。',
+            'catalog.json carries every per-track field; plus indexes by composer, period and instrument, and a manifest.'),
+    href: REL + 'midicn-lib-' + VER + '-meta.zip'
+  });
+  $('metaNote').innerHTML = t(
+    '目录字段含义与覆盖率见 <a href="sources.html">数据来源</a>页；许可字段 <code>l</code> 的取值见 <a href="licenses.html">许可与法律</a>页。',
+    'Field meanings and coverage: see <a href="sources.html">Sources</a>; licence values of the <code>l</code> field: see <a href="licenses.html">Licence &amp; legal</a>.'
+  );
+
+  /* 步骤 */
+  const steps = LANG === 'zh' ? [
+    '下载 <b>meta.zip</b>，用 catalog.json 决定你要哪些曲目。',
+    '按使用方式或来源下载对应 zip（也可全部下载）。',
+    '解压后目录为 <code>midicn-lib-' + VER + '/{pack}/{分类}/{id}.mid</code>，可直接被任何 MIDI 音序器或播放库读取。',
+    '在成果中按 <a href="licenses.html">署名模板</a>标注本库与上游来源。'
+  ] : [
+    'Download <b>meta.zip</b> and use catalog.json to decide which tracks you need.',
+    'Download the pack(s) you decided on — by usage tier or by source (or everything).',
+    'Unpacked layout: <code>midicn-lib-' + VER + '/{pack}/{category}/{id}.mid</code>, readable by any MIDI sequencer or library.',
+    'Credit this library and the upstream source using the <a href="licenses.html">attribution template</a>.'
+  ];
+  $('steps').innerHTML = steps.map(x=>'<li>'+x+'</li>').join('');
+
+  /* 许可提示 */
+  const z = ZONES; 
+  $('licNote').innerHTML =
+    '<div class="panel"><div class="panel-bd"><dl class="dl">'+
+      '<dt>'+z.main.code+'</dt><dd>'+z.main[LANG]+' — '+(LANG==='zh'?z.main.zhDesc:z.main.enDesc)+'</dd>'+
+      '<dt>'+z.piano.code+'</dt><dd>'+z.piano[LANG]+' — '+(LANG==='zh'?z.piano.zhDesc:z.piano.enDesc)+'</dd>'+
+      '<dt>'+z.study.code+'</dt><dd>'+z.study[LANG]+' — '+(LANG==='zh'?z.study.zhDesc:z.study.enDesc)+'</dd>'+
+    '</dl><p style="margin:var(--s4) 0 0">'+t(
+      '逐曲许可与逐源条款见 <a href="licenses.html">许可与法律</a>；每个包内都附 manifest，写明所含来源、许可与校验值。',
+      'Per-track and per-source terms: <a href="licenses.html">Licence &amp; legal</a>. Every pack ships a manifest listing sources, licences and checksums.'
+    )+'</p></div></div>';
+  $('footNote').innerHTML = t('版本 '+VER+' · 全部资产见 <a href="'+PAGE+'" target="_blank" rel="noopener">Release 页面</a>',
+                              'Version '+VER+' · all assets on the <a href="'+PAGE+'" target="_blank" rel="noopener">release page</a>');
+  $('footLegal').innerHTML = t('下载即表示你已阅读并同意<a href="licenses.html">许可条款</a>。',
+                               'By downloading you accept the <a href="licenses.html">licence terms</a>.');
+}
+applyLang();
 </script>
 </body>
 </html>
