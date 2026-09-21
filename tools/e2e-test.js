@@ -194,7 +194,7 @@ function makeFetch(realFetch){
     ok('含作曲家与作品编号', /COMPOSER|作曲家/.test(ident) && /CATALOGUE|作品编号/.test(ident));
     const sb = (dd.getElementById('srcbox')||{}).textContent || '';
     ok('来源档案含原始链接', /https?:\/\//.test(sb));
-    ok('来源档案含采集方式与致谢', /采集|ACQUIRED/.test(sb) && /致谢|CREDIT/.test(sb));
+    ok('来源档案含上游形态与致谢', /上游形态|UPSTREAM/.test(sb) && /致谢|CREDIT/.test(sb));
     ok('许可档位徽标出现', dd.querySelectorAll('#licbox .lic').length >= 1);
     const at = (dd.getElementById('attrtxt')||{}).textContent || '';
     ok('署名文本含本库与许可', /midicn-lib/.test(at) && /许可|licence/i.test(at));
@@ -208,6 +208,7 @@ function makeFetch(realFetch){
   console.log('\n【9】内容页');
   for (const [file, musts] of [
     ['sources.html', [/HOME|原始地址/, /thesession\.org/, /mutopiaproject/, /CREDIT|致谢/, /MuseData/]],
+    ['sources.html', [/开源项目/]],
     ['licenses.html', [/C1/, /署名|attribution/i, /下架|takedown/i, /48/, /CC BY-SA/i]],
     ['download.html', [/by source|按来源/i, /by usage|按使用方式/i, /VER = 'v1\.19'/, /meta\.zip/]],
   ]){
