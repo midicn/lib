@@ -54,7 +54,7 @@ const SOURCES = [
   },
   {
     id:'thesession', name:{zh:'The Session', en:'The Session'}, count:23250,
-    zone:'main', license:'CC BY-SA 4.0',
+    zone:'main', license:'CC BY-SA 4.0', count_note:'附加条款：禁止用于大语言模型（LLM）',
     url:'https://github.com/adactio/TheSession-data',
     kind:{zh:'爱尔兰传统曲调', en:'Irish traditional tunes'},
     what:{zh:'全球最大的爱尔兰传统音乐曲调档案，由社区贡献，每首曲调附调式、拍号、曲式（reel/jig/hornpipe 等）与多条变体。',
