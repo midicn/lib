@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11（56 项：引擎解耦 + 异步异常）*/
+/* midicn-lib 端到端回归 v11.1（61 项：引擎解耦 + 来源地址核验）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -39,6 +39,15 @@ async function inlineAssets(html, htmlPath){
       css ? '<style>' + css + '</style>' : '');
 }
 
+
+/* 取静态资源文本：本地模式读盘（避免误测线上旧版），否则走源站 */
+async function assetText(rel){
+  if (LOCAL){
+    try{ return fs.readFileSync(path.join(path.dirname(LOCAL), rel.replace('/', path.sep)), 'utf-8'); }catch(e){}
+  }
+  try{ return await (await fetch(ORIGIN + rel)).text(); }catch(e){}
+  return '';
+}
 
 const PRE = ['data/summary.json','data/browse.json','data/loc.json','assets/style.css'];
 const cacheData = {};
@@ -243,7 +252,7 @@ function makeFetch(realFetch){
       } else {
         h = await inlineAssets(await (await fetch(ORIGIN + file)).text(), null);
       }
-      try{ h += await (await fetch(ORIGIN + 'assets/archive.js')).text(); }catch(e){}
+      h += await assetText('assets/archive.js');
       const txt = h.replace(/<[^>]+>/g, ' ');
       const miss = musts.filter(r=>!(r.test(txt) || r.test(h)));
       ok(file + ' 关键内容齐备', miss.length === 0, miss.length ? '缺: ' + miss.join(' ') : '');
@@ -286,6 +295,47 @@ function makeFetch(realFetch){
     ok('引擎缺席时点播放只提示、不抛未捕获异常', asyncErrs.length === before,
        asyncErrs.slice(before, before+1).join(' ').slice(0,150));
   }catch(e){ ok('引擎解耦测试', false, String(e).slice(0, 90)); }
+
+  /* 【11】来源地址核验（每个地址都必须对得上真实采集来源，不得臆造）*/
+  console.log('\n【11】来源地址核验');
+  try{
+    const arch = await assetText('assets/archive.js');
+    const SRC_URLS = {
+      aria:'https://github.com/loubbrad/aria-midi',
+      thesession:'https://github.com/adactio/TheSession-data',
+      cyberhymnal:'https://www.hymntime.com/tch/',
+      chinafolk:'https://github.com/m-july/Anthology-of-Chinese-Folk-Songs',
+      essen:'https://www.esac-data.org/',
+      giantmidi:'https://github.com/bytedance/GiantMIDI-Piano',
+      lakh:'https://colinraffel.com/projects/lmd/',
+      norbeck:'https://norbeck.nu/abc/',
+      m21:'https://github.com/cuthbertLab/music21',
+      mutopia:'https://www.mutopiaproject.org/',
+      abcmisc:'http://trillian.mit.edu/~jc/music/abc/',
+      openscore:'https://github.com/OpenScore/Lieder',
+      maestro:'https://magenta.tensorflow.org/datasets/maestro',
+      groove:'https://magenta.tensorflow.org/datasets/groove',
+      emopia:'https://zenodo.org/records/5257995',
+      nottingham:'https://ifdo.ca/~seymour/nottingham/',
+      wikifonia:'http://www.synthzone.com/files/Wikifonia/Wikifonia.zip',
+      oga:'https://opengameart.org/',
+      musicnet:'https://zenodo.org/records/5120004',
+    };
+    const miss = Object.entries(SRC_URLS).filter(([id,u]) => !arch.includes("url:'" + u + "'"));
+    ok('19 个来源地址与真实采集来源一致', miss.length === 0,
+       miss.length ? '不符: ' + miss.map(([i])=>i).join(' ') : '');
+    /* 已知错误 / 无关地址不得复现 */
+    const FORBIDDEN = ['lucasnata','lucasnfe','www.ihchina.cn','EMOPIA/EMOPIA','jukedeck/nottingham',
+                       'www.wikifonia.org','web.mit.edu/music21','kernscores','openscore.cc','aria-midi.org'];
+    const back = FORBIDDEN.filter(b => arch.includes(b));
+    ok('无臆造/无关地址复现', back.length === 0, back.join(' '));
+    /* 不再保留多余的「站点」链接（只要一个原始地址）*/
+    ok('来源条目仅保留原始地址（无 site 字段）', !/\bsite:'/.test(arch));
+    /* 分区与许可须与发布 catalog 一致 */
+    ok('lakh 标注为 C3 学习研究（zone=study）', /id:'lakh'[\s\S]{0,220}?zone:'study'/.test(arch));
+    ok('emopia 标注为 C2 非商用（CC BY-NC-SA）',
+       /id:'emopia'[\s\S]{0,220}?zone:'piano'[\s\S]{0,80}?license:'CC BY-NC-SA 4\.0'/.test(arch));
+  }catch(e){ ok('来源地址核验', false, String(e).slice(0, 90)); }
 
   console.log('\n===== 结果 (' + (pass + fail) + ' 项): ' + pass + '/' + (pass + fail) + ' 通过 =====');
   if (fails.length) console.log('失败项:\n  - ' + fails.join('\n  - '));

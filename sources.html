@@ -107,7 +107,6 @@ function srcCard(s){
         '<dt>'+t('上游形态','UPSTREAM')+'</dt><dd>'+s.method[LANG]+'</dd>'+
         '<dt>'+t('许可','LICENCE')+'</dt><dd>'+s.license+(s.count_note?(' · '+s.count_note):'')+'</dd>'+
         '<dt>'+t('原始地址','HOME')+'</dt><dd><a href="'+s.url+'" target="_blank" rel="noopener">'+s.url+'</a></dd>'+
-        (s.site && s.site !== s.url ? '<dt>'+t('站点','SITE')+'</dt><dd><a href="'+s.site+'" target="_blank" rel="noopener">'+s.site+'</a></dd>' : '')+
         '<dt>'+t('致谢','CREDIT')+'</dt><dd>'+s.credit[LANG]+'</dd>'+
       '</dl>'+
     '</div></div>';
