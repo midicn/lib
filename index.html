@@ -12,19 +12,16 @@
 /* ═══ 主页专属：档案版式 ═══ */
 
 /* 首屏：像一本档案的扉页 */
-.hero{padding:var(--s7) 0 var(--s5);border-bottom:1px solid var(--rule)}
+.hero{padding:var(--s5) 0 var(--s4);border-bottom:1px solid var(--rule)}
 .hero .kick{font-family:var(--mono);font-size:var(--fs-11);color:var(--vermilion);
   letter-spacing:.18em;margin-bottom:var(--s4)}
 .hero h1{font-size:var(--fs-46);line-height:1.08;letter-spacing:-.01em;margin-bottom:var(--s4)}
 .hero h1 span{display:block;font-family:var(--mono);font-size:var(--fs-13);
   color:var(--paper-3);letter-spacing:.08em;margin-top:var(--s3)}
 .hero .lede{max-width:60ch}
-.hero .figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s4) var(--s6);
-  margin-top:var(--s6)}
-.fig{border-top:1px solid var(--rule-2);padding-top:var(--s2)}
-.fig b{font-family:var(--mono);font-size:var(--fs-26);font-weight:500;letter-spacing:-.02em;
-  display:block;line-height:1.1}
-.fig span{font-size:var(--fs-11);color:var(--paper-3);letter-spacing:.06em;font-family:var(--mono)}
+.hero-meta{margin-top:var(--s3);font-family:var(--mono);font-size:var(--fs-12);
+  color:var(--paper-3);letter-spacing:.02em}
+.hero-meta b{color:var(--paper);font-weight:500}
 
 /* 浏览轴切换 */
 .axes{display:flex;gap:var(--s2);flex-wrap:wrap;margin:var(--s5) 0 var(--s4)}
@@ -38,6 +35,9 @@
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s3)}
 @media(min-width:768px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media(min-width:1100px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media(min-width:1400px){ .grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .listhead,.row{grid-template-columns:52px minmax(0,1fr) 150px 104px 80px} }
+@media(min-width:1680px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr))} }
 .grid .tile{padding:var(--s3) var(--s4) var(--s4);cursor:pointer;text-align:left}
 .tile .tt{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
 .tile .tt b{font-family:var(--serif);font-size:var(--fs-14);font-weight:600}
@@ -90,8 +90,9 @@
 .row.on{background:var(--vermilion-soft)}
 .row .no{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3)}
 .row .tt{min-width:0}
-.row .tt b{display:block;font-size:var(--fs-13);font-weight:500;color:var(--paper);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .tt .ttl{display:block;font-size:var(--fs-13);font-weight:500;color:var(--paper);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:0}
+.row .tt .ttl:hover{color:var(--vermilion);border-bottom:0}
 .row .tt s{display:block;font-size:var(--fs-11);color:var(--paper-3);text-decoration:none;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .src,.row .per,.row .dur{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
@@ -144,7 +145,7 @@
   .row .dur{grid-area:dur;text-align:right}
   .row .src{grid-area:src;text-align:right}
   .row .per{grid-area:meta;color:var(--paper-3);font-size:var(--fs-10)}
-  .row .tt b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .row .tt .ttl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .pw{grid-template-columns:1fr auto;gap:var(--s2);min-height:0;padding:var(--s3) var(--s4)}
   .pmeta{grid-column:1/-1}
   #prog{grid-column:1;width:100%}
@@ -175,9 +176,8 @@
   <section class="hero wrap">
     <p class="kick" data-zh="开放 MIDI 音乐档案 · MIDICN-LIB" data-en="OPEN MIDI ARCHIVE · MIDICN-LIB">开放 MIDI 音乐档案 · MIDICN-LIB</p>
     <h1 data-zh="开放许可的 MIDI 音乐档案" data-en="An archive of openly licensed MIDI">开放许可的 MIDI 音乐档案<span data-zh="19 个来源 · 14 个分类 · 逐曲标注来源与许可" data-en="19 sources · 14 categories · per-track provenance &amp; licence">19 个来源 · 14 个分类 · 逐曲标注来源与许可</span></h1>
-    <p class="lede" data-zh="汇集古典钢琴、爱尔兰民谣、赞美诗、中国民歌、爵士标准曲与游戏音乐等开放素材，统一格式、补全元数据、逐曲标注来源与许可档位，便于检索、试听与取用。"
-       data-en="Classical piano, Irish folk, hymns, Chinese folk songs, jazz standards and game music — normalised, metadata-enriched, and labelled per track with provenance and licence tier.">汇集古典钢琴、爱尔兰民谣、赞美诗、中国民歌、爵士标准曲与游戏音乐等开放素材，统一格式、补全元数据、逐曲标注来源与许可档位，便于检索、试听与取用。</p>
-    <div class="figs" id="figs"></div>
+    <p class="lede" id="heroLede"></p>
+    <p class="hero-meta" id="heroMeta"></p>
   </section>
 
   <div class="wrap">
@@ -298,6 +298,7 @@
 <script src="vendor/Tone.js"></script>
 <script src="vendor/Midi.js"></script>
 <script src="soundfont/engine/js-synthesizer.min.js"></script>
+<script src="assets/player.js"></script>
 <script src="assets/archive.js"></script>
 <script>
 /* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
@@ -314,7 +315,7 @@ let SUMMARY = null, BROWSE = null;
 let AXIS = 'category';                 // category | source | tier
 let COLL = { kind:'category', id:null }; // 当前浏览集合
 let rows = [], shown = 0, filtered = [];
-let playing = false, curIdx = -1, sfReady = false;
+let curIdx = -1;
 const PAGE = 80;
 
 /* 分类说明（编辑导语；每类点明内容与来源）*/
@@ -373,11 +374,14 @@ function renderShell(){
   if (!SUMMARY) return;
   const nsrc = Object.keys(SUMMARY.sources || {}).length;
   const cats = (SUMMARY.categories || []).length;
-  $('figs').innerHTML =
-    fig(fmt(SUMMARY.total), t('首曲目','TRACKS')) +
-    fig(String(nsrc), t('个来源','SOURCES')) +
-    fig(String(cats), t('个分类','CATEGORIES')) +
-    fig(t('100%','100%'), t('时长覆盖','DURATION COVERED'));
+  $('heroLede').innerHTML = t(
+    '汇集古典钢琴、爱尔兰民谣、赞美诗、中国民歌、爵士标准曲与游戏音乐等开放素材，统一格式、补全元数据、逐曲标注来源与许可档位。',
+    'Classical piano, Irish folk, hymns, Chinese folk songs, jazz standards and game music — normalised, metadata-enriched, labelled per track with provenance and licence tier.'
+  );
+  $('heroMeta').innerHTML = t(
+    '<b>' + fmt(SUMMARY.total) + '</b> 首曲目 · <b>' + nsrc + '</b> 个来源 · <b>' + cats + '</b> 个分类 · 时长覆盖 <b>100%</b>',
+    '<b>' + fmt(SUMMARY.total) + '</b> tracks · <b>' + nsrc + '</b> sources · <b>' + cats + '</b> categories · duration <b>100%</b>'
+  );
   $('footNote').innerHTML = t(
     '本库为整理与转译项目，素材权利属于各来源方；逐曲标注来源与许可。',
     'A curation project; rights belong to the sources. Provenance and licence are labelled per track.'
@@ -387,7 +391,6 @@ function renderShell(){
     'Data v1.19 · ' + fmt(SUMMARY.total) + ' tracks · <a href="licenses.html">Licence &amp; legal</a>'
   );
 }
-const fig = (v, l) => '<div class="fig"><b>'+v+'</b><span>'+l+'</span></div>';
 
 /* ═══ 浏览轴 ═══ */
 function renderAxis(){
@@ -562,7 +565,10 @@ function renderMore(){
     const srcLabel = src ? src.name[LANG] : (x.id.split('-')[0]);
     el.innerHTML =
       '<span class="no">'+String(i+1).padStart(3,'0')+'</span>'+
-      '<span class="tt"><b>'+esc(x.t||x.id)+'</b><s>'+esc(x.cn||'')+(x.opus?(' · Op. '+esc(String(x.opus))):'')+'</s></span>'+
+      '<span class="tt"><a class="ttl" href="detail.html?id='+encodeURIComponent(x.id)+
+      '&cat='+encodeURIComponent(x._cat||'')+'&chunk='+(x._chunk!=null?x._chunk:0)+
+      '" onclick="event.stopPropagation()">'+esc(x.t||x.id)+'</a>'+
+      '<s>'+esc(x.cn||'')+(x.opus?(' · Op. '+esc(String(x.opus))):'')+'</s></span>'+
       '<span class="src">'+esc(srcLabel)+'</span>'+
       '<span class="per">'+esc(x.p||'')+'</span>'+
       '<span class="dur">'+mmss(x.du)+'</span>';
@@ -621,39 +627,31 @@ async function loadFacets(catIds){
   }
 }
 
-/* ═══ 播放（沿用 Tone + js-synthesizer 音源）═══ */
-let sfSynth = null, sfLoading = false;
-async function ensureSF(){
-  if (sfReady || sfLoading) return; sfLoading = true;
-  try{
-    const AC = Tone.getContext().rawContext;
-    sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
-    await sfSynth.init(AC);
-    let ab = null;
-    if ('DecompressionStream' in window){
-      try{ ab = await (await fetch('soundfont/GeneralUser-GS.sf2.gz')).arrayBuffer(); }catch(e){}
-    }
-    if (!ab) ab = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
-    await sfSynth.loadSFont(ab); sfReady = true; $('sfbadge').textContent = t('音源就绪','SF ready');
-  }catch(e){ $('sfbadge').textContent = t('合成器','synth'); }
-  sfLoading = false;
-}
-async function play(x, idx){
-  if (idx != null) curIdx = idx;
+/* ═══ 播放：交给共享引擎（Tone + Midi.js）═══ */
+Player.init({
+  onState: on => { $('play').textContent = on ? '⏸' : '▶'; $('viz').classList.toggle('on', on); },
+  onBadge: txt => { $('sfbadge').textContent = txt; },
+  onStatus: txt => { $('np').textContent = txt; },
+  onTime: (cur, total) => {
+    $('tcur').textContent = Player.fmt(cur);
+    $('ttot').textContent = Player.fmt(total);
+    $('prog').value = Math.min(1000, (cur / Math.max(total, .1)) * 1000);
+  }
+});
+async function play(x, i){
+  curIdx = (typeof i === 'number') ? i : curIdx;
   document.querySelectorAll('.row.on').forEach(e=>e.classList.remove('on'));
   const li = document.querySelector('.row[data-id="'+x.id+'"]'); if (li) li.classList.add('on');
-  $('np').textContent = x.t || x.id;
-  if (!sfReady){ await ensureSF(); }
-  try{
-    Tone.start();
-    const buf = await (await fetch(x.f)).arrayBuffer();
-    if (sfSynth){ sfSynth.stop(); await sfSynth.playNewMIDI(buf); }
-    playing = true; $('play').textContent = '⏸'; $('viz').classList.add('on');
-  }catch(e){ $('np').textContent = t('播放失败：','Playback failed: ') + e.message; }
+  await Player.play(x, i, filtered);
 }
-$('play').onclick = ()=>{ if (playing){ Tone.Transport.pause(); playing = false; $('play').textContent = '▶'; } else { Tone.Transport.start(); playing = true; $('play').textContent = '⏸'; } };
-$('prev').onclick = ()=>{ if (curIdx > 0) play(filtered[curIdx-1], curIdx-1); };
-$('next').onclick = ()=>{ if (curIdx < filtered.length-1) play(filtered[curIdx+1], curIdx+1); };
+$('play').onclick = ()=> Player.toggle();
+$('prev').onclick = ()=> Player.prev();
+$('next').onclick = ()=> Player.next();
+$('loop').onclick = e => { const on = !e.currentTarget.classList.contains('on');
+  e.currentTarget.classList.toggle('on', on); Player.setLoop(on); };
+$('vol').oninput = e => Player.setVolume(Number(e.target.value));
+$('prog').oninput = e => Player.seek(Number(e.target.value) / 1000);
+$('rate').onchange = ()=>{};   /* 保留控件位；变速由后续版本接入 */
 
 /* 启动：先按当前语言渲染外壳，再加载数据 */
 applyLang();

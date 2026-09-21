@@ -48,7 +48,9 @@
   --r:2px; --r-lg:3px;
 
   /* ── 容器 ── */
-  --wrap:1280px; --wrap-wide:1440px; --wrap-read:820px;
+  --wrap:min(1560px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
+  --wrap-wide:min(1680px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
+  --wrap-read:min(1120px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
 
   --z-hdr:20; --z-play:30; --z-pop:40;
   --hdr:56px; --play:68px; --tap:44px;
@@ -217,7 +219,7 @@ footer{margin-top:var(--s8);border-top:1px solid var(--rule);
   padding-left:var(--s3);margin:var(--s3) 0}
 
 /* ── 文档页 ───────────────────────────────────────────────────────── */
-main.doc{max-width:var(--wrap-read);margin:0 auto;
+main.doc{width:100%;max-width:var(--wrap-read);margin:0 auto;
   padding:var(--s7) clamp(var(--s4),3vw,var(--s6)) var(--s8)}
 main.doc h2{margin-top:var(--s7)}
 main.doc h3{margin-top:var(--s5)}

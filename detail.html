@@ -11,8 +11,9 @@
 <style>
 /* 详情页：识别信息（左）× 取用与播放（右）*/
 .dwrap{display:grid;gap:var(--s6);grid-template-columns:minmax(0,1fr);
-  max-width:var(--wrap);margin:0 auto;padding:var(--s6) clamp(var(--s4),3vw,var(--s6)) var(--s8)}
-@media(min-width:1024px){ .dwrap{grid-template-columns:minmax(0,1fr) 340px;align-items:start} }
+  max-width:var(--wrap);margin:0 auto;padding:var(--s5) clamp(var(--s4),3vw,var(--s6)) var(--s8)}
+@media(min-width:1024px){ .dwrap{grid-template-columns:minmax(0,1fr) 360px;align-items:start} }
+@media(min-width:1500px){ .dwrap{grid-template-columns:minmax(0,1fr) 420px;gap:var(--s7)} }
 .crumbs{display:flex;gap:var(--s2);flex-wrap:wrap;font-size:var(--fs-12);color:var(--paper-3);
   margin-bottom:var(--s4)}
 .crumbs a{color:var(--paper-2)}
@@ -123,6 +124,7 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
 <script src="vendor/Tone.js"></script>
 <script src="vendor/Midi.js"></script>
 <script src="soundfont/engine/js-synthesizer.min.js"></script>
+<script src="assets/player.js"></script>
 <script src="assets/archive.js"></script>
 <script>
 /* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
@@ -312,37 +314,23 @@ function render(){
   $('sfbadge').textContent = t('未加载音源','SF idle');
 }
 
-/* ── 播放 ── */
-let sfSynth = null, sfReady = false, sfLoading = false, playing = false;
-async function ensureSF(){
-  if (sfReady || sfLoading) return; sfLoading = true;
-  $('sfbadge').textContent = t('加载音源…','Loading SF…');
-  try{
-    const AC = Tone.getContext().rawContext;
-    sfSynth = new JSSynth.AudioWorkletNodeSynthesizer();
-    await sfSynth.init(AC);
-    let ab = null;
-    if ('DecompressionStream' in window){
-      try{ ab = await (await fetch('soundfont/GeneralUser-GS.sf2.gz')).arrayBuffer(); }catch(e){}
-    }
-    if (!ab) ab = await (await fetch('soundfont/GeneralUser-GS.sf2')).arrayBuffer();
-    await sfSynth.loadSFont(ab); sfReady = true; $('sfbadge').textContent = t('音源就绪','SF ready');
-  }catch(e){ $('sfbadge').textContent = t('合成器','synth'); }
-  sfLoading = false;
-}
+/* ── 播放：共享引擎（Tone + Midi.js）── */
+Player.init({
+  onState: on => { $('play').textContent = on ? '⏸' : '▶'; },
+  onBadge: txt => { $('sfbadge').textContent = txt; },
+  onStatus: txt => { $('times').textContent = txt; },
+  onTime: (cur, total) => {
+    $('times').textContent = Player.fmt(cur) + ' / ' + Player.fmt(total);
+    $('prog').value = Math.min(1000, (cur / Math.max(total, .1)) * 1000);
+  }
+});
 $('play').onclick = async ()=>{
+  if (Player.isPlaying()) { Player.toggle(); return; }
   if (!X) return;
-  if (playing){ Tone.Transport.pause(); playing = false; $('play').textContent = '▶'; return; }
-  if (!sfReady) await ensureSF();
-  try{
-    Tone.start();
-    const buf = await (await fetch(X.f)).arrayBuffer();
-    if (sfSynth){ sfSynth.stop(); await sfSynth.playNewMIDI(buf); }
-    playing = true; $('play').textContent = '⏸';
-  }catch(e){ $('sfbadge').textContent = t('播放失败','Playback failed'); }
+  await Player.play({ id:X.id, t:X.t, f:X.f, g:X.g, i:X.i }, 0, []);
 };
-$('vol').oninput = e=>{ try{ Tone.getDestination().volume.value = (e.target.value/100)*12 - 12; }catch(err){} };
-$('prog').oninput = e=>{ const v = Number(e.target.value)/1000; if (X && X.du){ $('times').textContent = mmss(v*X.du) + ' / ' + mmss(X.du); } };
+$('vol').oninput = e => Player.setVolume(Number(e.target.value));
+$('prog').oninput = e => Player.seek(Number(e.target.value) / 1000);
 
 applyLang();
 </script>
