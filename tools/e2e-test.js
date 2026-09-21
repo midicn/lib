@@ -168,7 +168,7 @@ function makeFetch(realFetch){
   console.log('\n【6】导航与页脚');
   const nav = [...d.querySelectorAll('.nav a')].map(a=>a.getAttribute('href'));
   ok('导航含四页', ['./','download.html','sources.html','licenses.html'].every(h=>nav.includes(h)), nav.join(' '));
-  ok('页脚四栏', d.querySelectorAll('footer .fgrid > div').length === 4);
+  ok('页脚为紧凑两行（链接 + 声明）', !!d.querySelector('footer .fbar') && !!d.querySelector('footer .fnote'));
   ok('页脚含许可声明', /许可|licence/i.test((d.getElementById('footLegal')||{}).textContent || ''));
 
   /* 【7】运行时 */
