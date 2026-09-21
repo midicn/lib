@@ -11,6 +11,26 @@
 <style>
 /* ═══ 主页专属：档案版式 ═══ */
 
+/* ══ 应用外壳：容器规格与文档页完全一致（--wrap / clamp(2vw)）══ */
+main.app{display:block;width:100%;max-width:var(--wrap);margin:0 auto;
+  padding:var(--s6) clamp(var(--s4),2vw,var(--s6)) var(--s8)}
+.acol{min-width:0}
+.side,.nowp{display:none}
+@media(min-width:1280px){
+  main.app{display:grid;grid-template-columns:216px minmax(0,1fr);gap:var(--s5);align-items:start}
+  .side{display:block;grid-column:1;grid-row:1/span 99;
+    position:sticky;top:calc(var(--hdr) + var(--s4));
+    background:var(--ink-2);border:1px solid var(--rule);border-radius:var(--r-lg);padding:var(--s3) 0}
+  .app-grid{grid-column:2;min-width:0}
+  .cats{display:none}                      /* 侧栏取代分类网格（DOM 保留）*/
+}
+@media(min-width:1440px){
+  main.app{grid-template-columns:216px minmax(0,1fr) 300px}
+  .nowp{display:flex;flex-direction:column;gap:var(--s3);grid-column:3;grid-row:1/span 99;
+    position:sticky;top:calc(var(--hdr) + var(--s4));
+    background:var(--ink-2);border:1px solid var(--rule);border-radius:var(--r-lg);padding:var(--s4)}
+}
+
 /* 断行卫生（同共享层，页面内再声明一次以防顺序问题）*/
 .nav a,.axis,.btn,.hero-meta,.hero .kick,.listhead span,.row .src,.row .per,.row .dur{white-space:nowrap}
 .hero h1,.stitle h2{text-wrap:balance}
