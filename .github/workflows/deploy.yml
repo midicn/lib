@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p site
           for z in meta main piano-special study; do
-            curl -sL -o $z.zip "https://github.com/midicn/midi-lib/releases/download/$RELEASE_TAG/midicn-lib-$RELEASE_TAG-$z.zip"
+            curl -sL --retry 3 --retry-delay 5 -o $z.zip "https://github.com/midicn/midi-lib/releases/download/$RELEASE_TAG/midicn-lib-$RELEASE_TAG-$z.zip"
             unzip -q $z.zip -d site
             rm $z.zip
           done
