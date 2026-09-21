@@ -127,7 +127,8 @@ function makeFetch(realFetch){
   ok('行含来源列', d.querySelectorAll('#list .row .src').length === rows.length);
   ok('行含时长 mm:ss', /^\d+:\d\d$/.test((d.querySelector('#list .row .dur')||{}).textContent || ''),
      (d.querySelector('#list .row .dur')||{}).textContent);
-  ok('表头 5 列', d.querySelectorAll('.listhead span').length === 5);
+  ok('表头 6 列（含详情列）', d.querySelectorAll('.listhead span').length === 6, d.querySelectorAll('.listhead span').length + ' 列');
+  ok('行内有明确「详情」入口', !!d.querySelector('#list .row .detbtn'));
   ok('状态栏显示计数', /加载|loaded/.test((d.querySelector('#status')||{}).textContent || ''));
 
   /* 【4】筛选 */
@@ -185,7 +186,11 @@ function makeFetch(realFetch){
       url: ORIGIN + 'detail.html?id=aria-000004&cat=piano&chunk=0',
       runScripts:'dangerously', pretendToBeVisual:true, virtualConsole: vc, resources:'usable', beforeParse: stub
     });
-    await wait(2500);
+    const dd0 = ddom.window.document;
+    for (let i = 0; i < 30; i++){                      // 详情页要先拉 4MB loc.json，代理慢时需等待
+      if (dd0.querySelectorAll('#ident dt').length >= 8) break;
+      await wait(600);
+    }
     const dd = ddom.window.document;
     const ttl = (dd.getElementById('ttl')||{}).textContent || '';
     ok('详情页标题渲染', ttl.length > 1 && ttl !== '…', ttl);
