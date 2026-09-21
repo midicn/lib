@@ -41,7 +41,7 @@
 @media(min-width:768px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media(min-width:1100px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
 @media(min-width:1400px){ .grid{grid-template-columns:repeat(5,minmax(0,1fr))}
-  .listhead,.row{grid-template-columns:52px minmax(0,1fr) 150px 104px 80px} }
+  .listhead,.row{grid-template-columns:52px minmax(0,1fr) 150px 104px 80px 36px} }
 @media(min-width:1680px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr))} }
 .grid .tile{padding:var(--s3) var(--s4) var(--s4);cursor:pointer;text-align:left}
 .tile .tt{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
@@ -85,19 +85,21 @@
 #q:focus{outline:none;border-color:var(--vermilion)}
 
 /* 列表：档案表格化 */
-.listhead{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px;
+.listhead{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 34px;
   gap:var(--s3);padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule-2);
   font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);letter-spacing:.06em}
 #list{list-style:none}
-.row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px;gap:var(--s3);
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 34px;gap:var(--s3);
   align-items:center;padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule);cursor:pointer}
 .row:hover{background:var(--ink-3)}
 .row.on{background:var(--vermilion-soft)}
 .row .no{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3)}
 .row .tt{min-width:0}
 .row .tt .ttl{display:block;font-size:var(--fs-13);font-weight:500;color:var(--paper);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:0}
-.row .tt .ttl:hover{color:var(--vermilion);border-bottom:0}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .detbtn{grid-column:6;width:30px;height:30px;display:grid;place-items:center;
+  border:1px solid transparent;color:var(--paper-3);font-size:15px;line-height:1;border-radius:2px}
+.row:hover .detbtn{border-color:var(--rule-2);color:var(--vermilion)}
 .row .tt s{display:block;font-size:var(--fs-11);color:var(--paper-3);text-decoration:none;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .src,.row .per,.row .dur{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
@@ -150,6 +152,7 @@
   .row .dur{grid-area:dur;text-align:right}
   .row .src{grid-area:src;text-align:right}
   .row .per{grid-area:meta;color:var(--paper-3);font-size:var(--fs-10)}
+  .row .detbtn{grid-column:3;width:var(--tap);height:var(--tap);border-color:var(--rule);font-size:18px}
   .row .tt .ttl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .pw{grid-template-columns:1fr auto;gap:var(--s2);min-height:0;padding:var(--s3) var(--s4)}
   .pmeta{grid-column:1/-1}
@@ -250,7 +253,7 @@
         <span>#</span><span data-zh="标题 / 作曲家" data-en="TITLE / COMPOSER">标题 / 作曲家</span>
         <span data-zh="来源" data-en="SOURCE">来源</span>
         <span data-zh="时期" data-en="PERIOD">时期</span>
-        <span data-zh="时长" data-en="LEN">时长</span>
+        <span data-zh="时长" data-en="LEN">时长</span><span></span>
       </div>
       <ul id="list"></ul>
     </div>
@@ -577,10 +580,11 @@ function renderMore(){
     const srcLabel = src ? src.name[LANG] : (x.id.split('-')[0]);
     el.innerHTML =
       '<span class="no">'+String(i+1).padStart(3,'0')+'</span>'+
-      '<span class="tt"><a class="ttl" href="detail.html?id='+encodeURIComponent(x.id)+
-      '&cat='+encodeURIComponent(x._cat||'')+'&chunk='+(x._chunk!=null?x._chunk:0)+
-      '" onclick="event.stopPropagation()">'+esc(x.t||x.id)+'</a>'+
+      '<span class="tt"><b class="ttl">'+esc(x.t||x.id)+'</b>'+
       '<s>'+esc(x.cn||'')+(x.opus?(' · Op. '+esc(String(x.opus))):'')+'</s></span>'+
+      '<a class="detbtn" href="detail.html?id='+encodeURIComponent(x.id)+
+      '&cat='+encodeURIComponent(x._cat||'')+'&chunk='+(x._chunk!=null?x._chunk:0)+
+      '" onclick="event.stopPropagation()" title="'+t('查看详情','Details')+'">›</a>'+
       '<span class="src">'+esc(srcLabel)+'</span>'+
       '<span class="per">'+esc(x.p||'')+'</span>'+
       '<span class="dur">'+mmss(x.du)+'</span>';
@@ -615,7 +619,10 @@ async function focusTrack(id){
         li.classList.add('on');
         if (li.scrollIntoView) li.scrollIntoView({ block:'center' });
         const x = filtered[i];
-        $('np').textContent = (x.t || x.id) + ' · 已定位（点击播放）';
+        $('np').textContent = (x.t || x.id) + t(' · 已定位，正在播放…', ' · located, starting…');
+        /* 刚从详情页点击过来 → 尝试直接播放；若被浏览器策略拦截，用户点本行即可 */
+        try { await Player.play(x, i, filtered); }
+        catch (e) { $('np').textContent = (x.t || x.id) + t(' · 已定位（点击本行播放）', ' · located (tap the row to play)'); }
         return;
       }
     }
