@@ -69,6 +69,7 @@
       <a href="https://github.com/midicn/midi-lib/releases" target="_blank" rel="noopener">全部版本 · Releases</a></div>
     <div><h4 data-zh="说明" data-en="NOTES">说明</h4><p class="meta" id="footNote"></p></div>
   </div>
+  <div class="fnote" id="footLic"></div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
 
@@ -204,6 +205,7 @@ function render(){
     )+'</p></div></div>';
   $('footNote').innerHTML = t('版本 '+VER+' · 全部资产见 <a href="'+PAGE+'" target="_blank" rel="noopener">Release 页面</a>',
                               'Version '+VER+' · all assets on the <a href="'+PAGE+'" target="_blank" rel="noopener">release page</a>');
+  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
   $('footLegal').innerHTML = t('下载即表示你已阅读并同意<a href="licenses.html">许可条款</a>。',
                                'By downloading you accept the <a href="licenses.html">licence terms</a>.');
 }

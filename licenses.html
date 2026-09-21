@@ -27,6 +27,11 @@
   <h1 data-zh="许可与法律" data-en="Licence &amp; Legal">许可与法律</h1>
   <p class="lede" id="lede"></p>
 
+  <!-- ⓪ 本库自身许可（分层声明）-->
+  <div class="stitle"><h2 data-zh="本库自身的许可" data-en="This library's own licence">本库自身的许可</h2></div>
+  <div id="ownlic" style="display:grid;gap:var(--s4)"></div>
+  <p class="note" id="ownlicNote"></p>
+
   <div class="rule double"></div>
 
   <!-- ① 三档许可体系 -->
@@ -81,6 +86,7 @@
       <a href="https://github.com/midicn/midi-lib-site" target="_blank" rel="noopener">站点仓库 · midi-lib-site</a></div>
     <div><h4 data-zh="说明" data-en="NOTES">说明</h4><p class="meta" id="footNote"></p></div>
   </div>
+  <div class="fnote" id="footLic"></div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
 
@@ -116,6 +122,28 @@ function render(){
   $('lede').innerHTML = t(
     '本库把开放许可的 MIDI 汇集、统一格式并补全元数据。我们的立场很明确：<em>素材的权利属于来源方</em>，使用者必须遵守各来源的原始条款；本页把每一条款写清楚，并提供可直接使用的署名模板。',
     'This library gathers openly licensed MIDI, normalises the format and enriches metadata. Our position is plain: <em>rights belong to the sources</em>, and users must follow each source\u2019s terms. This page states them precisely and provides a ready attribution template.'
+  );
+
+  /* ⓪ 本库自身许可 */
+  const own = LANG === 'zh' ? [
+    ['站点与工具代码', '<b>MIT</b>', 'HTML / CSS / JS / Python 构建脚本。极简宽松：只需保留版权与许可声明，可自由商用、修改、再分发。'],
+    ['本库自有的元数据与文档', '<b>CC BY 4.0</b>', 'catalog.json、各类索引、分类与来源说明文本。只需署名，无其他限制；CC BY 4.0 明确覆盖数据库权利，适合数据集。'],
+    ['上游 MIDI 素材', '<b>依各来源许可</b>', '本库<strong>无权</strong>对这些素材另行授权——其权利与许可属于各上游来源，请按来源页与逐曲 l 字段标注的条款使用。'],
+  ] : [
+    ['Site and tooling code', '<b>MIT</b>', 'HTML / CSS / JS / Python build scripts. Minimal and permissive: keep the copyright and licence notice; commercial use, modification and redistribution are all allowed.'],
+    ['Our own metadata and docs', '<b>CC BY 4.0</b>', 'catalog.json, indexes, category and source notes. Attribution only, no further restrictions; CC BY 4.0 explicitly covers database rights, which suits a dataset.'],
+    ['Upstream MIDI material', '<b>Per-source licence</b>', 'This library <strong>cannot</strong> relicense source material — rights and licences belong to each upstream. Follow the terms noted on the sources page and the per-track l field.'],
+  ];
+  $('ownlic').innerHTML = own.map(([h, l, b]) =>
+    '<div class="panel"><div class="panel-hd"><b style="font-size:var(--fs-14)">'+h+'</b>'+
+    '<span style="margin-left:auto"></span><span class="lic c1 plain">'+l+'</span></div>'+
+    '<div class="panel-bd"><p style="margin:0">'+b+'</p></div></div>').join('');
+  $('ownlicNote').innerHTML = t(
+    '为什么这样选：<b>MIT</b> 是软件许可，最适合代码，几乎不加限制；<b>CC BY 4.0</b> 是内容/数据许可，'+
+    '明确覆盖数据库权利、同样只要求署名。两者叠加＝<b>最大开放度 + 唯一要求是署名</b>，与我们尊重来源方的立场一致。',
+    'Why this split: <b>MIT</b> is a software licence — the natural fit for code, with almost no restrictions; '+
+    '<b>CC BY 4.0</b> is a content/data licence that explicitly covers database rights and likewise asks only for attribution. '+
+    'Together they give <b>maximum openness with attribution as the single requirement</b>.'
   );
 
   /* ① 档位 */
@@ -245,6 +273,7 @@ function render(){
     'Contact: <a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">open-source project issue</a> (public and traceable). Every adjustment is recorded publicly.'
   );
   $('footNote').innerHTML = t('本页为使用条款说明，不构成法律意见。','This page explains terms of use; it is not legal advice.');
+  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
   $('footLegal').innerHTML = t(
     '数据版本 v1.19 · 许可信息随数据一同发布（meta/catalog.json 的 <code>l</code> 字段）',
     'Data v1.19 · licence metadata ships with the data (<code>l</code> field in meta/catalog.json)'

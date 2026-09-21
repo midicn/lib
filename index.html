@@ -11,6 +11,11 @@
 <style>
 /* ═══ 主页专属：档案版式 ═══ */
 
+/* 断行卫生（同共享层，页面内再声明一次以防顺序问题）*/
+.nav a,.axis,.btn,.hero-meta,.hero .kick,.listhead span,.row .src,.row .per,.row .dur{white-space:nowrap}
+.hero h1,.stitle h2{text-wrap:balance}
+.hero .lede{text-wrap:pretty}
+
 /* 首屏：像一本档案的扉页 */
 .hero{padding:var(--s5) 0 var(--s4);border-bottom:1px solid var(--rule)}
 .hero .kick{font-family:var(--mono);font-size:var(--fs-11);color:var(--vermilion);
@@ -292,6 +297,7 @@
     <div><h4 data-zh="说明" data-en="NOTES">说明</h4>
       <p class="meta" id="footNote"></p></div>
   </div>
+  <div class="fnote" id="footLic"></div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
 
@@ -365,8 +371,13 @@ themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dar
   try{ BROWSE = await (await fetch('data/browse.json')).json(); }catch(e){ BROWSE = null; }
   buildFilters();
   renderShell(); renderAxis();
-  const first = (SUMMARY.categories || [])[0];
-  if (first) pick('category', first.id, first.name);
+  /* 深链：?cat=<分类>&play=<曲目 id> —— 从详情页「在音乐库中打开」进入 */
+  const qs = new URLSearchParams(location.search);
+  const wantCat = qs.get('cat'), wantPlay = qs.get('play');
+  const cats = SUMMARY.categories || [];
+  const target = (wantCat && cats.find(c => c.id === wantCat)) || cats[0];
+  if (target) await pick('category', target.id, target.name);
+  if (wantPlay) await focusTrack(wantPlay);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 
@@ -386,6 +397,7 @@ function renderShell(){
     '本库为整理与转译项目，素材权利属于各来源方；逐曲标注来源与许可。',
     'A curation project; rights belong to the sources. Provenance and licence are labelled per track.'
   );
+  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
   $('footLegal').innerHTML = t(
     '数据版本 v1.19 · 曲目 ' + fmt(SUMMARY.total) + ' 首 · <a href="licenses.html">许可与法律</a>',
     'Data v1.19 · ' + fmt(SUMMARY.total) + ' tracks · <a href="licenses.html">Licence &amp; legal</a>'
@@ -582,6 +594,38 @@ function renderMore(){
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 const mmss = s => !s ? '—' : Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
 function skeleton(n){ $('list').innerHTML = '<li class="sk"></li>'.repeat(n); $('more').hidden = true; }
+
+/* 深链定位：把目标曲目加载出来、滚入视野、高亮并提示 */
+async function focusTrack(id){
+  if (!id) return;
+  let tries = 0;
+  while (tries < 12){
+    let i = filtered.findIndex(x => x.id === id);
+    if (i < 0 && rows.some(x => x.id === id)){          // 已被筛选过滤掉 → 清空筛选
+      ['fComp','fPeriod','fInst','fGenre','fCountry','fForm','fZone','fDur','fSort']
+        .forEach(k => { if ($(k)) $(k).value = ''; });
+      $('q').value = '';
+      applyFilter();
+      i = filtered.findIndex(x => x.id === id);
+    }
+    if (i >= 0){
+      while (shown <= i && shown < filtered.length) renderMore();   // 加载到该行
+      const li = document.querySelector('.row[data-id="'+id+'"]');
+      if (li){
+        li.classList.add('on');
+        if (li.scrollIntoView) li.scrollIntoView({ block:'center' });
+        const x = filtered[i];
+        $('np').textContent = (x.t || x.id) + ' · 已定位（点击播放）';
+        return;
+      }
+    }
+    // 分片可能尚未加载该曲目 → 继续拉取更多
+    if (shown >= filtered.length && rows.length >= 400) break;
+    await new Promise(r => setTimeout(r, 250));
+    tries++;
+  }
+  $('np').textContent = '未在当前分类中找到 ' + id;
+}
 
 /* ═══ 交互绑定 ═══ */
 $('more').onclick = renderMore;

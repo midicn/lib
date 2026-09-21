@@ -115,6 +115,20 @@ strong,b{color:var(--paper);font-weight:650}
 .staff{height:12px;background:repeating-linear-gradient(to bottom,var(--rule) 0 1px,transparent 1px 4px);
   margin:var(--s5) 0}
 
+
+/* ── 断行卫生（CJK 逐字断行会导致短文本"莫名换行"）────────────── */
+h1,h2,h3{text-wrap:balance}
+p,.lede{text-wrap:pretty}
+.lede{max-width:74ch}
+.nav a,.btn,.axis,.langbtn,.dlchip,.dlmore,.fgrid a,.fgrid h4,.stitle h2,.stitle .meta,
+.tag,.lic,.pkg .pn,.pkg .pm,.sideitem .si-n,.hero-meta,.hero .kick,.crumbs span,.crumbs a{
+  white-space:nowrap}
+.nav{flex-wrap:wrap;row-gap:var(--s2)}
+@media(max-width:1023px){
+  .hbar{flex-wrap:wrap;height:auto;min-height:52px;padding-top:var(--s2);padding-bottom:var(--s2);row-gap:var(--s2)}
+  .nav{margin-left:0;width:100%;order:9;gap:var(--s4)}
+}
+
 /* ── 容器 ───────────────────────────────────────────────────────────── */
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 clamp(var(--s4),3vw,var(--s6))}
 .wrap-read{max-width:var(--wrap-read)}

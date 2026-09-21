@@ -63,6 +63,7 @@
     <div><h4 data-zh="说明" data-en="NOTES">说明</h4>
       <p class="meta" id="footNote"></p></div>
   </div>
+  <div class="fnote" id="footLic"></div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
 
@@ -164,6 +165,7 @@ function render(){
     '本库是<strong>整理与转译</strong>项目：原始素材的权利属于各来源方，我们只做格式统一、元数据补全与许可标注。',
     'This library is a <strong>curation and conversion</strong> project; rights in the source material belong to the respective sources.'
   );
+  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
   $('footLegal').innerHTML = t(
     '署名与商用指引见 <a href="licenses.html">许可与法律</a> · 数据版本 v1.19',
     'Attribution &amp; commercial guidance: <a href="licenses.html">Licence &amp; legal</a> · data v1.19'

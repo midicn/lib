@@ -119,6 +119,7 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
     <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
       <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">开源项目 · midi-lib</a></div>
   </div>
+  <div class="fnote" id="footLic"></div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
 
@@ -307,6 +308,8 @@ function render(){
 
   $('dl').href = x.f || '#';
   $('inlib').href = './?cat=' + encodeURIComponent(CAT) + '&play=' + encodeURIComponent(x.id);
+  $('inlib').textContent = t('在音乐库中定位此曲','Locate this track in the library');
+  $('footLic') && ($('footLic').innerHTML = t(LIB_LICENCE.zh, LIB_LICENCE.en));
   $('footLegal').innerHTML = t(
     '数据版本 v1.19 · 本页信息随数据自动生成 · <a href="licenses.html">许可与法律</a>',
     'Data v1.19 · generated from the data · <a href="licenses.html">Licence &amp; legal</a>'

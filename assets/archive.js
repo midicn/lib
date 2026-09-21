@@ -264,6 +264,14 @@ const EXCLUDED = [
          en:'Its licence (clauses 4 and 5) explicitly forbids redistribution, so it is excluded from every download pack.'} },
 ];
 
+/* ── 本库自身许可（供页脚与许可页引用）─────────────── */
+const LIB_LICENCE = {
+  code:  { id: 'MIT',        text: 'MIT' },
+  data:  { id: 'CC BY 4.0',  text: 'CC BY 4.0' },
+  zh: '代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可',
+  en: 'Code MIT · metadata CC BY 4.0 · material per source'
+};
+
 /* ── 工具：许可档映射 / 声波签名 / 数字格式化 ─────────────────────── */
 function zoneOf(src){ return ZONES[src] || ZONES.main; }
 
