@@ -50,7 +50,7 @@
   /* ── 容器 ── */
   --wrap:min(1560px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
   --wrap-wide:min(1680px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
-  --wrap-read:min(1120px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
+  --wrap-read:min(1280px,100% - 2 * clamp(var(--s4),3vw,var(--s6)));
 
   --z-hdr:20; --z-play:30; --z-pop:40;
   --hdr:56px; --play:68px; --tap:44px;
@@ -98,7 +98,9 @@ h2{font-size:var(--fs-26)}
 h3{font-size:var(--fs-16);font-family:var(--sans);font-weight:650;letter-spacing:0}
 p{color:var(--paper-2);margin-bottom:var(--s3)}
 strong,b{color:var(--paper);font-weight:650}
-.lede{font-family:var(--serif);font-size:var(--fs-16);line-height:1.78;color:var(--paper);max-width:66ch}
+.lede{font-family:var(--serif);font-size:var(--fs-16);line-height:1.78;color:var(--paper);
+  /* CJK：ch 按半角计，中文会过窄 → 用 em（≈每行中文字数） */
+  max-width:min(100%,52em)}
 .lede em{font-style:normal;color:var(--vermilion)}
 .meta{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);letter-spacing:.04em}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -119,7 +121,7 @@ strong,b{color:var(--paper);font-weight:650}
 /* ── 断行卫生（CJK 逐字断行会导致短文本"莫名换行"）────────────── */
 h1,h2,h3{text-wrap:balance}
 p,.lede{text-wrap:pretty}
-.lede{max-width:74ch}
+.lede{max-width:min(100%,52em)}
 .nav a,.btn,.axis,.langbtn,.dlchip,.dlmore,.fgrid a,.fgrid h4,.stitle h2,.stitle .meta,
 .tag,.lic,.pkg .pn,.pkg .pm,.sideitem .si-n,.hero-meta,.hero .kick,.crumbs span,.crumbs a{
   white-space:nowrap}

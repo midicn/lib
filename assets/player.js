@@ -15,6 +15,7 @@
   var playing = false, looping = false;
   var curTotal = 0, curTrack = null, curIdx = -1, queue = [];
   var vol = 70, hooks = {};
+  var graph = 'none', lastError = '';
 
   function $(id) { return document.getElementById(id); }
   function fmt(s) {
@@ -26,21 +27,36 @@
   /* ── 音频图（首次播放时建立）──────────────────────────────────────── */
   function initAudio() {
     if (ready) return true;
-    if (!global.Tone) return false;
-    var verb = new Tone.Reverb({ decay: 3.0, preDelay: .015, wet: .26 }).connect(Tone.Destination);
-    var filt = new Tone.Filter({ type: 'lowpass', frequency: 5200, rolloff: -12 }).connect(verb);
-    var comp = new Tone.Compressor({ threshold: -20, ratio: 2.6, attack: .01, release: .25 }).connect(filt);
-    syn = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'amtriangle', harmonicity: 2.02, modulationType: 'sine' },
-      envelope: { attack: .004, decay: 1.35, sustain: .1, release: 2.0 }, volume: -9
-    }).connect(comp);
-    bass = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'sine' },
-      envelope: { attack: .012, decay: 1.1, sustain: .16, release: 1.6 }, volume: -11
-    }).connect(comp);
-    perc = new Tone.PolySynth(Tone.MembraneSynth, { volume: -6 }).connect(comp);
+    if (!global.Tone) { lastError = 'Tone.js 未加载'; return false; }
+    // 完整音频图（效果链）；任一步失败则降级为最小图，保证能出声
+    try {
+      var verb = new Tone.Reverb({ decay: 3.0, preDelay: .015, wet: .26 }).connect(Tone.Destination);
+      var filt = new Tone.Filter({ type: 'lowpass', frequency: 5200, rolloff: -12 }).connect(verb);
+      var comp = new Tone.Compressor({ threshold: -20, ratio: 2.6, attack: .01, release: .25 }).connect(filt);
+      syn = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'amtriangle', harmonicity: 2.02, modulationType: 'sine' },
+        envelope: { attack: .004, decay: 1.35, sustain: .1, release: 2.0 }, volume: -9
+      }).connect(comp);
+      bass = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        envelope: { attack: .012, decay: 1.1, sustain: .16, release: 1.6 }, volume: -11
+      }).connect(comp);
+      perc = new Tone.PolySynth(Tone.MembraneSynth || Tone.Synth, { volume: -6 }).connect(comp);
+      graph = 'full';
+    } catch (e) {
+      safe(function () { syn && syn.dispose(); });
+      try {
+        syn = new Tone.PolySynth(Tone.Synth, { volume: -8 }).toDestination();
+        bass = syn; perc = syn; graph = 'minimal';
+        lastError = '效果链不可用（已降级）：' + ((e && e.message) || e);
+      } catch (e2) {
+        lastError = '合成器初始化失败：' + ((e2 && e2.message) || e2);
+        return false;
+      }
+    }
     applyVolume();
     ready = true;
+    if (graph === 'minimal' && hooks.onBadge) safe(function () { hooks.onBadge('简易音源'); });
     return true;
   }
   function applyVolume() {
@@ -80,11 +96,21 @@
 
   /* ── 播放 ───────────────────────────────────────────────────────── */
   async function play(track, idx, list) {
+    try {
+      return await _play(track, idx, list);
+    } catch (e) {
+      playing = false;
+      if (hooks.onState) safe(function () { hooks.onState(false); });
+      status('播放失败：' + ((e && e.message) || e));
+    }
+  }
+
+  async function _play(track, idx, list) {
     stop();
     curTrack = track;
     if (typeof idx === 'number') curIdx = idx;
     if (Array.isArray(list)) queue = list;
-    if (!track || !track.f) { status('no file'); return; }
+    if (!track || typeof track.f !== 'string' || !track.f) { status('该条目缺少文件路径'); return; }
 
     if (!initAudio()) { status('Tone.js 未加载'); return; }
     safe(function () { Tone.start(); });
