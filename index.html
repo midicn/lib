@@ -41,7 +41,7 @@
 @media(min-width:768px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media(min-width:1100px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
 @media(min-width:1400px){ .grid{grid-template-columns:repeat(5,minmax(0,1fr))}
-  .listhead,.row{grid-template-columns:52px minmax(0,1fr) 150px 104px 80px 36px} }
+  .listhead,.row{grid-template-columns:52px minmax(0,1fr) 150px 104px 80px 64px} }
 @media(min-width:1680px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr))} }
 .grid .tile{padding:var(--s3) var(--s4) var(--s4);cursor:pointer;text-align:left}
 .tile .tt{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:var(--s2)}
@@ -85,11 +85,11 @@
 #q:focus{outline:none;border-color:var(--vermilion)}
 
 /* 列表：档案表格化 */
-.listhead{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 34px;
+.listhead{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 60px;
   gap:var(--s3);padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule-2);
   font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);letter-spacing:.06em}
 #list{list-style:none}
-.row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 34px;gap:var(--s3);
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) 132px 96px 72px 60px;gap:var(--s3);
   align-items:center;padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule);cursor:pointer}
 .row:hover{background:var(--ink-3)}
 .row.on{background:var(--vermilion-soft)}
@@ -97,9 +97,10 @@
 .row .tt{min-width:0}
 .row .tt .ttl{display:block;font-size:var(--fs-13);font-weight:500;color:var(--paper);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .detbtn{grid-column:6;width:30px;height:30px;display:grid;place-items:center;
-  border:1px solid transparent;color:var(--paper-3);font-size:15px;line-height:1;border-radius:2px}
-.row:hover .detbtn{border-color:var(--rule-2);color:var(--vermilion)}
+.row .detbtn{grid-column:6;display:inline-flex;align-items:center;justify-content:center;
+  min-height:26px;padding:0 8px;border:1px solid var(--rule);color:var(--paper-2);
+  font-size:var(--fs-11);white-space:nowrap;border-radius:2px;background:transparent}
+.row:hover .detbtn{border-color:var(--vermilion);color:var(--vermilion)}
 .row .tt s{display:block;font-size:var(--fs-11);color:var(--paper-3);text-decoration:none;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .src,.row .per,.row .dur{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
@@ -152,7 +153,7 @@
   .row .dur{grid-area:dur;text-align:right}
   .row .src{grid-area:src;text-align:right}
   .row .per{grid-area:meta;color:var(--paper-3);font-size:var(--fs-10)}
-  .row .detbtn{grid-column:3;width:var(--tap);height:var(--tap);border-color:var(--rule);font-size:18px}
+  .row .detbtn{grid-column:3;min-height:30px;padding:0 10px}
   .row .tt .ttl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .pw{grid-template-columns:1fr auto;gap:var(--s2);min-height:0;padding:var(--s3) var(--s4)}
   .pmeta{grid-column:1/-1}
@@ -181,14 +182,14 @@
 
 <main>
   <!-- 扉页 -->
-  <section class="hero wrap">
+  <section class="hero">
     <p class="kick" data-zh="开放 MIDI 音乐档案 · MIDICN-LIB" data-en="OPEN MIDI ARCHIVE · MIDICN-LIB">开放 MIDI 音乐档案 · MIDICN-LIB</p>
     <h1 data-zh="开放许可的 MIDI 音乐档案" data-en="An archive of openly licensed MIDI">开放许可的 MIDI 音乐档案<span data-zh="19 个来源 · 14 个分类 · 逐曲标注来源与许可" data-en="19 sources · 14 categories · per-track provenance &amp; licence">19 个来源 · 14 个分类 · 逐曲标注来源与许可</span></h1>
     <p class="lede" id="heroLede"></p>
     <p class="hero-meta" id="heroMeta"></p>
   </section>
 
-  <div class="wrap">
+  <div class="acol">
     <!-- 浏览轴 -->
     <div class="stitle" style="margin-top:var(--s6)">
       <h2 data-zh="选择浏览维度" data-en="Browse by">选择浏览维度</h2>
@@ -584,7 +585,7 @@ function renderMore(){
       '<s>'+esc(x.cn||'')+(x.opus?(' · Op. '+esc(String(x.opus))):'')+'</s></span>'+
       '<a class="detbtn" href="detail.html?id='+encodeURIComponent(x.id)+
       '&cat='+encodeURIComponent(x._cat||'')+'&chunk='+(x._chunk!=null?x._chunk:0)+
-      '" onclick="event.stopPropagation()" title="'+t('查看详情','Details')+'">›</a>'+
+      '" onclick="event.stopPropagation()">'+t('详情','Details')+'</a>'+
       '<span class="src">'+esc(srcLabel)+'</span>'+
       '<span class="per">'+esc(x.p||'')+'</span>'+
       '<span class="dur">'+mmss(x.du)+'</span>';
