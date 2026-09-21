@@ -219,6 +219,7 @@ footer{margin-top:var(--s8);border-top:1px solid var(--rule);
   padding-left:var(--s3);margin:var(--s3) 0}
 
 /* ── 文档页 ───────────────────────────────────────────────────────── */
+main.doc.wide{max-width:var(--wrap)}
 main.doc{width:100%;max-width:var(--wrap-read);margin:0 auto;
   padding:var(--s7) clamp(var(--s4),3vw,var(--s6)) var(--s8)}
 main.doc h2{margin-top:var(--s7)}

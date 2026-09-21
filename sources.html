@@ -22,7 +22,7 @@
   <button class="iconbtn langbtn" id="lang">EN</button>
 </div></header>
 
-<main class="doc">
+<main class="doc wide">
   <p class="meta" data-zh="档案 · 来源志" data-en="ARCHIVE · PROVENANCE">档案 · 来源志</p>
   <h1 data-zh="数据来源" data-en="Sources">数据来源</h1>
   <p class="lede" id="lede"></p>
@@ -32,13 +32,18 @@
     <h2 data-zh="已收录来源" data-en="Included sources">已收录来源</h2>
     <span class="spacer"></span><span class="meta" id="srcCount"></span>
   </div>
+  <style>
+    #list{display:grid;gap:var(--s5);grid-template-columns:1fr;align-items:start}
+    @media(min-width:1180px){ #list{grid-template-columns:1fr 1fr} }
+  </style>
   <div id="list"></div>
 
   <div class="rule double"></div>
   <div class="stitle"><h2 data-zh="考察后未收录" data-en="Examined, not included">考察后未收录</h2></div>
+  <style>@media(min-width:1180px){ #excluded{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5)} #excluded > .panel{margin-bottom:0!important} }</style>
   <div id="excluded"></div>
 
-  <div class="stitle"><h2 data-zh="我们的加工流程" data-en="Processing pipeline">我们的加工流程</h2></div>
+  <div class="stitle"><h2 data-zh="上游数据如何进入本库" data-en="How upstream data enters this library">上游数据如何进入本库</h2></div>
   <ol class="steps" id="pipeline"></ol>
 
   <div class="note" id="caveat"></div>
@@ -52,7 +57,7 @@
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
     <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
-      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">数据仓库 · midi-lib</a>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">开源项目 · midi-lib</a>
       <a href="https://github.com/midicn/midi-lib-site" target="_blank" rel="noopener">站点仓库 · midi-lib-site</a>
       <a href="https://midicn.com" target="_blank" rel="noopener">midicn.com</a></div>
     <div><h4 data-zh="说明" data-en="NOTES">说明</h4>
@@ -91,7 +96,7 @@ themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dar
 
 function srcCard(s){
   const z = zoneOf(s.zone);
-  return '<div class="panel" style="margin-bottom:var(--s5)">'+
+  return '<div class="panel">'+
     '<div class="panel-hd">'+
       '<span style="flex:none;width:104px">'+sigHTML(s.id + s.count, 22)+'</span>'+
       '<b style="font-size:var(--fs-16)">'+s.name[LANG]+'</b>'+
@@ -103,7 +108,7 @@ function srcCard(s){
       '<p class="meta" style="margin-bottom:var(--s3)">'+s.kind[LANG]+'</p>'+
       '<p style="margin-bottom:var(--s4)">'+s.what[LANG]+'</p>'+
       '<dl class="dl">'+
-        '<dt>'+t('采集','ACQUIRED')+'</dt><dd>'+s.method[LANG]+'</dd>'+
+        '<dt>'+t('上游形态','UPSTREAM')+'</dt><dd>'+s.method[LANG]+'</dd>'+
         '<dt>'+t('许可','LICENCE')+'</dt><dd>'+s.license+(s.count_note?(' · '+s.count_note):'')+'</dd>'+
         '<dt>'+t('原始地址','HOME')+'</dt><dd><a href="'+s.url+'" target="_blank" rel="noopener">'+s.url+'</a></dd>'+
         (s.site && s.site !== s.url ? '<dt>'+t('站点','SITE')+'</dt><dd><a href="'+s.site+'" target="_blank" rel="noopener">'+s.site+'</a></dd>' : '')+
@@ -135,25 +140,25 @@ function render(){
   )).join('');
 
   const steps = LANG === 'zh' ? [
-    '<b>采集</b>：从上游官方渠道获取原始文件与元数据表（MIDI / ABC / LilyPond / MusicXML / CSV）。',
-    '<b>转译</b>：统一转为标准 MIDI，保留速度、拍号与配器；重算时长并校验可播放性。',
+    '<b>上游发布</b>：上游项目以其公开渠道发布原始文件与元数据表（MIDI / ABC / LilyPond / MusicXML / CSV）。',
+    '<b>格式转换</b>：格式统一为标准 MIDI，保留速度、拍号与配器；重算时长并校验可播放性。',
     '<b>去重</b>：以文件 MD5 与「来源 + 标题 + 时长」双重指纹剔除重复条目。',
-    '<b>元数据富化</b>：以 IMSLP 官方作品目录、作曲家生卒表与上游头字段，交叉补全标题、编号、时期、乐器、地域。',
+    '<b>元数据补全</b>：以 IMSLP 官方作品目录、作曲家生卒表与上游头字段，交叉补全标题、编号、时期、乐器、地域。',
     '<b>许可标注</b>：逐曲记录许可，归入 C1 可商用 / C2 非商用 / C3 学习研究 三档。',
     '<b>发布</b>：生成目录与分片，打包为 Release 资产，保留可复现的构建脚本。'
   ] : [
-    '<b>Acquire</b>: pull original files and metadata from the upstream (MIDI / ABC / LilyPond / MusicXML / CSV).',
-    '<b>Convert</b>: normalise to standard MIDI, preserve tempo, meter, instrumentation; recompute duration and verify playability.',
-    '<b>De-duplicate</b>: drop duplicates via MD5 plus a content fingerprint (source + title + duration).',
-    '<b>Enrich</b>: cross-fill title, catalogue number, period, instrument and region from IMSLP, composer date tables and upstream headers.',
-    '<b>Label licences</b>: record per-track licence into C1 commercial / C2 non-commercial / C3 study tiers.',
-    '<b>Publish</b>: emit catalogue and shards, package Release assets, keep the build reproducible.'
+    '<b>Upstream release</b>: each upstream project publishes its files and metadata tables through its own public channel.',
+    '<b>Format conversion</b>: normalise to standard MIDI, preserve tempo, meter, instrumentation; recompute duration and verify playability.',
+    '<b>De-duplication</b>: drop duplicates via MD5 plus a content fingerprint (source + title + duration).',
+    '<b>Metadata completion</b>: cross-fill title, catalogue number, period, instrument and region from IMSLP, composer date tables and upstream headers.',
+    '<b>Licence labelling</b>: record per-track licence into C1 commercial / C2 non-commercial / C3 study tiers.',
+    '<b>Packaging</b>: emit catalogue and shards, package Release assets, keep the build reproducible.'
   ];
   $('pipeline').innerHTML = steps.map(x=>'<li>'+x+'</li>').join('');
 
   $('caveat').innerHTML = t(
-    '若你是某来源的整理者或权利人，希望调整收录方式、补充署名或要求移除，请通过数据仓库 issue 联系我们，我们会优先处理。',
-    'If you are a compiler or rights holder of any source and wish to adjust attribution or request removal, please open an issue on the data repository — we will prioritise it.'
+    '若你是某来源的整理者或权利人，希望调整收录方式、补充署名或要求移除，请通过开源项目 issue 联系我们，我们会优先处理。',
+    'If you are a compiler or rights holder of any source and wish to adjust attribution or request removal, please open an issue on the open-source project — we will prioritise it.'
   );
   $('footNote').innerHTML = t(
     '本库是<strong>整理与转译</strong>项目：原始素材的权利属于各来源方，我们只做格式统一、元数据补全与许可标注。',

@@ -13,6 +13,7 @@
 .dwrap{display:grid;gap:var(--s6);grid-template-columns:minmax(0,1fr);
   max-width:var(--wrap);margin:0 auto;padding:var(--s5) clamp(var(--s4),3vw,var(--s6)) var(--s8)}
 @media(min-width:1024px){ .dwrap{grid-template-columns:minmax(0,1fr) 360px;align-items:start} }
+@media(min-width:1280px){ #ident{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);column-gap:var(--s6)} }
 @media(min-width:1500px){ .dwrap{grid-template-columns:minmax(0,1fr) 420px;gap:var(--s7)} }
 .crumbs{display:flex;gap:var(--s2);flex-wrap:wrap;font-size:var(--fs-12);color:var(--paper-3);
   margin-bottom:var(--s4)}
@@ -116,7 +117,7 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
     <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
-      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">数据仓库 · midi-lib</a></div>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">开源项目 · midi-lib</a></div>
   </div>
   <div class="fnote" id="footLegal"></div>
 </div></footer>
@@ -238,7 +239,7 @@ function render(){
     '</div><div class="panel-bd">'+
       '<p style="margin-bottom:var(--s3)">'+esc(src.what[LANG])+'</p>'+
       '<dl class="dl">'+
-        '<dt>'+t('采集','ACQUIRED')+'</dt><dd>'+esc(src.method[LANG])+'</dd>'+
+        '<dt>'+t('上游形态','UPSTREAM')+'</dt><dd>'+esc(src.method[LANG])+'</dd>'+
         '<dt>'+t('许可','LICENCE')+'</dt><dd>'+esc(src.license)+'</dd>'+
         '<dt>'+t('原始地址','HOME')+'</dt><dd><a href="'+src.url+'" target="_blank" rel="noopener">'+esc(src.url)+'</a></dd>'+
         '<dt>'+t('致谢','CREDIT')+'</dt><dd>'+esc(src.credit[LANG])+'</dd>'+
