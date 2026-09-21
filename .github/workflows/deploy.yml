@@ -21,6 +21,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve release tag (single source: meta/version.json · fallback to last known)
+        run: |
+          TAG=$(curl -sL --retry 3 "https://raw.githubusercontent.com/midicn/midi-lib/main/meta/version.json" 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin).get('version',''))" 2>/dev/null) || true
+          if [ -z "$TAG" ]; then
+            echo '⚠ version.json 不可达，回退 v1.19'
+            TAG='v1.19'
+          fi
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=$TAG"
+
       - name: Download & assemble from Release
         run: |
           mkdir -p site
