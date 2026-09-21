@@ -32,8 +32,6 @@
   <div id="ownlic" style="display:grid;gap:var(--s4)"></div>
   <p class="note" id="ownlicNote"></p>
 
-  <div class="rule double"></div>
-
   <!-- ① 三档许可体系 -->
   <div class="stitle"><h2 data-zh="许可档位体系" data-en="Licence tiers">许可档位体系</h2></div>
   <style>#zones{display:grid;gap:var(--s4);grid-template-columns:1fr}
@@ -75,19 +73,18 @@
 </main>
 
 <footer><div class="wrap">
-  <div class="fgrid">
-    <div><h4 data-zh="数据" data-en="DATA">数据</h4>
+  <div class="fbar">
+    <b>midicn-lib</b>
+    <nav class="fnav">
       <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
       <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
-      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a></div>
-    <div><h4 data-zh="项目" data-en="PROJECT">项目</h4>
-      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">开源项目 · midi-lib</a>
-      <a href="https://github.com/midicn/midi-lib-site" target="_blank" rel="noopener">站点仓库 · midi-lib-site</a></div>
-    <div><h4 data-zh="说明" data-en="NOTES">说明</h4><p class="meta" id="footNote"></p></div>
+      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <span class="flic" id="footLic"></span>
   </div>
-  <div class="fnote" id="footLic"></div>
-  <div class="fnote" id="footLegal"></div>
+  <div class="fnote"><span id="footNote"></span><span id="footLegal"></span></div>
 </div></footer>
 
 <script src="assets/archive.js"></script>
