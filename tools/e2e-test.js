@@ -157,7 +157,7 @@ function makeFetch(realFetch){
   /* 【5】设计系统 */
   console.log('\n【5】设计系统');
   const styleTxt = [...d.querySelectorAll('style')].map(s=>s.textContent).join('\n');
-  ok('首页容器与文档页同规格', /<main class="app">/.test(html) && /main\.app\{[^}]*max-width:var\(--wrap\)/.test(html));
+  ok('首页与其他页同一容器（doc wide）', /<main class="doc wide">/.test(html) && !/app-grid|class="app"/.test(html));
   ok('无嵌套滚动容器（无拖拉框）', !/overflow-y:\s*auto/.test(styleTxt) && !/overflow-y:\s*auto/.test(html));
   ok('采用墨·纸·朱砂令牌', /--vermilion/.test(html) || /--vermilion/.test(styleTxt));
   ok('衬线标题字体已定义', /--serif/.test(html) || /--serif/.test(styleTxt));
