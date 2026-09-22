@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.7（v1.20 断言同步）*/
+/* midicn-lib 端到端回归 v11.8（v1.21 断言同步）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -260,7 +260,7 @@ function makeFetch(realFetch){
     ['sources.html', [/HOME|原始地址/, /thesession\.org/, /mutopiaproject/, /CREDIT|致谢/, /MuseData/]],
     ['sources.html', [/开源项目/]],
     ['licenses.html', [/C1/, /署名|attribution/i, /下架|takedown/i, /48/, /CC BY-SA/i, /禁止用于大语言模型|LLM/]],
-    ['download.html', [/by source|按来源/i, /by usage|按使用方式/i, /VER = 'v1\.20'/, /meta\.zip/]],
+    ['download.html', [/by source|按来源/i, /by usage|按使用方式/i, /VER = 'v1\.21'/, /meta\.zip/]],
   ]){
     try{
       let h;
