@@ -42,6 +42,7 @@ jobs:
           cp provenance.html site/ 2>/dev/null || true
           cp download.html site/ 2>/dev/null || true
           cp lyrics.html site/ 2>/dev/null || true
+          cp 404.html site/ 2>/dev/null || true
           cp sitemap.xml site/ 2>/dev/null || true
           cp robots.txt site/ 2>/dev/null || true
           cp -r assets site/assets 2>/dev/null || true

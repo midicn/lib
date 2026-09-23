@@ -3,7 +3,7 @@
   <url>
     <loc>https://lib.midicn.com/</loc>
     <lastmod>2026-09-23</lastmod>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
@@ -15,13 +15,7 @@
   <url>
     <loc>https://lib.midicn.com/sources.html</loc>
     <lastmod>2026-09-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lib.midicn.com/licenses.html</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
@@ -31,9 +25,15 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://lib.midicn.com/licenses.html</loc>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://lib.midicn.com/provenance.html</loc>
     <lastmod>2026-09-23</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 </urlset>

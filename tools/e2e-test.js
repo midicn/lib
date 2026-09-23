@@ -26,8 +26,9 @@ async function inlineAssets(html, htmlPath){
     try{ return await (await fetch(ORIGIN + rel)).text(); }catch(e){}
     return '';
   };
-  const [arch, plr, css] = await Promise.all([
-    grab('assets/archive.js'), grab('assets/player.js'), grab('assets/style.css')]);
+  const [arch, plr, css, shell] = await Promise.all([
+    grab('assets/archive.js'), grab('assets/player.js'), grab('assets/style.css'),
+    grab('assets/shell.js')]);
   return html
     .replace(/<script[^>]*src="vendor\/[^"]+"[^>]*><\/script>/g, '')
     .replace(/<script[^>]*src="soundfont\/[^"]+"[^>]*><\/script>/g, '')
@@ -35,6 +36,9 @@ async function inlineAssets(html, htmlPath){
       arch ? '<script>' + arch + '</script>' : '')
     .replace(/<script[^>]*src="assets\/player\.js"[^>]*><\/script>/g,
       plr ? '<script>' + plr + '</script>' : '')
+    // 三站共享外壳脚本：必须内联，否则 jsdom 会去网络抓 → 假「脚本错误」
+    .replace(/<script[^>]*src="assets\/shell\.js"[^>]*><\/script>/g,
+      shell ? '<script>' + shell + '</script>' : '')
     .replace(/<link[^>]*href="assets\/style\.css"[^>]*>/g,
       css ? '<style>' + css + '</style>' : '');
 }
@@ -198,7 +202,13 @@ function makeFetch(realFetch){
   /* 【6】导航与页脚 */
   console.log('\n【6】导航与页脚');
   const nav = [...d.querySelectorAll('.nav a')].map(a=>a.getAttribute('href'));
-  ok('导航含五页（含歌词检索）', ['./','download.html','sources.html','lyrics.html','licenses.html'].every(h=>nav.includes(h)), nav.join(' '));
+  // v1.23：三站统一导航（六项，跨站用绝对 URL）——「详细校验」见【12】
+  ok('导航含姊妹站与关键页',
+     ['https://lib.midicn.com/', 'https://mid.midicn.com/', 'https://zip.midicn.com/']
+       .every(h => nav.some(a => a === h)) &&
+     ['sources.html', 'lyrics.html', 'licenses.html']
+       .every(h => nav.some(a => a.endsWith(h))),
+     nav.join(' '));
   ok('页脚为紧凑两行（链接 + 声明）', !!d.querySelector('footer .fbar') && !!d.querySelector('footer .fnote'));
   ok('页脚含许可声明', /许可|licence/i.test((d.getElementById('footLegal')||{}).textContent || ''));
 
@@ -319,6 +329,42 @@ function makeFetch(realFetch){
     ok('引擎缺席时点播放只提示、不抛未捕获异常', asyncErrs.length === before,
        asyncErrs.slice(before, before+1).join(' ').slice(0,150));
   }catch(e){ ok('引擎解耦测试', false, String(e).slice(0, 90)); }
+
+  /* 【12】三站统一外壳 + SEO（v1.23 · _apply_site_shell.py 的回归防线）
+     三站的页头/页脚/图标/互链必须一致；每页必须带全套 SEO 要素。 */
+  console.log('\n【12】统一外壳与 SEO');
+  {
+    const files = ['index.html','download.html','sources.html','lyrics.html',
+                   'licenses.html','provenance.html','detail.html','404.html'];
+    const NAVKEYS = ['音乐库','维度浏览','包下载','数据来源','歌词检索','许可与法律'];
+    const base = path.dirname(LOCAL);
+    let navOK = 0, seoOK = 0, shellOK = 0, extOK = 0;
+    for (const f of files){
+      const fp = path.join(base, f);
+      if (!fs.existsSync(fp)) continue;
+      const s = fs.readFileSync(fp, 'utf-8');
+      // 主导航必含 6 项且互链到姊妹站
+      const navBlock = (s.match(/<nav class="nav"[\s\S]*?<\/nav>/) || [''])[0];
+      const hasAll = NAVKEYS.every(k => navBlock.includes(k));
+      if (hasAll) navOK++;
+      // 跨站互链存在
+      if (s.includes('https://mid.midicn.com/') && s.includes('https://zip.midicn.com/')) extOK++;
+      // SEO 要素
+      const seo = ['rel="canonical"', 'property="og:title"', 'name="twitter:card"',
+                   'application/ld+json', 'rel="icon"', 'hreflang="zh-CN"', 'og:image'];
+      if (seo.every(x => s.includes(x)) && (s.match(/<!-- SEO:BEGIN/g) || []).length === 1) seoOK++;
+      // 共享外壳脚本
+      if (s.includes('assets/shell.js')) shellOK++;
+    }
+    const n = files.filter(f => fs.existsSync(path.join(base, f))).length;
+    ok('主导航六项齐全', navOK === n, `${navOK}/${n} 页`);
+    ok('跨站互链（mid + zip）', extOK === n, `${extOK}/${n} 页`);
+    ok('SEO 要素齐全（canonical/og/twitter/JSON-LD/icon/hreflang）', seoOK === n, `${seoOK}/${n} 页`);
+    ok('共享外壳脚本已注入', shellOK === n, `${shellOK}/${n} 页`);
+    ok('robots.txt + sitemap.xml 齐备',
+       fs.existsSync(path.join(base, 'robots.txt')) && fs.existsSync(path.join(base, 'sitemap.xml')));
+    ok('OG 分享图存在', fs.existsSync(path.join(base, 'assets', 'og.png')));
+  }
 
   /* 【11】来源地址核验（每个地址都必须对得上真实采集来源，不得臆造）*/
   console.log('\n【11】来源地址核验');
