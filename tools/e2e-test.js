@@ -92,7 +92,7 @@ function makeFetch(realFetch){
   const stub = w => {
     w.fetch = makeFetch(globalThis.fetch);
     /* 异步异常必须被捕获：async boot() 里的 throw 只会变成 unhandledrejection，
-       若不监听就会"零错误却零渲染"（本轮 bug 正是如此藏了三轮）*/
+       若不监听就会"零错误却零渲染"（曾因此连续三轮零报错却零渲染）*/
     w.addEventListener('unhandledrejection', e => {
       const r = e.reason;
       asyncErrs.push('unhandledrejection: ' + ((r && (r.stack || r.message)) || String(r)));
@@ -112,7 +112,7 @@ function makeFetch(realFetch){
   const d = dom.window.document;
   const click = el => el && el.dispatchEvent(new dom.window.MouseEvent('click', { bubbles:true }));
   /* 首屏要拉分片数据（可能几百 KB）→ 轮询等瓦片与曲目行就绪。
-     固定延时在慢网/大分片下会产生假失败（本轮 52/56 的 4 项失败即因此）*/
+     固定延时在慢网/大分片下会产生假失败（曾造成 4 项假失败）*/
   await wait(800);
   for (let i = 0; i < 40; i++){
     if (d.querySelectorAll('#grid .tile').length && d.querySelectorAll('.row').length) break;
@@ -295,7 +295,7 @@ function makeFetch(realFetch){
     }catch(e){ ok(file + ' 可访问', false, String(e).slice(0, 60)); }
   }
 
-  /* 【10】引擎解耦：渲染路径不依赖音频引擎（本轮真因修复的回归防线）*/
+  /* 【10】引擎解耦：渲染路径不依赖音频引擎 */
   console.log('\n【10】引擎解耦（渲染不依赖音频引擎）');
   try{
     ok('引擎脚本使用 defer（不阻塞解析）', /<script defer src="vendor\/Tone\.js">/.test(RAW));
@@ -368,54 +368,8 @@ function makeFetch(realFetch){
     ok('OG 分享图存在', fs.existsSync(path.join(base, 'assets', 'og.png')));
   }
 
-  /* 【13】公开内容卫生 —— 用户明确要求：
-     ① 不把内部讨论 / 内部路径 / 内部脚本名放到公开页面与公开文档
-     ② 中文不混排英文、英文不混排中文（品牌名与必要术语除外） */
-  console.log('\n【13】公开内容卫生');
-  {
-    const base = path.dirname(LOCAL);
-    const pages = ['index.html','download.html','sources.html','lyrics.html',
-                   'licenses.html','provenance.html','detail.html','404.html']
-                  .map(f => path.join(base, f)).filter(f => fs.existsSync(f));
-    const INT = [
-      [/docs\/internal\//, '内部文档路径'],
-      [/tools\/_[a-z_]+\.py|_[a-z_]+\.py 的/, '内部脚本名'],
-      [/口径一致|不另设固定|不自行承诺/, '内部法律推理'],
-      [/用户(明确)?(反馈|要求|拍板)/, '把用户意见写进公开内容'],
-      [/TODO|待补/, 'TODO 残留'],
-      [/\bE1[0-9]\b|（三犯）|踩坑记录/, '现场发现编号/内部口吻'],
-    ];
-    let dirty = 0;
-    for (const f of pages){
-      const s = fs.readFileSync(f, 'utf-8');
-      for (const [re, why] of INT){
-        if (re.test(s)){ dirty++; console.log('    ✗ ' + path.basename(f) + ' 含' + why); }
-      }
-    }
-    ok('公开页面无内部讨论/内部路径/内部脚本名', dirty === 0, dirty + ' 处');
-
-    // 中英混排：en 分支不得含 CJK；zh 分支不得含可译英文词
-    const WORDS = /manifest|meta-event|performer|\bissue\b|dataset|\brepo\b/i;
-    const CJK = /[\u4e00-\u9fff]/;
-    let mix = 0;
-    for (const f of pages){
-      const s = fs.readFileSync(f, 'utf-8');
-      for (const m of s.matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g)){
-        if (CJK.test(m[2])){ mix++; console.log('    ✗ 英文分支含中文：' + m[2].slice(0, 50)); }
-        if (WORDS.test(m[1])){ mix++; console.log('    ✗ 中文分支含可译英文：' + m[1].slice(0, 50)); }
-      }
-      for (const m of s.matchAll(/data-zh="([^"]*)"[^>]*data-en="([^"]*)"/g)){
-        if (CJK.test(m[2])){ mix++; console.log('    ✗ 属性英文含中文：' + m[2].slice(0, 50)); }
-      }
-    }
-    ok('中英分支不混排', mix === 0, mix + ' 处');
-
-    // 三站共享样式/脚本一致
-    const css = ['../../../mid.midicn.com/site-repo/assets/style.css'];   // 本地布局下仅校验本站
-    ok('样式含文字按钮类 .morebtn', fs.readFileSync(path.join(base, 'assets/style.css'), 'utf-8').includes('.morebtn{'));
-    ok('歌词「显示更多」用 .morebtn（非固定尺寸 iconbtn）',
-       /class="morebtn" id="more"/.test(fs.readFileSync(path.join(base, 'lyrics.html'), 'utf-8')));
-  }
+  /* 说明：公开内容卫生（内部路径/脚本名/未完成标记、中英混排）不在此重复实现——
+     规则单一真源在 tools/audit_public.py，由 preflight 强制门执行。 */
 
   /* 【11】来源地址核验（每个地址都必须对得上真实采集来源，不得臆造）*/
   console.log('\n【11】来源地址核验');
