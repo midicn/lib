@@ -616,7 +616,9 @@ function applyFilter(){
   shown = filtered.length;                     /* 全量视为已展示（窗口化按需渲染） */
   winFirst = winLast = -1; winCur = -2;
   $('list').innerHTML = '<li class="vsp"></li><li class="vsp"></li>';
-  try { window.scrollTo({ top: Math.max(0, listTopDoc() - 72) }); } catch(e) {}
+  /* 注意：这里**不要** window.scrollTo —— 那会让每次筛选/首次加载都自动把页面
+     拉到列表位置（用户明确反馈不要这个行为）。列表就在下方，正常显示即可。
+     例外：`?play=<id>` 深链定位（见 locateAndPlay）会主动滚动到目标行，那是需要的。 */
   renderWindow(true);
   const n = activeCount();
   $('fbadge').hidden = n === 0; $('fbadge').textContent = n;

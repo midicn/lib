@@ -301,14 +301,14 @@ function render(){
     ['元数据准确性', '我们尽力核对作曲家、作品编号、时期等字段（含 IMSLP 官方目录交叉验证），但元数据可能存在错误或遗漏。发现错误请提交 issue，我们会修正。'],
     ['无担保', '本库按「现状」提供，不附带任何明示或默示担保，包括可商售性与特定用途适用性。因使用本库数据产生的任何后果由使用者自行承担。'],
     ['商标与名称', '各来源名称、机构名称与商标归其各自所有者；本库在来源页与许可页的引用属于说明性使用，不表示任何赞助或背书关系。'],
-    ['下架与异议流程', '权利人若认为某项内容侵犯其权利，请通过开源项目 issue 或邮件提供：作品标识（id 或文件名）、权利依据、诉求。我们会在核实后 <strong>48 小时内</strong>下架相关数据并更新发布版本。'],
+    ['下架与异议流程', '权利人若认为某项内容侵犯其权利，请通过开源项目 issue 或邮件提供：作品标识（id 或文件名）、权利依据、诉求。我们会在核实后<strong>及时</strong>下架相关数据并更新发布版本（与法律「立即 / 及时」口径一致，不另设固定时限）。'],
   ] : [
     ['Rights in the material', 'The rights status of a MIDI file depends on its upstream: typesetting, transcription, performance and dataset compilation may each create rights. We label licences as recorded by sources, but this is not legal advice.'],
     ['Works may carry separate rights', 'Many works are public domain, yet <strong>specific editions, transcriptions or recordings</strong> may still be protected — which is exactly the case for C2/C3 data.'],
     ['Metadata accuracy', 'We verify composers, catalogue numbers and periods (including IMSLP cross-checks), but errors are possible. Report them and we will fix them.'],
     ['No warranty', 'The library is provided "as is", without warranty of any kind, express or implied, including merchantability or fitness for a particular purpose.'],
     ['Trademarks and names', 'Source, institution and product names belong to their owners; references here are descriptive and imply no sponsorship or endorsement.'],
-    ['Takedown and objections', 'Rights holders may open an issue or email us with the track id or filename, the basis of the claim and the requested action. Verified requests are honoured within <strong>48 hours</strong>.'],
+    ['Takedown and objections', 'Rights holders may open an issue or email us with the track id or filename, the basis of the claim and the requested action. Verified requests are honoured <strong>promptly</strong> — matching the statutory standard of “immediately / without undue delay”, with no fixed deadline of our own.'],
   ];
   $('legal').innerHTML = legal.map(([h,b])=>
     '<h3>'+h+'</h3><p>'+b+'</p>').join('');
