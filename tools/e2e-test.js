@@ -371,6 +371,25 @@ function makeFetch(realFetch){
   /* 说明：公开内容卫生（内部路径/脚本名/未完成标记、中英混排）不在此重复实现——
      规则单一真源在 tools/audit_public.py，由 preflight 强制门执行。 */
 
+  /* 【14】未收录源清单与目录同步（防止站点与 SOURCE-CATALOG.md 漂移） */
+  console.log('\n【14】未收录源清单');
+  {
+    const arch = fs.readFileSync(path.join(path.dirname(LOCAL), 'assets/archive.js'), 'utf-8');
+    const m = arch.match(/const EXCLUDED = \[([\s\S]*?)\n\];/);
+    const n = m ? (m[1].match(/id:'/g) || []).length : 0;
+    const cats = m ? (m[1].match(/cat:'[ABCD]'/g) || []).length : 0;
+    ok('未收录源清单已填写（≥30 条）', n >= 30, n + ' 条');
+    ok('每条都带分类标记 A/B/C/D', cats === n, cats + '/' + n);
+    // 若本地存在目录文档，则核对数量一致（线上运行时跳过）
+    const catPath = path.resolve(path.dirname(LOCAL), '..', '..', 'docs', 'SOURCE-CATALOG.md');
+    if (fs.existsSync(catPath)){
+      const doc = fs.readFileSync(catPath, 'utf-8');
+      const dm = doc.match(/\|\s*未收录源\s*\|\s*(\d+)/);
+      const declared = dm ? Number(dm[1]) : null;
+      ok('与 SOURCE-CATALOG.md 的数量一致', declared === n, '文档 ' + declared + ' / 站点 ' + n);
+    }
+  }
+
   /* 【11】来源地址核验（每个地址都必须对得上真实采集来源，不得臆造）*/
   console.log('\n【11】来源地址核验');
   try{
@@ -399,10 +418,13 @@ function makeFetch(realFetch){
     const miss = Object.entries(SRC_URLS).filter(([id,u]) => !arch.includes("url:'" + u + "'"));
     ok('21 个来源地址与真实采集来源一致', miss.length === 0,
        miss.length ? '不符: ' + miss.map(([i])=>i).join(' ') : '');
-    /* 已知错误 / 无关地址不得复现 */
+    /* 已知错误 / 无关地址不得复现 —— **只在「已收录」来源里查**。
+       注意：`EXCLUDED`（考察后未收录）里出现这些名字是**正确**的
+       （例如 kernscores 正是我们考察后决定不收的源），不能算违规。 */
     const FORBIDDEN = ['lucasnata','lucasnfe','www.ihchina.cn','EMOPIA/EMOPIA','jukedeck/nottingham',
                        'www.wikifonia.org','web.mit.edu/music21','kernscores','openscore.cc','aria-midi.org'];
-    const back = FORBIDDEN.filter(b => arch.includes(b));
+    const srcOnly = (arch.match(/SOURCES = \[[\s\S]*?\n\];/) || [''])[0];
+    const back = FORBIDDEN.filter(b => srcOnly.includes(b));
     ok('无臆造/无关地址复现', back.length === 0, back.join(' '));
     /* 不再保留多余的「站点」链接（只要一个原始地址）*/
     ok('来源条目仅保留原始地址（无 site 字段）', !/\bsite:'/.test(arch));

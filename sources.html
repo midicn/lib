@@ -155,17 +155,38 @@ function render(){
                                 SOURCES.length+' sources · '+fmt(total)+' tracks');
   $('list').innerHTML = SOURCES.map(srcCard).join('');
 
-  $('excluded').innerHTML = EXCLUDED.map(s=>(
-    '<div class="panel" style="margin-bottom:var(--s4)">'+
-    '<div class="panel-hd"><b style="font-size:var(--fs-16)">'+s.name[LANG]+'</b>'+
-      '<span class="lic no">'+t('不可分发','NOT REDISTRIBUTABLE')+'</span>'+
-      '<span style="margin-left:auto"></span>'+
-      '<span class="meta">'+fmt(s.count)+t(' 首（未收录）',' tracks (excluded)')+'</span></div>'+
-    '<div class="panel-bd"><p style="margin-bottom:var(--s3)">'+s.why[LANG]+'</p>'+
-    '<dl class="dl"><dt>'+t('许可','LICENCE')+'</dt><dd>'+s.license+'</dd>'+
-    '<dt>'+t('原始地址','HOME')+'</dt><dd><a href="'+s.url+'" target="_blank" rel="noopener">'+s.url+'</a></dd></dl>'+
-    '</div></div>'
-  )).join('');
+  /* 未收录源按四类分组渲染：A 不可分发 · B 许可未明确 · C 待核实 · D 待收录
+   每类给不同的徽标与说明，避免把「许可未明确」误标成「不可分发」。 */
+  const EX_ORDER = ['A','B','C','D'];
+  $('excluded').innerHTML = EX_ORDER.map(cat=>{
+    const arr = EXCLUDED.filter(x=>x.cat===cat);
+    if (!arr.length) return '';
+    const zh = (EXCLUDED_CAT[cat]||{}).zh || cat, en = (EXCLUDED_CAT[cat]||{}).en || cat;
+    const note = {
+      A: ['许可明确不允许再分发（或严于公开服务），我们一律不收。',
+          'Licences that clearly forbid redistribution (or are stricter than a public service) — never ingested.'],
+      B: ['许可文本未明确允许再分发 —— 即使数据质量很高、规模很大，我们也不下载收录。以下源全部公开可访问，你可自行获取并自行判断授权。',
+          'Licence text does not clearly permit redistribution — however large or high-quality, we do not ingest. All are publicly accessible; you may fetch them yourself and judge the terms.'],
+      C: ['尚在核实中，或混有版权内容需逐一筛选。',
+          'Still under review, or mixed with copyrighted content that needs per-item screening.'],
+      D: ['许可清晰、可以收录，只是尚未抓取（欢迎自取，或等后续批次）。',
+          'Licence is clear and ingestion is possible — simply not yet fetched.'],
+    }[cat];
+    return '<div class="stitle" style="margin-top:var(--s6)"><h3 style="font-size:var(--fs-16)">'
+      + t(zh, en) + ' · ' + arr.length + '</h3></div>'
+      + '<p class="meta" style="margin-bottom:var(--s4)">' + t(note[0], note[1]) + '</p>'
+      + arr.map(s=>(
+        '<div class="panel" style="margin-bottom:var(--s4)">'
+        + '<div class="panel-hd"><b style="font-size:var(--fs-16)">'+s.name[LANG]+'</b>'
+        + '<span class="lic '+(cat==='A'?'no':cat==='B'?'c2':cat==='C'?'':'c1')+'">'+t(EXCLUDED_CAT[cat].zh, EXCLUDED_CAT[cat].en)+'</span>'
+        + '<span style="margin-left:auto"></span>'
+        + '<span class="meta">'+s.count+'</span></div>'
+        + '<div class="panel-bd"><p style="margin-bottom:var(--s3)">'+s.why[LANG]+'</p>'
+        + '<dl class="dl"><dt>'+t('许可','LICENCE')+'</dt><dd>'+s.license+'</dd>'
+        + (s.url ? '<dt>'+t('原始地址','HOME')+'</dt><dd><a href="'+s.url+'" target="_blank" rel="noopener">'+s.url.replace(/^https?:\/\//,'')+'</a></dd>' : '<dt>'+t('原始地址','HOME')+'</dt><dd>'+t('（无公开地址）','(no public URL)')+'</dd>')
+        + '</dl></div></div>'
+      )).join('');
+  }).join('');
 
   const steps = LANG === 'zh' ? [
     '<b>上游发布</b>：上游项目以其公开渠道发布原始文件与元数据表（MIDI / ABC / LilyPond / MusicXML / CSV）。',
