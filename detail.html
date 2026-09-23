@@ -43,7 +43,7 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
     padding:var(--s3) var(--s4) calc(var(--s3) + var(--sa-b))}
 }
 </style>
-<!-- SEO:BEGIN 由 tools/_apply_site_shell.py 生成，勿手改 -->
+<!-- SEO:BEGIN -->
 <meta name="robots" content="noindex,follow">
 <link rel="canonical" href="https://lib.midicn.com/detail.html">
 <link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/detail.html">
@@ -366,7 +366,7 @@ function render(){
   const allow = z.id==='main' ? t('商业使用 · 再分发 · 修改','Commercial · redistribute · modify')
     : z.id==='piano' ? t('非商业使用（须同许可方式）','Non-commercial (share-alike)')
     : t('仅学习研究 · 不得再分发','Study/research only · no redistribution');
-  /* TheSession 附加条款（数据仓 LICENSE.md §2.2 · NOTICE · 台账口径一致） */
+  /* TheSession 附加条款 */
   const extraTerm = (src && src.id === 'thesession') ? t(
     '<dt>附加条款</dt><dd><b>禁止用于大语言模型（LLM）</b>——不得训练大模型、借助 LLM 工具处理，或并入 LLM 相关应用（无障碍方案除外）</dd>',
     '<dt>Additional term</dt><dd><b>Prohibition on LLM use</b> — no LLM training, no processing with LLM tools, and no incorporation into LLM-related applications (accessibility excepted)</dd>') : '';

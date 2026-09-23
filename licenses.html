@@ -6,7 +6,7 @@
 <title>许可与法律 · midicn-lib</title>
 <meta name="description" content="midicn-lib 的许可体系（C1 可商用 / C2 非商用 / C3 学习研究）、逐源许可矩阵、署名要求与法律声明。">
 <link rel="stylesheet" href="assets/style.css">
-<!-- SEO:BEGIN 由 tools/_apply_site_shell.py 生成，勿手改 -->
+<!-- SEO:BEGIN -->
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://lib.midicn.com/licenses.html">
 <link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/licenses.html">
@@ -100,8 +100,8 @@
   <div class="panel" style="margin-top:var(--s4)">
     <div class="panel-bd">
       <p><b data-zh="特别条款 · 内嵌歌词（2,778 首，独立权利层）" data-en="Special term · Embedded lyrics (2,778 tracks, separate rights layer)">特别条款 · 内嵌歌词（2,778 首，独立权利层）</b></p>
-      <p data-zh="部分曲目文件内含 MIDI 歌词事件（lyric meta-event）。<b>歌词是独立于曲目的另一层权利对象</b>：即使某曲目属 <code>main</code>（可商用），其内嵌歌词文本仍<b>仅限研究、教学、学习</b>用途，不得单独用于商业用途、出版、录制或再分发。本库对任何歌词文本<b>不主张著作权</b>，也不构成歌词权利人的授权表示。"
-         data-en="Some track files contain MIDI lyric meta-events. <b>Lyrics are a separate rights object from the track</b>: even where a track is <code>main</code> (commercial use permitted), its embedded lyric text remains <b>study/teaching/learning use only</b> and may not be used commercially, published, recorded or redistributed on its own. This library <b>claims no copyright</b> in any lyric text and grants no rights in it.">部分曲目文件内含 MIDI 歌词事件（lyric meta-event）。<b>歌词是独立于曲目的另一层权利对象</b>：即使某曲目属 <code>main</code>（可商用），其内嵌歌词文本仍<b>仅限研究、教学、学习</b>用途，不得单独用于商业用途、出版、录制或再分发。本库对任何歌词文本<b>不主张著作权</b>，也不构成歌词权利人的授权表示。</p>
+      <p data-zh="部分曲目文件内含 MIDI 歌词事件。<b>歌词是独立于曲目的另一层权利对象</b>：即使某曲目属 <code>main</code>（可商用），其内嵌歌词文本仍<b>仅限研究、教学、学习</b>用途，不得单独用于商业用途、出版、录制或再分发。本库对任何歌词文本<b>不主张著作权</b>，也不构成歌词权利人的授权表示。"
+         data-en="Some track files contain MIDI lyric meta-events. <b>Lyrics are a separate rights object from the track</b>: even where a track is <code>main</code> (commercial use permitted), its embedded lyric text remains <b>study/teaching/learning use only</b> and may not be used commercially, published, recorded or redistributed on its own. This library <b>claims no copyright</b> in any lyric text and grants no rights in it.">部分曲目文件内含 MIDI 歌词事件。<b>歌词是独立于曲目的另一层权利对象</b>：即使某曲目属 <code>main</code>（可商用），其内嵌歌词文本仍<b>仅限研究、教学、学习</b>用途，不得单独用于商业用途、出版、录制或再分发。本库对任何歌词文本<b>不主张著作权</b>，也不构成歌词权利人的授权表示。</p>
       <p data-zh="<b>为何单列：</b>上游对 MIDI 文件本身授予的许可（CC BY 4.0 / PD / CC0）<b>不能自动延伸</b>到文件中可能由第三方写入的歌词——许可人只能授权自己拥有的权利，「容器被授权」不等于「容器内第三方内容被授权」。故本库不作「歌词随文件一并授权」的主张，而保守地将歌词整体限定为研究用途。"
          data-en="<b>Why a separate layer:</b> a license granted by an upstream source over the MIDI file itself (CC BY 4.0 / PD / CC0) <b>does not automatically extend</b> to lyric text a third party may have written into that file — a licensor can only license what it owns; &quot;the container is licensed&quot; is not &quot;third-party content inside it is licensed&quot;. This library therefore makes no claim that lyrics are licensed along with the file, and conservatively restricts lyrics to study use."><b>为何单列：</b>上游对 MIDI 文件本身授予的许可（CC BY 4.0 / PD / CC0）<b>不能自动延伸</b>到文件中可能由第三方写入的歌词——许可人只能授权自己拥有的权利，「容器被授权」不等于「容器内第三方内容被授权」。故本库不作「歌词随文件一并授权」的主张，而保守地将歌词整体限定为研究用途。</p>
       <p class="meta" data-zh="风险实测：2,778 首中约 2,642 首来自以公有领域内容为限的来源（OpenScore Lieder · Mutopia · 赞美诗集等），歌词本身即属公有领域；风险集中在 lakh 的 136 首（多为 20 世纪商业歌曲），该批曲目已定级 C3（study）且其中在保护期内者已剔除。中国民歌歌词库（10,035 首）不在发布包内，仅站内检索展示。"
@@ -301,20 +301,20 @@ function render(){
     ['元数据准确性', '我们尽力核对作曲家、作品编号、时期等字段（含 IMSLP 官方目录交叉验证），但元数据可能存在错误或遗漏。发现错误请提交 issue，我们会修正。'],
     ['无担保', '本库按「现状」提供，不附带任何明示或默示担保，包括可商售性与特定用途适用性。因使用本库数据产生的任何后果由使用者自行承担。'],
     ['商标与名称', '各来源名称、机构名称与商标归其各自所有者；本库在来源页与许可页的引用属于说明性使用，不表示任何赞助或背书关系。'],
-    ['下架与异议流程', '权利人若认为某项内容侵犯其权利，请通过开源项目 issue 或邮件提供：作品标识（id 或文件名）、权利依据、诉求。我们会在核实后<strong>及时</strong>下架相关数据并更新发布版本（与法律「立即 / 及时」口径一致，不另设固定时限）。'],
+    ['下架与异议流程', '权利人若认为某项内容侵犯其权利，请通过开源项目 issue 或邮件提供：作品标识（id 或文件名）、权利依据、诉求。我们会在核实后<strong>及时</strong>下架相关数据并更新发布版本。'],
   ] : [
     ['Rights in the material', 'The rights status of a MIDI file depends on its upstream: typesetting, transcription, performance and dataset compilation may each create rights. We label licences as recorded by sources, but this is not legal advice.'],
     ['Works may carry separate rights', 'Many works are public domain, yet <strong>specific editions, transcriptions or recordings</strong> may still be protected — which is exactly the case for C2/C3 data.'],
     ['Metadata accuracy', 'We verify composers, catalogue numbers and periods (including IMSLP cross-checks), but errors are possible. Report them and we will fix them.'],
     ['No warranty', 'The library is provided "as is", without warranty of any kind, express or implied, including merchantability or fitness for a particular purpose.'],
     ['Trademarks and names', 'Source, institution and product names belong to their owners; references here are descriptive and imply no sponsorship or endorsement.'],
-    ['Takedown and objections', 'Rights holders may open an issue or email us with the track id or filename, the basis of the claim and the requested action. Verified requests are honoured <strong>promptly</strong> — matching the statutory standard of “immediately / without undue delay”, with no fixed deadline of our own.'],
+    ['Takedown and objections', 'Rights holders may open an issue or email us with the track id or filename, the basis of the claim and the requested action. Verified requests are honoured <strong>promptly</strong>.'],
   ];
   $('legal').innerHTML = legal.map(([h,b])=>
     '<h3>'+h+'</h3><p>'+b+'</p>').join('');
 
   $('contact').innerHTML = t(
-    '联系与异议：<a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">开源项目 issue</a>（推荐，公开可追溯）。我们会公开记录每一次调整。',
+    '联系与异议：<a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">开源项目议题</a>（推荐，公开可追溯）。我们会公开记录每一次调整。',
     'Contact: <a href="https://github.com/midicn/midi-lib/issues" target="_blank" rel="noopener">open-source project issue</a> (public and traceable). Every adjustment is recorded publicly.'
   );
   $('footNote').innerHTML = t('本页为使用条款说明，不构成法律意见。','This page explains terms of use; it is not legal advice.');

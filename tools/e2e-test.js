@@ -252,7 +252,7 @@ function makeFetch(realFetch){
     ok('数据记录含文件路径', /\.mid/.test((dd.getElementById('rec')||{}).textContent || ''));
     ok('相关作品列出', dd.querySelectorAll('#recs a').length > 0, dd.querySelectorAll('#recs a').length + ' 项');
     ok('下载按钮指向 .mid', /\.mid$/.test((dd.getElementById('dl')||{}).getAttribute('href') || ''));
-    /* TheSession 附加条款（批次 2 · 与数据仓 LICENSE.md §2.2 一致）*/
+    /* TheSession 附加条款*/
     try {
       const sdom = new JSDOM(dhtml, { url: ORIGIN + 'detail.html?id=thesession-000000',
         runScripts:'dangerously', pretendToBeVisual:true, virtualConsole: vc, resources:'usable', beforeParse: stub });
@@ -332,7 +332,7 @@ function makeFetch(realFetch){
        asyncErrs.slice(before, before+1).join(' ').slice(0,150));
   }catch(e){ ok('引擎解耦测试', false, String(e).slice(0, 90)); }
 
-  /* 【12】三站统一外壳 + SEO（v1.23 · _apply_site_shell.py 的回归防线）
+  /* 【12】三站统一外壳 + SEO
      三站的页头/页脚/图标/互链必须一致；每页必须带全套 SEO 要素。 */
   console.log('\n【12】统一外壳与 SEO');
   {
@@ -366,6 +366,55 @@ function makeFetch(realFetch){
     ok('robots.txt + sitemap.xml 齐备',
        fs.existsSync(path.join(base, 'robots.txt')) && fs.existsSync(path.join(base, 'sitemap.xml')));
     ok('OG 分享图存在', fs.existsSync(path.join(base, 'assets', 'og.png')));
+  }
+
+  /* 【13】公开内容卫生 —— 用户明确要求：
+     ① 不把内部讨论 / 内部路径 / 内部脚本名放到公开页面与公开文档
+     ② 中文不混排英文、英文不混排中文（品牌名与必要术语除外） */
+  console.log('\n【13】公开内容卫生');
+  {
+    const base = path.dirname(LOCAL);
+    const pages = ['index.html','download.html','sources.html','lyrics.html',
+                   'licenses.html','provenance.html','detail.html','404.html']
+                  .map(f => path.join(base, f)).filter(f => fs.existsSync(f));
+    const INT = [
+      [/docs\/internal\//, '内部文档路径'],
+      [/tools\/_[a-z_]+\.py|_[a-z_]+\.py 的/, '内部脚本名'],
+      [/口径一致|不另设固定|不自行承诺/, '内部法律推理'],
+      [/用户(明确)?(反馈|要求|拍板)/, '把用户意见写进公开内容'],
+      [/TODO|待补/, 'TODO 残留'],
+      [/\bE1[0-9]\b|（三犯）|踩坑记录/, '现场发现编号/内部口吻'],
+    ];
+    let dirty = 0;
+    for (const f of pages){
+      const s = fs.readFileSync(f, 'utf-8');
+      for (const [re, why] of INT){
+        if (re.test(s)){ dirty++; console.log('    ✗ ' + path.basename(f) + ' 含' + why); }
+      }
+    }
+    ok('公开页面无内部讨论/内部路径/内部脚本名', dirty === 0, dirty + ' 处');
+
+    // 中英混排：en 分支不得含 CJK；zh 分支不得含可译英文词
+    const WORDS = /manifest|meta-event|performer|\bissue\b|dataset|\brepo\b/i;
+    const CJK = /[\u4e00-\u9fff]/;
+    let mix = 0;
+    for (const f of pages){
+      const s = fs.readFileSync(f, 'utf-8');
+      for (const m of s.matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g)){
+        if (CJK.test(m[2])){ mix++; console.log('    ✗ 英文分支含中文：' + m[2].slice(0, 50)); }
+        if (WORDS.test(m[1])){ mix++; console.log('    ✗ 中文分支含可译英文：' + m[1].slice(0, 50)); }
+      }
+      for (const m of s.matchAll(/data-zh="([^"]*)"[^>]*data-en="([^"]*)"/g)){
+        if (CJK.test(m[2])){ mix++; console.log('    ✗ 属性英文含中文：' + m[2].slice(0, 50)); }
+      }
+    }
+    ok('中英分支不混排', mix === 0, mix + ' 处');
+
+    // 三站共享样式/脚本一致
+    const css = ['../../../mid.midicn.com/site-repo/assets/style.css'];   // 本地布局下仅校验本站
+    ok('样式含文字按钮类 .morebtn', fs.readFileSync(path.join(base, 'assets/style.css'), 'utf-8').includes('.morebtn{'));
+    ok('歌词「显示更多」用 .morebtn（非固定尺寸 iconbtn）',
+       /class="morebtn" id="more"/.test(fs.readFileSync(path.join(base, 'lyrics.html'), 'utf-8')));
   }
 
   /* 【11】来源地址核验（每个地址都必须对得上真实采集来源，不得臆造）*/

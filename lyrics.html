@@ -6,7 +6,7 @@
 <title>歌词检索 · midicn-lib</title>
 <meta name="description" content="中国民间歌曲歌词检索（10,035 首）。仅供研究、教学与学习用途；歌词为独立权利层，不随曲目许可授权。">
 <link rel="stylesheet" href="assets/style.css">
-<!-- SEO:BEGIN 由 tools/_apply_site_shell.py 生成，勿手改 -->
+<!-- SEO:BEGIN -->
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://lib.midicn.com/lyrics.html">
 <link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/lyrics.html">
@@ -66,7 +66,7 @@
   </div></div>
 
   <div id="list" style="margin-top:var(--s4)"></div>
-  <div style="text-align:center;margin:var(--s5) 0"><button class="iconbtn" id="more" hidden></button></div>
+  <div class="morewrap"><button class="morebtn" id="more" hidden></button></div>
 
   <div class="stitle"><h2 data-zh="关于本库歌词" data-en="About these lyrics">关于本库歌词</h2></div>
   <div class="panel"><div class="panel-bd" id="about"></div></div>
@@ -158,13 +158,13 @@ function render(){
     '<b>不主张著作权</b>，也不代表歌词权利人授权。<b>无论对应曲目属于哪个许可档位，歌词文本仅限研究、教学与学习用途</b>；'+
     '不得用于商业用途、出版、录制或再分发。<br>'+
     '为了与上述定性一致，<b>歌词库不进入任何发布包，本页也不提供批量下载</b>；'+
-    '如歌词权利人提出异议，我们将<b>及时</b>下架相关内容（与法律「立即 / 及时」口径一致，不另设固定时限）。依据见 <a href="licenses.html">许可与法律</a> 页「内嵌歌词」面板与 <code>LICENSE.md §2.3</code>。',
+    '如歌词权利人提出异议，我们将<b>及时</b>下架相关内容。依据见 <a href="licenses.html">许可与法律</a> 页「内嵌歌词」面板与 <code>LICENSE.md §2.3</code>。',
     '<b>⚠ Scope of use (read first)</b><br>'+
     'Lyrics are a <b>separate rights object from the track</b> and are <b>not licensed along with it</b>: this library '+
     '<b>claims no copyright</b> in the text and grants no rights in it. <b>Whatever the track licence, lyric text is '+
     'restricted to study, teaching and learning</b> — no commercial use, publication, recording or redistribution.<br>'+
     'Consistently, <b>the lyrics library ships in no release package and this page offers no bulk download</b>. '+
-    'A rights-holder objection will be honoured <b>promptly</b> (matching the statutory “immediately / without undue delay” standard; no fixed deadline of our own). Basis: the “Embedded lyrics” panel on the '+
+    'A rights-holder objection will be honoured <b>promptly</b>. Basis: the “Embedded lyrics” panel on the '+
     '<a href="licenses.html">Licence</a> page and <code>LICENSE.md §2.3</code>.'
   );
   $('hint').innerHTML = t(

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   midicn-lib · 设计系统 v10 「谱面档案 The Score Archive」
+   midicn-lib · 站点样式
    ───────────────────────────────────────────────────────────────────────
    视觉主张
      · 谱线节奏：1px 墨线是全站唯一的装饰语言，构成版式韵律
@@ -252,3 +252,13 @@ main.doc li{margin-bottom:var(--s2)}
   .pkgs{grid-template-columns:1fr}
     table{font-size:var(--fs-12)} th,td{padding:var(--s2)}
 }
+
+/* 「显示更多（还有 N 首）」这类**文字按钮**：宽度自适应、窄屏可换行。
+   注意不要用 .iconbtn —— 那是固定 34×34 的方形图标按钮，装不下长文案。 */
+.morebtn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  min-height:38px;padding:var(--s2) var(--s5);border:1px solid var(--rule-2);
+  background:none;color:var(--paper);font-size:var(--fs-13);transition:var(--t);
+  max-width:100%;white-space:normal;text-align:center;line-height:1.4}
+.morebtn:hover{border-color:var(--vermilion);color:var(--vermilion)}
+@media(max-width:640px){.morebtn{width:100%}}
+.morewrap{display:flex;justify-content:center;margin:var(--s5) 0}

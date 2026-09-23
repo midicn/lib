@@ -6,7 +6,7 @@
 <title>数据下载 · midicn-lib</title>
 <meta name="description" content="midicn-lib 下载：按使用方式（可商用/非商用/学习研究）、按来源、按分类三种打包方式，附目录与校验。">
 <link rel="stylesheet" href="assets/style.css">
-<!-- SEO:BEGIN 由 tools/_apply_site_shell.py 生成，勿手改 -->
+<!-- SEO:BEGIN -->
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://lib.midicn.com/download.html">
 <link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/download.html">
@@ -169,7 +169,7 @@ function render(){
   );
   const usage = [
     { id:'meta', nm:t('目录与索引','Catalogue &amp; indexes'), meta:'6 '+t('文件','files')+' · ~8 MB',
-      desc:t('catalog.json（全库逐曲元数据，v1.23 起含作品归组键 wk、演奏者 performer、作曲家中文名等）+ 三个索引（按作曲家 / 按时期 / 按乐器）+ 校验清单。任何下游构建都应先取此包。',
+      desc:t('catalog.json（全库逐曲元数据，v1.23 起含作品归组键 wk、演奏者、作曲家中文名等）+ 三个索引（按作曲家 / 按时期 / 按乐器）+ 校验清单。任何下游构建都应先取此包。',
              'catalog.json (per-track metadata; v1.23 adds work key wk, performer, Chinese composer names) + indexes by composer / period / instrument + manifest. Start here for any downstream build.') },
     { id:'main', nm:t('C1 · 可商用主包','C1 · Commercial main'), meta:'79,216 '+t('首','tracks'),
       desc:t('许可允许商业使用的全部曲目（古典、民歌、赞美诗、爱尔兰传统、开放乐谱、游戏素材等）。商用须保留来源署名。',
@@ -222,7 +222,7 @@ function render(){
       '<dt>'+z.piano.code+'</dt><dd>'+z.piano[LANG]+' — '+(LANG==='zh'?z.piano.zhDesc:z.piano.enDesc)+'</dd>'+
       '<dt>'+z.study.code+'</dt><dd>'+z.study[LANG]+' — '+(LANG==='zh'?z.study.zhDesc:z.study.enDesc)+'</dd>'+
     '</dl><p style="margin:var(--s4) 0 0">'+t(
-      '逐曲许可与逐源条款见 <a href="licenses.html">许可与法律</a>；每个包内都附 manifest，写明所含来源、许可与校验值。',
+      '逐曲许可与逐源条款见 <a href="licenses.html">许可与法律</a>；每个包内都附清单，写明所含来源、许可与校验值。',
       'Per-track and per-source terms: <a href="licenses.html">Licence &amp; legal</a>. Every pack ships a manifest listing sources, licences and checksums.'
     )+'</p></div></div>';
   $('lyricsNote').innerHTML = t(

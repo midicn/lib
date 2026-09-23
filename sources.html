@@ -6,7 +6,7 @@
 <title>数据来源 · midicn-lib</title>
 <meta name="description" content="midicn-lib 收录的开放 MIDI 来源：逐源说明、原始地址、许可条款与致谢。">
 <link rel="stylesheet" href="assets/style.css">
-<!-- SEO:BEGIN 由 tools/_apply_site_shell.py 生成，勿手改 -->
+<!-- SEO:BEGIN -->
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://lib.midicn.com/sources.html">
 <link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/sources.html">
@@ -185,7 +185,7 @@ function render(){
   $('pipeline').innerHTML = steps.map(x=>'<li>'+x+'</li>').join('');
 
   $('caveat').innerHTML = t(
-    '若你是某来源的整理者或权利人，希望调整收录方式、补充署名或要求移除，请通过开源项目 issue 联系我们，我们会优先处理。',
+    '若你是某来源的整理者或权利人，希望调整收录方式、补充署名或要求移除，请通过开源项目议题联系我们，我们会优先处理。',
     'If you are a compiler or rights holder of any source and wish to adjust attribution or request removal, please open an issue on the open-source project — we will prioritise it.'
   );
   $('footNote').innerHTML = t(
