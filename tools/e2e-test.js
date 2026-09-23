@@ -53,7 +53,7 @@ async function assetText(rel){
   return '';
 }
 
-const PRE = ['data/summary.json','data/browse.json','data/loc.json','assets/style.css'];
+const PRE = ['data/summary.json','data/browse.json','data/loc.json','data/works.json','assets/style.css'];
 const cacheData = {};
 async function preload(){
   const dir = LOCAL ? path.dirname(LOCAL) : null;
@@ -65,11 +65,20 @@ async function preload(){
   }
 }
 function makeFetch(realFetch){
+  const dir = LOCAL ? path.dirname(LOCAL) : null;
   return async (u, opt)=>{
     const url = String(u);
     const key = url.replace(/^.*?(data\/)/, '$1');
     if (cacheData[key]) return new Response(cacheData[key], { status:200 });
     if (cacheData['assets/style.css'] && key === 'assets/style.css') return new Response(cacheData['assets/style.css'], { status:200 });
+    /* 本地模式：**任何 data/ 文件都按需从磁盘读**，不要走网络。
+       原先只预读了 summary/browse/loc，详情页要的分片（如 data/cat-piano-0.json）
+       无处命中 → 落到 realFetch 去抓线上 → 网络一慢就失败（假回归的根因）。 */
+    if (dir && key.startsWith('data/')){
+      try{
+        return new Response(fs.readFileSync(path.join(dir, key.replace('/', path.sep)), 'utf-8'), { status:200 });
+      }catch(e){ return new Response('{}', { status:404 }); }
+    }
     try{
       const abs = /^https?:/.test(url) ? url : ORIGIN + key;
       return await realFetch(abs, opt);
@@ -437,7 +446,7 @@ function makeFetch(realFetch){
     const pv = await assetText('provenance.html');
     const ncards = (pv.match(/class="panel pc"/g) || []).length;
     ok('站内台账页存在且含 21 张来源卡', ncards === 21, ncards ? ncards + ' 张' : '（未找到）');
-    ok('台账页含三条规则与 180 天复核周期', /三条规则/.test(pv) && /180 天复核周期/.test(pv));
+    ok('台账页含三条规则与可复核性说明', /三条规则/.test(pv) && /可复核性/.test(pv));
     ok('台账页给出整包校验值', /MD5/.test(pv) && /d26e22562e67eb7d37535e96cc5eebba/.test(pv));
     ok('来源页指向站内台账页', /PROV_PAGE/.test(sc) && /PROV_PAGE\s*=\s*'provenance\.html'/.test(arch));
     /* 分区与许可须与发布 catalog 一致 */
