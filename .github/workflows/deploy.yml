@@ -11,7 +11,7 @@ concurrency:
   group: pages
   cancel-in-progress: true
 env:
-  RELEASE_TAG: v1.21
+  RELEASE_TAG: v1.23
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -41,9 +41,14 @@ jobs:
           cp sources.html site/ 2>/dev/null || true
           cp provenance.html site/ 2>/dev/null || true
           cp download.html site/ 2>/dev/null || true
+          cp lyrics.html site/ 2>/dev/null || true
           cp sitemap.xml site/ 2>/dev/null || true
           cp robots.txt site/ 2>/dev/null || true
           cp -r assets site/assets 2>/dev/null || true
+          # 歌词分片：源文件（midi_db/lyrics）不入任何仓，故分片**预先提交进本仓**并在此搬运。
+          # 注意 gen_shards.py 只写自己的 json，不会清空 data/，故 lyrics/ 会被保留。
+          mkdir -p site/data
+          cp -r data/lyrics site/data/lyrics 2>/dev/null || true
           ls site | head -6
           find site -name '*.mid' | wc -l
       - name: 写入 GitHub 上的真实包体积（不依赖用户端访问 API）
@@ -55,6 +60,11 @@ jobs:
           cd site
           python3 ../tools/gen_shards.py
           ls -la data | head -8
+          # 歌词分片是**预提交内容**（源文件 midi_db/lyrics 不入仓，无法在 CI 生成）→ 只断言存在
+          n=$(ls data/lyrics/s*.json 2>/dev/null | wc -l)
+          echo "歌词分片 $n 个 + index.json"
+          test -f data/lyrics/index.json || { echo "::error::data/lyrics/index.json 缺失：请本地运行 tools/gen_lyrics_shards.py 并提交"; exit 1; }
+          test "$n" -ge 1 || { echo "::error::歌词分片缺失：请本地运行 tools/gen_lyrics_shards.py 并提交"; exit 1; }
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5

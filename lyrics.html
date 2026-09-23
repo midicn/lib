@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>歌词检索 · midicn-lib</title>
+<meta name="description" content="中国民间歌曲歌词检索（10,035 首）。仅供研究、教学与学习用途；歌词为独立权利层，不随曲目许可授权。">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0C'/%3E%3Crect x='14' y='30' width='4' height='14' fill='%23CE4A32'/%3E%3Crect x='24' y='20' width='4' height='24' fill='%23CE4A32'/%3E%3Crect x='34' y='26' width='4' height='18' fill='%23C9A227'/%3E%3Crect x='44' y='16' width='4' height='28' fill='%23C9A227'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header><div class="hbar">
+  <a class="brand" href="./"><svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0B0B0C"/><rect x="14" y="30" width="4" height="14" fill="#CE4A32"/><rect x="24" y="20" width="4" height="24" fill="#CE4A32"/><rect x="34" y="26" width="4" height="18" fill="#C9A227"/><rect x="44" y="16" width="4" height="28" fill="#C9A227"/></svg><b>midicn-lib</b><i>archive</i></a>
+  <nav class="nav">
+    <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+    <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
+    <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+    <a href="lyrics.html" class="on" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+    <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
+  </nav>
+  <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
+  <button class="iconbtn langbtn" id="lang">EN</button>
+</div></header>
+
+<main class="doc wide">
+  <p class="meta" data-zh="档案 · 民歌歌词" data-en="ARCHIVE · FOLK LYRICS">档案 · 民歌歌词</p>
+  <h1 data-zh="歌词检索" data-en="Lyrics search">歌词检索</h1>
+  <p class="lede" id="lede"></p>
+
+  <!-- 版权声明：必须显著，不可折叠 -->
+  <div class="note" id="notice" style="border-left:3px solid var(--vermilion);margin-bottom:var(--s5)"></div>
+
+  <div class="panel"><div class="panel-bd">
+    <div style="display:flex;gap:var(--s3);flex-wrap:wrap;align-items:center">
+      <input id="q" type="search" autocomplete="off"
+             data-ph-zh="搜索歌词或曲名…" data-ph-en="Search lyrics or title…"
+             placeholder="搜索歌词或曲名…"
+             style="flex:1 1 260px;min-width:0;padding:var(--s3);border-radius:var(--r2);border:1px solid var(--line);background:transparent;color:inherit;font-size:var(--fs-15)">
+      <select id="reg" style="flex:0 1 180px;padding:var(--s3);border-radius:var(--r2);border:1px solid var(--line);background:transparent;color:inherit;font-size:var(--fs-14)"></select>
+      <span class="meta" id="cnt"></span>
+    </div>
+    <p class="meta" id="hint" style="margin:var(--s3) 0 0"></p>
+  </div></div>
+
+  <div id="list" style="margin-top:var(--s4)"></div>
+  <div style="text-align:center;margin:var(--s5) 0"><button class="iconbtn" id="more" hidden></button></div>
+
+  <div class="stitle"><h2 data-zh="关于本库歌词" data-en="About these lyrics">关于本库歌词</h2></div>
+  <div class="panel"><div class="panel-bd" id="about"></div></div>
+</main>
+
+<footer><div class="wrap">
+  <div class="fbar">
+    <b>midicn-lib</b>
+    <nav class="fnav">
+      <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
+      <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
+      <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
+      <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <span class="flic" id="footLic"></span>
+  </div>
+  <div class="fnote"><span id="footNote"></span><span id="footLegal"></span></div>
+</div></footer>
+
+<script>
+/* 安全存储：file:// 或隐私模式下 localStorage 会抛 SecurityError */
+const LIC_TEXT = { zh:'代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可',
+                  en:'Code MIT · metadata CC BY 4.0 · material per source' };
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+let LANG = store.get('midicn-lang', null) || 'zh';
+function t(zh, en){ return LANG === 'zh' ? zh : en; }
+const $ = id => document.getElementById(id);
+const fmt = n => (n||0).toLocaleString('en-US');
+
+/* ── 分片读取（境内韧性：失败重试一次）───────────────────────────── */
+async function fetchJSON(url){
+  for(let i=0;i<2;i++){
+    try{ const r = await fetch(url, {cache:'force-cache'});
+         if(r.ok) return await r.json(); }catch(e){}
+  }
+  throw new Error('load failed: ' + url);
+}
+
+let INDEX = [], SHARD = {}, shown = 0, hits = [];
+const PAGE = 60;
+
+function applyLang(){
+  document.documentElement.lang = LANG === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll('[data-zh]').forEach(el=>{
+    const v = el.getAttribute('data-' + LANG); if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll('[data-ph-zh]').forEach(el=>{
+    const v = el.getAttribute('data-ph-' + LANG); if (v != null) el.placeholder = v;
+  });
+  $('lang').textContent = LANG === 'zh' ? 'EN' : '中';
+  render();
+}
+$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh';
+  store.set('midicn-lang', LANG); applyLang(); };
+
+const themeBtn = $('theme');
+function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
+setTheme(store.get('midicn-theme', null) || 'dark');
+themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+function rowHTML(it){
+  const [id, title, reg, chars, shard] = it;
+  return '<div class="panel" data-id="'+id+'" data-shard="'+shard+'" style="margin-bottom:var(--s3)">'+
+    '<div class="panel-hd" style="cursor:pointer">'+
+      '<b style="font-size:var(--fs-15)">'+(title || id)+'</b>'+
+      (reg ? '<span class="meta">'+reg+'</span>' : '')+
+      '<span style="margin-left:auto"></span>'+
+      '<span class="meta">'+fmt(chars)+' 字</span>'+
+      '<button class="iconbtn" data-act="toggle" style="margin-left:var(--s2)">▾</button>'+
+    '</div>'+
+    '<div class="panel-bd" hidden></div>'+
+  '</div>';
+}
+
+function render(){
+  $('lede').innerHTML = t(
+    '中国民间歌曲集成（OMR）的 <b>10,035 首</b>民歌歌词，可按<b>曲名</b>或<b>歌词全文</b>检索。歌词随 MIDI 一同来自上游数据集，<b>本页仅供检索</b>。',
+    'All <b>10,035</b> folk-song lyrics from the Anthology of Chinese Folk Songs (OMR). Search by <b>title</b> or <b>full text</b>. Shown here for <b>reference only</b>.'
+  );
+  $('notice').innerHTML = t(
+    '<b>⚠ 使用范围（务必先读）</b><br>'+
+    '歌词是<b>独立于曲目的另一层权利对象</b>，<b>不随曲目许可授权</b>：本库对歌词文本'+
+    '<b>不主张著作权</b>，也不代表歌词权利人授权。<b>无论对应曲目属于哪个许可档位，歌词文本仅限研究、教学与学习用途</b>；'+
+    '不得用于商业用途、出版、录制或再分发。<br>'+
+    '为了与上述定性一致，<b>歌词库不进入任何发布包，本页也不提供批量下载</b>；'+
+    '如歌词权利人提出异议，我们将在 <b>48 小时内</b>下架相关内容。依据见 <a href="licenses.html">许可与法律</a> 页「内嵌歌词」面板与 <code>LICENSE.md §2.3</code>。',
+    '<b>⚠ Scope of use (read first)</b><br>'+
+    'Lyrics are a <b>separate rights object from the track</b> and are <b>not licensed along with it</b>: this library '+
+    '<b>claims no copyright</b> in the text and grants no rights in it. <b>Whatever the track licence, lyric text is '+
+    'restricted to study, teaching and learning</b> — no commercial use, publication, recording or redistribution.<br>'+
+    'Consistently, <b>the lyrics library ships in no release package and this page offers no bulk download</b>. '+
+    'A rights-holder objection will be honoured within <b>48 hours</b>. Basis: the “Embedded lyrics” panel on the '+
+    '<a href="licenses.html">Licence</a> page and <code>LICENSE.md §2.3</code>.'
+  );
+  $('hint').innerHTML = t(
+    '按曲名即时过滤；输入 2 个以上字符时同时检索歌词全文（首次全文检索需载入分片，约 5 MB）。',
+    'Title filtering is instant; 2+ characters also search full lyrics (first full-text search loads shards, ~5 MB).'
+  );
+  $('about').innerHTML = t(
+    '<p><b>来源</b>：中国民间歌曲集成（OMR 数据集，m-july）· 逐曲旋律与记谱源自各省卷的整理稿。</p>'+
+    '<p><b>为什么单列</b>：上游对 MIDI 文件本身授予的许可<b>不能自动延伸</b>到文件中可能由第三方写入的歌词——'+
+    '许可人只能授权自己拥有的权利。故本库不作「歌词随文件一并授权」的主张，而保守地把歌词整体限定为研究用途。</p>'+
+    '<p><b>完整性</b>：标记「残缺」的条目歌词不完整（原文如此，未作补全）。</p>'+
+    '<p><b>其它内含歌词的曲目</b>：另有 2,642 首来自公有领域来源（OpenScore Lieder · Mutopia · 赞美诗集等）的曲目'+
+    '内含 MIDI 歌词事件，其歌词本身即属公有领域；它们随曲目分发，同样适用上述「仅研究/学习」定性。</p>',
+    '<p><b>Source</b>: Anthology of Chinese Folk Songs (OMR dataset, m-july); melodies and notation derive from the provincial volumes.</p>'+
+    '<p><b>Why a separate layer</b>: a licence granted over the MIDI file itself <b>does not automatically extend</b> to lyric text '+
+    'a third party may have written into it — a licensor can only license what it owns. We therefore make no claim that lyrics are '+
+    'licensed along with the file, and conservatively restrict them to study use.</p>'+
+    '<p><b>Completeness</b>: entries marked <i>incomplete</i> have partial lyrics (as in the original; not supplemented).</p>'+
+    '<p><b>Other tracks with lyrics</b>: a further 2,642 tracks from public-domain sources (OpenScore Lieder, Mutopia, hymnals) carry '+
+    'MIDI lyric events whose text is itself public domain; they ship with the tracks and the same study-only restriction applies.</p>'
+  );
+  $('footNote').innerHTML = t('本页为使用条款说明，不构成法律意见。','This page explains terms of use; it is not legal advice.');
+  $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
+  $('footLegal').innerHTML = t(
+    '数据版本 v1.23 · 歌词库不进发布包，本页仅供检索',
+    'Data v1.23 · lyrics library is not shipped; reference only'
+  );
+  doFilter();
+}
+
+function doFilter(){
+  const q = ($('q').value || '').trim().toLowerCase();
+  const reg = $('reg').value;
+  hits = INDEX.filter(it=>{
+    if(reg && it[2] !== reg) return false;
+    if(!q) return true;
+    return (it[1] || '').toLowerCase().includes(q);
+  });
+  $('cnt').textContent = t(fmt(hits.length) + ' 首', fmt(hits.length) + ' tracks');
+  shown = 0;
+  $('list').innerHTML = '';
+  paint();
+
+  // 2 字以上且曲名未命中足够时，异步补全文检索
+  if(q.length >= 2){
+    const seen = new Set(hits.map(x=>x[0]));
+    fullTextSearch(q, reg, seen).catch(()=>{});
+  }
+}
+
+let token = 0;
+async function fullTextSearch(q, reg, seen){
+  const my = ++token;
+  const nShard = Math.max(...INDEX.map(x=>x[4])) + 1;
+  for(let si=0; si<nShard; si++){
+    if(my !== token) return;                       // 用户已改查询，放弃本轮
+    let b = SHARD[si];
+    if(!b){ try{ b = await fetchJSON('data/lyrics/s'+String(si).padStart(2,'0')+'.json'); }
+            catch(e){ continue; }
+            SHARD[si] = b; }
+    let added = 0;
+    for(const id in b){
+      if(seen.has(id)) continue;
+      if(!b[id].toLowerCase().includes(q)) continue;
+      const it = INDEX.find(x=>x[0]===id);         // 命中后再取元数据
+      if(!it || (reg && it[2] !== reg)) continue;
+      seen.add(id); hits.push(it); added++;
+    }
+    if(added){ $('cnt').textContent = t(fmt(hits.length)+' 首', fmt(hits.length)+' tracks'); paint(); }
+  }
+}
+
+function paint(){
+  const slice = hits.slice(shown, shown + PAGE);
+  if(!slice.length) return;
+  $('list').insertAdjacentHTML('beforeend', slice.map(rowHTML).join(''));
+  shown += slice.length;
+  const left = hits.length - shown;
+  $('more').hidden = left <= 0;
+  $('more').textContent = left > 0 ? t('显示更多（还有 ' + fmt(left) + ' 首）', 'Show more (' + fmt(left) + ' left)') : '';
+}
+
+$('more').onclick = paint;
+$('q').oninput = ()=>{ token++; doFilter(); };
+$('reg').onchange = ()=>{ token++; load(); };
+
+$('list').addEventListener('click', async e=>{
+  const hd = e.target.closest('.panel-hd'); if(!hd) return;
+  const card = hd.parentElement;
+  const bd = card.querySelector('.panel-bd');
+  const id = card.dataset.id, si = +card.dataset.shard;
+  if(!bd.hidden){ bd.hidden = true; return; }
+  if(!bd.dataset.loaded){
+    bd.innerHTML = '<p class="meta">…</p>';
+    try{
+      let b = SHARD[si];
+      if(!b){ b = await fetchJSON('data/lyrics/s'+String(si).padStart(2,'0')+'.json'); SHARD[si] = b; }
+      const txt = b[id] || t('（无歌词）','(no lyrics)');
+      bd.innerHTML = '<p style="white-space:pre-wrap;line-height:1.9;font-size:var(--fs-15)">'+
+                     txt.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p>'+
+                     '<p class="meta" style="margin-top:var(--s3)">'+id+' · '+t('仅限研究/学习','study use only')+'</p>';
+    }catch(err){ bd.innerHTML = '<p class="meta">'+t('加载失败','Load failed')+'</p>'; }
+    bd.dataset.loaded = '1';
+  }
+  bd.hidden = false;
+});
+
+async function load(){
+  try{
+    INDEX = await fetchJSON('data/lyrics/index.json');
+  }catch(e){
+    $('notice').innerHTML = t('歌词索引加载失败，请刷新重试。','Failed to load the lyrics index; please refresh.');
+    return;
+  }
+  const regs = {};
+  INDEX.forEach(it=>{ if(it[2]) regs[it[2]] = (regs[it[2]]||0)+1; });
+  const sel = $('reg');
+  sel.innerHTML = '<option value="">'+t('全部地区','All regions')+'</option>' +
+    Object.keys(regs).sort().map(r=>'<option value="'+r+'">'+r+' ('+regs[r]+')</option>').join('');
+  doFilter();
+}
+
+applyLang();
+load();
+</script>
+</body>
+</html>

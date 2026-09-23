@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>midicn-lib · 开放 MIDI 音乐库</title>
-<meta name="description" content="124,179 首开放许可 MIDI：古典钢琴、民谣、赞美诗、中国民歌等，覆盖 19 个来源、14 个分类，逐曲标注来源与许可。">
+<meta name="description" content="133,667 首开放许可 MIDI：古典钢琴、民谣、赞美诗、中国民歌等，覆盖 21 个来源、14 个分类，逐曲标注来源与许可。">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0B0C'/%3E%3Crect x='14' y='30' width='4' height='14' fill='%23CE4A32'/%3E%3Crect x='24' y='20' width='4' height='24' fill='%23CE4A32'/%3E%3Crect x='34' y='26' width='4' height='18' fill='%23C9A227'/%3E%3Crect x='44' y='16' width='4' height='28' fill='%23C9A227'/%3E%3C/svg%3E">
@@ -175,6 +175,9 @@
     <a href="./" class="on" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+    
+    <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+    
     <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
   <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
@@ -185,7 +188,7 @@
   <!-- 扉页 -->
   <section class="hero">
     <p class="kick" data-zh="开放 MIDI 音乐档案 · MIDICN-LIB" data-en="OPEN MIDI ARCHIVE · MIDICN-LIB">开放 MIDI 音乐档案 · MIDICN-LIB</p>
-    <h1 data-zh="开放许可的 MIDI 音乐档案" data-en="An archive of openly licensed MIDI">开放许可的 MIDI 音乐档案<span data-zh="19 个来源 · 14 个分类 · 逐曲标注来源与许可" data-en="19 sources · 14 categories · per-track provenance &amp; licence">19 个来源 · 14 个分类 · 逐曲标注来源与许可</span></h1>
+    <h1 data-zh="开放许可的 MIDI 音乐档案" data-en="An archive of openly licensed MIDI">开放许可的 MIDI 音乐档案<span data-zh="21 个来源 · 14 个分类 · 逐曲标注来源与许可" data-en="21 sources · 14 categories · per-track provenance &amp; licence">21 个来源 · 14 个分类 · 逐曲标注来源与许可</span></h1>
     <p class="lede" id="heroLede"></p>
     <p class="hero-meta" id="heroMeta"></p>
   </section>
@@ -291,6 +294,9 @@
       <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
       <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      
+      <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
       <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -358,9 +364,9 @@ const CAT_DESC = {
   'hymn':{zh:'Cyber Hymnal：公有领域赞美诗，附曲调名与年代。',en:'Cyber Hymnal: public-domain hymns with tune names and years.'},
   'folk-world':{zh:'ESAC 与 Norbeck：欧洲与世界各地民谣，标注地域与国家。',en:'ESAC and Norbeck: folk songs from Europe and beyond, with region and country.'},
   'folk-china':{zh:'《中国民间歌曲集成》：号子、山歌、小调等，精确到省份与采录地。',en:'Anthology of Chinese Folk Songs: work songs, mountain songs, xiaodiao, down to province.'},
-  'piano-performance':{zh:'GiantMIDI-Piano：大规模古典钢琴演奏，附作曲家国籍与生卒。',en:'GiantMIDI-Piano: large-scale classical piano with composer nationality and dates.'},
-  'classical-traditional':{zh:'Lakh 合集：多来源古典与流行 MIDI，文件名含编号线索。',en:'Lakh collection: mixed classical and popular MIDI with catalogue clues in file names.'},
-  'classical-open':{zh:'music21 / Mutopia / OpenScore：开放乐谱语料，公有领域与 CC0 为主。',en:'music21 / Mutopia / OpenScore: open score corpora, mostly public domain and CC0.'},
+  'piano-performance':{zh:'GiantMIDI-Piano 与 ATEPP：大规模古典钢琴演奏，含多位钢琴家的演奏版本与作曲家国籍、生卒。',en:'GiantMIDI-Piano and ATEPP: large-scale classical piano, with multiple performers per work plus composer nationality and dates.'},
+  'classical-traditional':{zh:'Lakh 合集：多来源古典与传统 MIDI，文件名含编号线索（已剔除现代流行/影视素材）。',en:'Lakh collection: mixed classical and traditional MIDI with catalogue clues in file names (modern pop/film material excluded).'},
+  'classical-open':{zh:'music21 / Mutopia / OpenScore / PDMX：开放乐谱语料，公有领域与 CC0 为主。',en:'music21 / Mutopia / OpenScore / PDMX: open score corpora, mostly public domain and CC0.'},
   'klezmer-balkan':{zh:'John Chambers 的 ABC 合集：克莱兹梅尔、巴尔干、以色列曲调。',en:'John Chambers\u2019 ABC collections: klezmer, Balkan and Israeli tunes.'},
   'maestro':{zh:'MAESTRO：钢琴演奏与 MIDI 精确对齐的基准数据集。',en:'MAESTRO: benchmark dataset with precisely aligned piano performances.'},
   'drum':{zh:'Groove：专业鼓手演奏的鼓组 MIDI，含速度、拍号与风格。',en:'Groove: studio drum MIDI with tempo, meter and style.'},
@@ -432,8 +438,8 @@ function renderShell(){
   );
   $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
-    '数据版本 v1.19 · 曲目 ' + fmt(SUMMARY.total) + ' 首 · <a href="licenses.html">许可与法律</a>',
-    'Data v1.19 · ' + fmt(SUMMARY.total) + ' tracks · <a href="licenses.html">Licence &amp; legal</a>'
+    '数据版本 v1.23 · 曲目 ' + fmt(SUMMARY.total) + ' 首 · <a href="licenses.html">许可与法律</a>',
+    'Data v1.23 · ' + fmt(SUMMARY.total) + ' tracks · <a href="licenses.html">Licence &amp; legal</a>'
   );
 }
 

@@ -16,6 +16,9 @@
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" class="on" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+    
+    <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+    
     <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
   <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
@@ -27,29 +30,31 @@
   <h1 data-zh="数据下载" data-en="Download">数据下载</h1>
   <p class="lede" id="lede"></p>
 
+  <!-- 包入口已统一到 zip 站（用户决定：包入口归属 zip.midicn.com） -->
+  <div class="note" id="hubNote" style="border-left:3px solid var(--vermilion);margin:var(--s4) 0"></div>
+
   <!-- 轴 1：按使用方式 -->
   <div class="stitle">
-    <h2 data-zh="一 · 按使用方式打包" data-en="1 · By usage tier">一 · 按使用方式打包</h2>
+    <h2 data-zh="一 · 用途包（整库 4 个）" data-en="1 · Usage packs (4, whole library)">一 · 用途包（整库 4 个）</h2>
     <span class="spacer"></span><span class="meta" data-zh="最常用" data-en="most used">最常用</span>
   </div>
   <p id="axis1Note"></p>
   <div class="pkgs" id="usagePacks"></div>
 
-  <!-- 轴 2：按来源 -->
+  <!-- 轴 2：按维度 -->
   <div class="stitle">
-    <h2 data-zh="二 · 按来源打包" data-en="2 · By source">二 · 按来源打包</h2>
+    <h2 data-zh="二 · 维度包（按来源 / 风格 / 时期 …）" data-en="2 · Dimension packs">二 · 维度包</h2>
     <span class="spacer"></span><span class="meta" id="srcAxisMeta"></span>
   </div>
   <p id="axis2Note"></p>
   <div class="pkgs" id="srcPacks"></div>
 
-  <!-- 轴 3：目录与索引 -->
-  <div class="stitle"><h2 data-zh="三 · 目录与索引（全部打包的前置）" data-en="3 · Catalogue &amp; indexes">三 · 目录与索引</h2></div>
-  <div class="pkgs" id="metaPacks"></div>
-  <p class="note" id="metaNote"></p>
-
   <div class="stitle"><h2 data-zh="使用步骤" data-en="How to use">使用步骤</h2></div>
   <ol class="steps" id="steps"></ol>
+
+  <!-- 歌词库：独立权利层，不随包分发 -->
+  <div class="stitle"><h2 data-zh="歌词库（不随包分发）" data-en="Lyrics library (not shipped)">歌词库（不随包分发）</h2></div>
+  <p class="note" id="lyricsNote"></p>
 
   <div class="stitle"><h2 data-zh="许可提示" data-en="Licence reminder">许可提示</h2></div>
   <div id="licNote"></div>
@@ -62,6 +67,9 @@
       <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
       <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      
+      <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
       <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -84,7 +92,7 @@ let LANG = store.get('midicn-lang', null) || 'zh';
 function t(zh, en){ return LANG === 'zh' ? zh : en; }
 const $ = id => document.getElementById(id);
 
-const VER = 'v1.19';
+const VER = 'v1.23';
 const REL = 'https://github.com/midicn/midi-lib/releases/download/' + VER + '/';
 const PAGE = 'https://github.com/midicn/midi-lib/releases/tag/' + VER;
 
@@ -117,82 +125,78 @@ function pkgCard(o){
 
 function render(){
   const total = SOURCES.reduce((a,s)=>a+s.count,0);
+  const ZIP = 'https://zip.midicn.com/';
+
   $('lede').innerHTML = t(
-    '同一份数据，按<em>三种维度</em>提供打包：以使用方式（最简单）、以来源（便于溯源与致谢）、以目录与索引（自建下游）。包内文件完全一致，只是分组不同。',
-    'The same data, packaged along <em>three axes</em>: by usage tier (simplest), by source (for provenance and credit), and catalogue/indexes (for downstream builds). Contents are identical — only the grouping differs.'
+    '同一份数据，按<em>两条路径</em>取用：<b>用途包</b>（整库 4 个，按能否商用分档）与<b>维度包</b>（按来源 / 风格 / 时期 / 乐器 / 授权 / 曲式 / 地域 / 作曲家 切成 400+ 个子集）。包内文件完全一致，只是分组不同。',
+    'The same data, along <em>two paths</em>: <b>usage packs</b> (4 packs split by commercial use) and <b>dimension packs</b> (400+ subsets by source / genre / period / instrument / licence / form / region / composer). Contents are identical — only the grouping differs.'
   );
 
-  /* 轴 1 */
+  $('hubNote').innerHTML = t(
+    '<b>下载入口</b>：全部包（4 个用途包 + 400+ 个维度包）的下载入口统一在 '+
+    '<a href="'+ZIP+'" target="_blank" rel="noopener"><b>zip.midicn.com</b></a>。'+
+    '本页只做总览与说明，便于你先判断该取哪一个包。'+
+    '<br><br><a class="dlbtn" href="'+ZIP+'" target="_blank" rel="noopener">'+DL_ICON+'前往下载站 zip.midicn.com</a>',
+    '<b>Where to download</b>: every pack (4 usage packs + 400+ dimension packs) is served from '+
+    '<a href="'+ZIP+'" target="_blank" rel="noopener"><b>zip.midicn.com</b></a>. '+
+    'This page is an overview only, to help you decide which pack you need.'+
+    '<br><br><a class="dlbtn" href="'+ZIP+'" target="_blank" rel="noopener">'+DL_ICON+'Go to zip.midicn.com</a>'
+  );
+
+  /* 轴 1：用途包 */
   $('axis1Note').innerHTML = t(
-    '如果你只想知道「我能不能商用」，用这一轴。C1 可商用、C2 非商用、C3 学习研究，另加完整 meta 包。',
-    'If your only question is "may I use this commercially?", use this axis: C1 commercial, C2 non-commercial, C3 study/research, plus a full meta pack.'
+    '如果你只想知道「我能不能商用」，用这一轴。C1 可商用、C2 非商用、C3 学习研究，另加完整 meta 包。整库 '+fmt(total)+' 首。',
+    'If your only question is "may I use this commercially?", use this path: C1 commercial, C2 non-commercial, C3 study/research, plus a full meta pack. '+fmt(total)+' tracks in total.'
   );
   const usage = [
     { id:'meta', nm:t('目录与索引','Catalogue &amp; indexes'), meta:'6 '+t('文件','files')+' · ~8 MB',
-      desc:t('catalog.json（全库逐曲元数据）+ 三个索引（按作曲家 / 按时期 / 按乐器）+ 校验清单。任何下游构建都应先取此包。',
-             'catalog.json (per-track metadata) + index-by-composer / period / instrument + manifest. Start here for any downstream build.') },
-    { id:'main', nm:t('C1 · 可商用主包','C1 · Commercial main'), meta:'69,197 '+t('首','tracks')+' · ~216 MB',
-      desc:t('许可允许商业使用的全部曲目（民歌、赞美诗、开放乐谱、游戏素材等）。商用须保留来源署名。',
-             'All tracks whose licences permit commercial use. Attribution to sources required.') },
-    { id:'piano-special', nm:t('C2 · 钢琴非商用包','C2 · Piano (non-commercial)'), meta:'34,869 '+t('首','tracks')+' · ~305 MB',
-      desc:t('古典钢琴演奏录音转录（Aria-MIDI、MAESTRO），依 CC BY-NC-SA 4.0 提供，仅限非商业用途。',
-             'Classical piano performance transcriptions (Aria-MIDI, MAESTRO) under CC BY-NC-SA 4.0 — non-commercial only.') },
-    { id:'study', nm:t('C3 · 学习研究包','C3 · Study / research'), meta:'20,113 '+t('首','tracks')+' · ~59 MB',
-      desc:t('中国民歌与部分传统音乐，仅供学习与研究；不得再分发、不得商用。',
-             'Chinese folk songs and traditional material — study/research only; no redistribution, no commercial use.') },
+      desc:t('catalog.json（全库逐曲元数据，v1.23 起含作品归组键 wk、演奏者 performer、作曲家中文名等）+ 三个索引（按作曲家 / 按时期 / 按乐器）+ 校验清单。任何下游构建都应先取此包。',
+             'catalog.json (per-track metadata; v1.23 adds work key wk, performer, Chinese composer names) + indexes by composer / period / instrument + manifest. Start here for any downstream build.') },
+    { id:'main', nm:t('C1 · 可商用主包','C1 · Commercial main'), meta:'79,216 '+t('首','tracks'),
+      desc:t('许可允许商业使用的全部曲目（古典、民歌、赞美诗、爱尔兰传统、开放乐谱、游戏素材等）。商用须保留来源署名。',
+             'All tracks whose licences permit commercial use (classical, folk, hymns, Irish traditional, open scores, game assets). Attribution required.') },
+    { id:'piano-special', nm:t('C2 · 钢琴非商用包','C2 · Piano (non-commercial)'), meta:'34,869 '+t('首','tracks'),
+      desc:t('古典钢琴演奏录音转录（Aria-MIDI、MAESTRO、EMOPIA），依 CC BY-NC-SA 4.0 提供，仅限非商业用途。',
+             'Classical piano performance transcriptions (Aria-MIDI, MAESTRO, EMOPIA) under CC BY-NC-SA 4.0 — non-commercial only.') },
+    { id:'study', nm:t('C3 · 学习研究包','C3 · Study / research'), meta:'19,582 '+t('首','tracks'),
+      desc:t('中国民间歌曲集成与 Lakh 过滤子集，仅供学习与研究；不得再分发、不得商用。',
+             'Chinese folk-song anthology and the filtered Lakh subset — study/research only; no redistribution, no commercial use.') },
   ];
   $('usagePacks').innerHTML = usage.map(u=>pkgCard({
-    name:u.nm, meta:u.meta, desc:u.desc,
-    href: REL + 'midicn-lib-' + VER + '-' + u.id + '.zip'
+    name:u.nm, meta:u.meta, desc:u.desc, href: ZIP
   })).join('');
 
-  /* 轴 2 */
-  const srcTotal = SOURCES.reduce((a,s)=>a+s.count,0);
-  $('srcAxisMeta').textContent = t(SOURCES.length + ' 个来源 · ' + fmt(srcTotal) + ' 首',
-                                   SOURCES.length + ' sources · ' + fmt(srcTotal) + ' tracks');
+  /* 轴 2：维度包（跳转 zip 站） */
+  $('srcAxisMeta').textContent = t('8 个维度 · 400+ 个包 · 约 4.6 GB',
+                                   '8 dimensions · 400+ packs · ~4.6 GB');
   $('axis2Note').innerHTML = t(
-    '若你只需某一批素材、或希望在成果中精确致谢某个来源，用这一轴。每包只含单一来源的曲目，许可与 C1/C2/C3 档位标注在包名与包内 manifest 中。',
-    'If you need one collection, or want to credit a specific source precisely, use this axis. Each pack holds a single source; its tier is noted in the pack name and manifest.'
+    '若你只需某一批素材（例如「巴洛克长笛」或「爱尔兰民谣」），或希望在成果中精确致谢某个来源，用这一轴。维度包按 <b>来源 · 风格 · 时期 · 乐器 · 授权档位 · 曲式 · 地域 · 作曲家</b> 切成 400+ 个子集，每包含子集 MIDI + 子集 catalog + 许可说明，可独立分发。',
+    'For one collection (say "Baroque flute" or "Irish folk"), or to credit a specific source precisely, use this path. Dimension packs split the library into 400+ subsets by <b>source · genre · period · instrument · licence tier · form · region · composer</b>; each ships its own MIDI files, subset catalogue and licence notice, and can be redistributed independently.'
   );
-  $('srcPacks').innerHTML = SOURCES.map(s=>{
-    const z = zoneOf(s.zone);
-    return pkgCard({
-      name: s.name[LANG],
-      meta: z.code + ' ' + z[LANG] + ' · ' + fmt(s.count) + t(' 首',' tracks') + ' · ' + s.license,
-      desc: s.kind[LANG] + '。' + (LANG==='zh' ? s.what.zh.slice(0, 68) + '…' : s.what.en.slice(0, 92) + '…'),
-      href: REL + 'midicn-lib-' + VER + '-source-' + s.id + '.zip'
-    });
-  }).join('');
-
-  /* 轴 3 */
-  $('metaPacks').innerHTML = pkgCard({
-    name: t('meta.zip · 目录与索引','meta.zip · catalogue &amp; indexes'),
-    meta:'6 '+t('文件','files')+' · ~8 MB',
-    desc: t('catalog.json 含全库逐曲字段：id / 标题 / 作曲家 / 分类 / 风格 / 时期 / 乐器 / 地域 / 国家 / 许可 / 时长 / 编号 / 曲式 / 年代 / 难度；另附按作曲家、时期、乐器的索引与校验清单。',
-            'catalog.json carries every per-track field; plus indexes by composer, period and instrument, and a manifest.'),
-    href: REL + 'midicn-lib-' + VER + '-meta.zip'
+  $('srcPacks').innerHTML = pkgCard({
+    name: t('维度包总览（400+ 个）','Dimension packs (400+)'),
+    meta: t('8 个维度 · 逐个可下载 · zip.midicn.com','8 dimensions · individually downloadable · zip.midicn.com'),
+    desc: t('按维度折叠浏览，每包一行显示曲目数与体积；点包名即下载。',
+            'Browse by dimension, one row per pack with track count and size; click a pack name to download.'),
+    href: ZIP
   });
-  $('metaNote').innerHTML = t(
-    '目录字段含义与覆盖率见 <a href="sources.html">数据来源</a>页；许可字段 <code>l</code> 的取值见 <a href="licenses.html">许可与法律</a>页。',
-    'Field meanings and coverage: see <a href="sources.html">Sources</a>; licence values of the <code>l</code> field: see <a href="licenses.html">Licence &amp; legal</a>.'
-  );
 
   /* 步骤 */
   const steps = LANG === 'zh' ? [
-    '下载 <b>meta.zip</b>，用 catalog.json 决定你要哪些曲目。',
-    '按使用方式或来源下载对应 zip（也可全部下载）。',
-    '解压后目录为 <code>midicn-lib-' + VER + '/{pack}/{分类}/{id}.mid</code>，可直接被任何 MIDI 音序器或播放库读取。',
+    '不确定要哪个？先下载 <b>meta.zip</b>，用 catalog.json 查看全库逐曲字段。',
+    '要整库 → 在 <a href="'+ZIP+'" target="_blank" rel="noopener">zip 站</a>取 <b>4 个用途包</b>；只要一批 → 取对应的<b>维度包</b>。',
+    '解压后目录为 <code>midicn-lib-' + VER + '/{分类}/{id}.mid</code>，可直接被任何 MIDI 音序器或播放库读取。',
     '在成果中按 <a href="licenses.html">署名模板</a>标注本库与上游来源。'
   ] : [
-    'Download <b>meta.zip</b> and use catalog.json to decide which tracks you need.',
-    'Download the pack(s) you decided on — by usage tier or by source (or everything).',
+    'Not sure which pack? Download <b>meta.zip</b> first and inspect catalog.json.',
+    'Whole library → take the <b>4 usage packs</b> on the <a href="'+ZIP+'" target="_blank" rel="noopener">zip site</a>; one collection → take the matching <b>dimension pack</b>.',
     'Unpacked layout: <code>midicn-lib-' + VER + '/{pack}/{category}/{id}.mid</code>, readable by any MIDI sequencer or library.',
     'Credit this library and the upstream source using the <a href="licenses.html">attribution template</a>.'
   ];
   $('steps').innerHTML = steps.map(x=>'<li>'+x+'</li>').join('');
 
   /* 许可提示 */
-  const z = ZONES; 
+  const z = ZONES;
   $('licNote').innerHTML =
     '<div class="panel"><div class="panel-bd"><dl class="dl">'+
       '<dt>'+z.main.code+'</dt><dd>'+z.main[LANG]+' — '+(LANG==='zh'?z.main.zhDesc:z.main.enDesc)+'</dd>'+
@@ -202,6 +206,19 @@ function render(){
       '逐曲许可与逐源条款见 <a href="licenses.html">许可与法律</a>；每个包内都附 manifest，写明所含来源、许可与校验值。',
       'Per-track and per-source terms: <a href="licenses.html">Licence &amp; legal</a>. Every pack ships a manifest listing sources, licences and checksums.'
     )+'</p></div></div>';
+  $('lyricsNote').innerHTML = t(
+    '本库另有 <b>10,035 首中国民歌歌词</b>（来源：中国民间歌曲集成 OMR 数据集）。'+
+    '歌词是<b>独立于曲目的另一层权利对象</b>——上游对 MIDI 文件的许可<b>不能自动延伸</b>到其中可能由第三方写入的歌词，'+
+    '因此<b>歌词库不进任何发布包、本页也不提供下载</b>，仅可在 <a href="lyrics.html">歌词检索</a>页查阅，且'+
+    '<b>仅限研究、教学与学习用途</b>。另有 2,642 首来自公有领域来源的曲目内含 MIDI 歌词事件（歌词本身即 PD），随曲目分发，同样适用该定性。',
+    'This library also holds <b>10,035 Chinese folk-song lyrics</b> (source: Anthology of Chinese Folk Songs, OMR). '+
+    'Lyrics are a <b>separate rights object from the track</b> — an upstream licence over the MIDI file <b>does not automatically '+
+    'extend</b> to lyric text a third party may have written into it. The lyrics library therefore <b>ships in no pack and is not '+
+    'downloadable here</b>; it can only be consulted on the <a href="lyrics.html">lyrics search</a> page, and <b>for study, teaching '+
+    'and learning only</b>. A further 2,642 tracks from public-domain sources carry MIDI lyric events whose text is itself public '+
+    'domain; they ship with the tracks under the same restriction.'
+  );
+
   $('footNote').innerHTML = t('版本 '+VER+' · 全部资产见 <a href="'+PAGE+'" target="_blank" rel="noopener">Release 页面</a>',
                               'Version '+VER+' · all assets on the <a href="'+PAGE+'" target="_blank" rel="noopener">release page</a>');
   $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));

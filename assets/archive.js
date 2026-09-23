@@ -34,7 +34,7 @@ const ZONES = {
            enDesc:'Study and research only; no redistribution, no commercial use.' },
 };
 
-/* ── 来源档案（19 个已发布来源；按发布量降序）─────────────────────────
+/* ── 来源档案（21 个已发布来源；按发布量降序）─────────────────────────
    url    原始来源地址（用户可直接访问）
    method 我们如何上游整理与加工
    credit 对该来源方的致谢（许可与法律页、详情页共用）
@@ -51,6 +51,30 @@ const SOURCES = [
             en:'The upstream publishes metadata.json and the MIDI set; work titles completed from the public IMSLP catalogue.'},
     credit:{zh:'转录与数据集由 Aria-MIDI 团队制作并开放；演奏录音版权归各演奏者所有。',
             en:'Transcription dataset by the Aria-MIDI team; performance rights remain with the performers.'},
+  },
+{
+    id:'pdmx', name:{zh:'PDMX（公有领域乐谱集）', en:'PDMX'}, count:2893,
+    zone:'main', license:'CC0 1.0 / Public Domain',
+    url:'https://github.com/pnlong/PDMX',
+    kind:{zh:'公有领域钢琴乐谱', en:'Public-domain piano scores'},
+    what:{zh:'由公开乐谱（IMSLP 等公有领域来源）自动渲染得到的钢琴 MIDI，覆盖巴洛克至浪漫时期的键盘文献，附作曲家、作品编号、时期等结构化元数据；本库仅收录其中可确证为公有领域的乐谱型子集。',
+          en:'Piano MIDI rendered from public-domain scores (IMSLP and similar), spanning Baroque to Romantic keyboard literature, with structured metadata; this library includes only the score-type subset verifiably in the public domain.'},
+    method:{zh:'上游于 Zenodo 发布标注记录与 MIDI 包；本库按作曲家卒年与出版状态逐条筛出公有领域子集后入库（CC0 / PD 混合，均无权利限制）。',
+            en:'The upstream publishes its annotation record and MIDI bundle on Zenodo; this library filters to the public-domain subset by composer death year and publication status (mixed CC0 / PD, no rights restrictions).'},
+    credit:{zh:'乐谱标注与渲染由 PDMX 项目（Long et al., ICASSP 2025）制作并开放；原始乐谱版权状况依 IMSLP 各页标注。',
+            en:'Score annotation and rendering by the PDMX project (Long et al., ICASSP 2025); original score copyright status follows the respective IMSLP pages.'},
+  },
+{
+    id:'atepp', name:{zh:'ATEPP（钢琴演奏转写）', en:'ATEPP'}, count:7130,
+    zone:'main', license:'CC BY 4.0',
+    url:'https://github.com/tangjjbetsy/ATEPP',
+    kind:{zh:'古典钢琴演奏转录', en:'Classical piano performance transcriptions'},
+    what:{zh:'来自 49 位钢琴家的约 645 小时古典钢琴演奏录音，经自动转写为 MIDI；同一作品往往含多个演奏版本，可对比不同诠释下的力度、速度与触键差异，是演奏研究少见的公开语料。',
+          en:'About 645 hours of classical piano performance recordings by 49 pianists, automatically transcribed to MIDI; a single work often has multiple performance versions, enabling comparison of dynamics, tempo and touch — a rare open corpus for performance research.'},
+    method:{zh:'上游以 metadata 表与分卷归档发布；本库读取元数据把演奏者、专辑、录音年与对应作品关联，逐曲标注为「演奏版」（version_type=performance）。',
+            en:'The upstream publishes a metadata table with split archives; this library joins performers, albums and recording years to their works, marking each track as a performance version.'},
+    credit:{zh:'演奏转录与数据集由 ATEPP 团队制作并开放（CC BY 4.0）；演奏录音版权归各演奏者及其唱片方所有。',
+            en:'Performance transcriptions and dataset by the ATEPP team, released under CC BY 4.0; performance rights remain with the respective pianists and labels.'},
   },
   {
     id:'thesession', name:{zh:'The Session', en:'The Session'}, count:23250,
@@ -101,7 +125,7 @@ const SOURCES = [
             en:'Curated and released by the ESAC / German folk-song archive community.'},
   },
   {
-    id:'giantmidi', name:{zh:'GiantMIDI-Piano', en:'GiantMIDI-Piano'}, count:10112,
+    id:'giantmidi', name:{zh:'GiantMIDI-Piano', en:'GiantMIDI-Piano'}, count:10110,
     zone:'main', license:'CC BY 4.0',
     url:'https://github.com/bytedance/GiantMIDI-Piano',
     kind:{zh:'古典钢琴演奏（大规模）', en:'Large-scale classical piano'},
@@ -113,7 +137,7 @@ const SOURCES = [
             en:'Released by the ByteDance GiantMIDI-Piano project under CC BY 4.0.'},
   },
   {
-    id:'lakh', name:{zh:'Lakh MIDI Dataset', en:'Lakh MIDI Dataset'}, count:9640,
+    id:'lakh', name:{zh:'Lakh MIDI Dataset', en:'Lakh MIDI Dataset'}, count:9109,
     zone:'study', license:'CC BY 4.0',
     url:'https://colinraffel.com/projects/lmd/',
     kind:{zh:'多风格 MIDI 合集', en:'Multi-genre MIDI collection'},
@@ -137,7 +161,7 @@ const SOURCES = [
             en:'Made freely available by Henrik Norbeck; please keep attribution and visit the original site.'},
   },
   {
-    id:'m21', name:{zh:'music21 语料库', en:'music21 Corpus'}, count:3029,
+    id:'m21', name:{zh:'music21 语料库', en:'music21 Corpus'}, count:3028,
     zone:'main', license:'Public Domain',
     url:'https://github.com/cuthbertLab/music21',
     kind:{zh:'西方古典（教学语料）', en:'Western classical (teaching corpus)'},
@@ -245,7 +269,7 @@ const SOURCES = [
             en:'The original wikifonia.org site is offline; this library uses the publicly released Wikifonia archive (MD5-verified) and keeps only its public-domain traditional material.'},
   },
   {
-    id:'oga', name:{zh:'OpenGameArt', en:'OpenGameArt'}, count:340,
+    id:'oga', name:{zh:'OpenGameArt', en:'OpenGameArt'}, count:339,
     zone:'main', license:'逐曲混合（CC0 / CC BY / CC BY-SA / GPL）',
     url:'https://opengameart.org/',
     kind:{zh:'游戏音乐素材', en:'Game music assets'},

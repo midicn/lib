@@ -16,6 +16,9 @@
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" class="on" data-zh="数据来源" data-en="Sources">数据来源</a>
+    
+    <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+    
     <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
   <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
@@ -53,6 +56,9 @@
       <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
       <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      
+      <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
       <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -169,8 +175,8 @@ function render(){
   );
   $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
-    '署名与商用指引见 <a href="licenses.html">许可与法律</a> · 数据版本 v1.19',
-    'Attribution &amp; commercial guidance: <a href="licenses.html">Licence &amp; legal</a> · data v1.19'
+    '署名与商用指引见 <a href="licenses.html">许可与法律</a> · 数据版本 v1.23',
+    'Attribution &amp; commercial guidance: <a href="licenses.html">Licence &amp; legal</a> · data v1.23'
   );
 }
 applyLang();

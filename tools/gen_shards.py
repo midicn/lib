@@ -7,6 +7,8 @@
   data/cat-<cat>-<n>.json  各分类曲目分片（点分类才加载，500 条/片）
   data/facets-<cat>.json   各分类分面（作曲家 / 地域，选中分类时懒加载）
   data/search-lite.json    全库轻量搜索索引（输入搜索时才懒加载）
+  data/works.json          作品归组索引（仅 performance 录音、≥2 个录音的 wk）——
+                           详情页「本曲其他演奏版」跨分片聚合用（N1）
 
 用法（部署流水线中调用）：
   python tools/gen_shards.py     # 需在站点根目录（含 meta/catalog.json）执行
@@ -38,7 +40,9 @@ CAT_NAMES = {
 }
 
 # 播放器需要的字段（catalog 完整字段中的子集，减小体积）
-KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f", "opus", "no", "form", "yr", "ctry", "diff")
+# v1.23 新增：cnzh（作曲家中文名）· vt（版本类型）· perf（演奏者）· alb（专辑）· wk（作品归组键）
+KEEP = ("id", "t", "c", "cn", "g", "p", "r", "i", "z", "l", "v", "f", "opus", "no",
+        "form", "yr", "ctry", "diff", "cnzh", "vt", "perf", "alb", "wk")
 
 # ── 地域名清洗：上游 Essen/Norbeck 等源残留 LaTeX 转义（{\"aa} / \"o 等） ──
 _LATEX = (
@@ -166,6 +170,23 @@ def main() -> int:
     (out / "loc.json").write_text(
         json.dumps(loc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
+    # ── 作品归组索引（N1）─────────────────────────────────────────────────
+    # 详情页「本曲其他演奏版」需要**跨分片**聚合：ATEPP 同一作品的多个录音会散落在
+    # 不同 cat-*-N.json 分片里（piano-performance 有 17,241 首 / 35 片），
+    # 只靠当前分片看不到全部。故这里单独出一份索引，只收录 ≥2 个录音的 wk。
+    perf = defaultdict(list)
+    for t in tracks:
+        if t.get("vt") != "performance":
+            continue
+        wk = t.get("wk")
+        if wk:
+            perf[wk].append([t["id"], t.get("perf") or "", t.get("alb") or "", disp_title(t) or ""])
+    works = {k: v for k, v in perf.items() if len(v) > 1}
+    (out / "works.json").write_text(
+        json.dumps(works, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"  works.json: {len(works):,} 个作品 / {sum(len(v) for v in works.values()):,} 个录音",
+          flush=True)
+
     # 多维浏览数据（新首页的「按时期 / 乐器 / 风格 / 国家 / 曲式 / 难度」轴）
     def dim(field):
         c = Counter(x.get(field) for x in tracks if x.get(field))
@@ -194,8 +215,8 @@ def main() -> int:
         "total": len(tracks),
         "categories": summary_cats,
         "sources": dict(sorted(by_source.items(), key=lambda kv: -kv[1])),
-        "zones": {"main": sum(1 for t in tracks if t["z"] == "main"),
-                  "piano-special": sum(1 for t in tracks if t["z"] == "piano-special")},
+        "zones": {z: sum(1 for t in tracks if t["z"] == z)
+                  for z in ("main", "piano-special", "study")},
     }
     (out / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

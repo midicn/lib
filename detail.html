@@ -54,6 +54,9 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
     <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
     <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
     <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+    
+    <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+    
     <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
   </nav>
   <button class="iconbtn" id="theme" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36A5.39 5.39 0 0112 3z"/></svg></button>
@@ -80,8 +83,14 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
     <div id="licbox"></div>
 
     <!-- ④ 推荐 -->
-    <div class="stitle"><h2 data-zh="相关作品" data-en="Related">相关作品</h2></div>
-    <div class="panel"><div class="panel-bd"><div class="recs" id="recs"></div></div></div>
+  <!-- 本曲其他演奏版（N1）：仅 performance 版本显示，按演奏者归组 -->
+  <div id="perfWrap" hidden>
+    <div class="stitle"><h2 data-zh="本曲其他演奏版" data-en="Other recordings of this work">本曲其他演奏版</h2></div>
+    <div class="panel"><div class="panel-bd" id="perfBody"></div></div>
+  </div>
+
+  <div class="stitle"><h2 data-zh="相关作品" data-en="Related">相关作品</h2></div>
+  <div class="panel"><div class="panel-bd"><div class="recs" id="recs"></div></div></div>
   </main>
 
   <aside class="stick">
@@ -116,6 +125,9 @@ h1.dt{font-size:var(--fs-34);margin-bottom:var(--s2)}
       <a href="./" data-zh="音乐库" data-en="Library">音乐库</a>
       <a href="download.html" data-zh="数据下载" data-en="Download">数据下载</a>
       <a href="sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      
+      <a href="lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      
       <a href="licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
       <a href="https://github.com/midicn/midi-lib" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -223,9 +235,46 @@ themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dar
   render();
 })();
 
+/* ═══ 本曲其他演奏版（N1）：data/works.json 跨分片聚合 ═══
+   为什么需要它：ATEPP 同一作品的多个录音散布在不同 cat-*-N.json 分片里
+   （piano-performance 17,241 首 / 35 片），只靠当前分片看不到全部。
+   数据只覆盖 vt=performance 且 ≥2 个录音的作品，按**演奏者**归组——
+   同一钢琴家常为同一曲留有多份录音，逐个列出反而噪音大。 */
+let WORKS = null, WORKS_P = null;
+function loadWorks(){
+  if(!WORKS_P) WORKS_P = fetchJSON('data/works.json', 2)
+    .then(j=>{ WORKS = j; return j; }).catch(()=>null);
+  return WORKS_P;
+}
+async function renderPerf(x){
+  if(!x || x.vt !== 'performance' || !x.wk) return;
+  const w = await loadWorks();
+  const list = w && w[x.wk];
+  if(!list || list.length < 2) return;
+  const by = new Map();
+  list.forEach(([id, perf])=>{
+    if(id === x.id) return;
+    const k = perf || t('（未署名演奏者）','(unattributed)');
+    if(!by.has(k)) by.set(k, []);
+    by.get(k).push(id);
+  });
+  if(!by.size) return;
+  const sorted = [...by.entries()].sort((a,b)=> b[1].length - a[1].length);
+  const note = t(
+    '同一作品在本库共有 <b>'+sorted.length+'</b> 位演奏者的 <b>'+list.length+'</b> 个录音（含本曲），按演奏者归组：',
+    'This library holds <b>'+list.length+'</b> recordings of this work by <b>'+sorted.length+
+    '</b> performers (including this one), grouped by performer:');
+  $('perfBody').innerHTML = '<p style="margin-bottom:var(--s4)">'+note+'</p>'+
+    '<div class="recs">'+sorted.map(([perf, ids])=>
+      '<a href="detail.html?id='+encodeURIComponent(ids[0])+'">'+
+        '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(perf)+'</span>'+
+        '<span>'+(ids.length>1 ? t('×'+ids.length+' 个录音','×'+ids.length+' rec.') : '1')+'</span></a>'
+    ).join('')+'</div>';
+  $('perfWrap').hidden = false;
+}
+
 function fail(msg){
-  document.querySelector('main').innerHTML = '<p class="err">'+esc(msg)+'</p>' +
-    '<p><a href="./" data-zh="返回音乐库" data-en="Back to library">返回音乐库</a></p>';
+  document.querySelector('main').innerHTML = '<p class="err">'+esc(msg)+'</p>' +    '<p><a href="./" data-zh="返回音乐库" data-en="Back to library">返回音乐库</a></p>';
   applyLang();
 }
 
@@ -245,10 +294,19 @@ function render(){
     '<span>/</span><span>'+esc(String(CAT))+'</span>';
 
   /* ① 识别信息 */
+  // 作曲家：优先「中文名（原名）」——中文用户先看到 cnzh
+  const compName = x.cnzh
+    ? esc(x.cnzh) + (x.cn ? ' <span class="meta">'+esc(x.cn)+'</span>' : '')
+    : (esc(x.cn || '—') + (x.c ? ' <span class="meta">'+esc(x.c)+'</span>' : ''));
+  const VT_ZH = { performance:'演奏录音', score:'乐谱' };
   const rows = [
     [t('曲名','TITLE'), esc(ttl)],
-    [t('作曲家','COMPOSER'), esc(x.cn || '—') + (x.c ? ' <span class="meta">'+esc(x.c)+'</span>' : '')],
+    [t('作曲家','COMPOSER'), compName],
     [t('作品编号','CATALOGUE'), x.opus ? esc(String(x.opus)) + (x.no ? (' / No. ' + esc(String(x.no))) : '') : '—'],
+    // ── v1.23 新增：演奏版信息（ATEPP 的价值所在）──
+    [t('版本类型','VERSION'), x.vt ? esc(LANG==='zh' ? (VT_ZH[x.vt]||x.vt) : x.vt) : t('通用','general')],
+    [t('演奏者','PERFORMER'), x.perf ? esc(x.perf) : '—'],
+    [t('专辑 / 录音','ALBUM'), x.alb ? esc(x.alb) : '—'],
     [t('时期','PERIOD'), x.p ? esc(LANG==='zh' ? (PERIOD_ZH[x.p]||x.p) : x.p) : '—'],
     [t('乐器 / 编制','INSTRUMENT'), x.i ? esc(LANG==='zh' ? (INST_ZH[x.i]||x.i) : x.i) : '—'],
     [t('风格','GENRE'), x.g ? esc(LANG==='zh' ? (GENRE_ZH[x.g]||x.g) : x.g) : '—'],
@@ -331,6 +389,9 @@ function render(){
       '<span>'+esc(y.cn||'')+'</span></a>').join('')
     : '<p class="meta">'+t('无相关条目','Nothing related in this shard')+'</p>';
 
+  /* ⑤ 本曲其他演奏版（N1）：跨分片，按演奏者归组 —— 异步，不阻塞首屏 */
+  renderPerf(x);
+
   /* 侧栏记录 */
   $('rec').innerHTML = [
     [t('标识','ID'), esc(x.id)],
@@ -346,8 +407,8 @@ function render(){
   $('inlib').textContent = t('在音乐库中定位此曲','Locate this track in the library');
   $('footLic') && ($('footLic').innerHTML = t(LIC_TEXT.zh, LIC_TEXT.en));
   $('footLegal').innerHTML = t(
-    '数据版本 v1.19 · 本页信息随数据自动生成 · <a href="licenses.html">许可与法律</a>',
-    'Data v1.19 · generated from the data · <a href="licenses.html">Licence &amp; legal</a>'
+    '数据版本 v1.23 · 本页信息随数据自动生成 · <a href="licenses.html">许可与法律</a>',
+    'Data v1.23 · generated from the data · <a href="licenses.html">Licence &amp; legal</a>'
   );
   $('dl').textContent = t('下载 MIDI','Download MIDI');
   $('sfbadge').textContent = t('未加载音源','SF idle');

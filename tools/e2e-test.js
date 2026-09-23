@@ -1,4 +1,4 @@
-/* midicn-lib 端到端回归 v11.8（v1.21 断言同步）*/
+/* midicn-lib 端到端回归 v11.8（v1.23 断言同步）*/
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -120,7 +120,7 @@ function makeFetch(realFetch){
   console.log('\n【1】扉页与骨架');
   const hmeta = d.getElementById('heroMeta');
   ok('扉页改为紧凑行内数字（无大数字块）', !!hmeta && d.querySelectorAll('.fig').length === 0);
-  ok('曲目总数已填充', /124[,.]?179/.test((hmeta||{}).textContent || ''), (hmeta||{}).textContent);
+  ok('曲目总数已填充', /133[,.]?667/.test((hmeta||{}).textContent || ''), (hmeta||{}).textContent);
   ok('导语已填充', (((d.getElementById('heroLede')||{}).textContent) || '').length > 20);
   ok('标题为衬线大标题', /MIDI/.test((d.querySelector('.hero h1')||{}).textContent || ''));
   ok('编辑导语存在', !!d.querySelector('.hero .lede'));
@@ -137,9 +137,9 @@ function makeFetch(realFetch){
 
   const srcAxis = [...axes].find(a=>/来源|Source/.test(a.textContent));
   click(srcAxis); await wait(800);
-  ok('切「按来源」→ 19 个瓦片', d.querySelectorAll('#grid .tile').length === 19,
+  ok('切「按来源」→ 21 个瓦片', d.querySelectorAll('#grid .tile').length === 21,
      d.querySelectorAll('#grid .tile').length + ' 个');
-  ok('来源瓦片带许可徽标', d.querySelectorAll('#grid .tile .lic').length >= 19);
+  ok('来源瓦片带许可徽标', d.querySelectorAll('#grid .tile .lic').length >= 21);
   const tierAxis = [...d.querySelectorAll('#axes .axis')].find(a=>/使用方式|tier/i.test(a.textContent));
   click(tierAxis); await wait(700);
   ok('切「按使用方式」→ 3 个瓦片', d.querySelectorAll('#grid .tile').length === 3);
@@ -198,7 +198,7 @@ function makeFetch(realFetch){
   /* 【6】导航与页脚 */
   console.log('\n【6】导航与页脚');
   const nav = [...d.querySelectorAll('.nav a')].map(a=>a.getAttribute('href'));
-  ok('导航含四页', ['./','download.html','sources.html','licenses.html'].every(h=>nav.includes(h)), nav.join(' '));
+  ok('导航含五页（含歌词检索）', ['./','download.html','sources.html','lyrics.html','licenses.html'].every(h=>nav.includes(h)), nav.join(' '));
   ok('页脚为紧凑两行（链接 + 声明）', !!d.querySelector('footer .fbar') && !!d.querySelector('footer .fnote'));
   ok('页脚含许可声明', /许可|licence/i.test((d.getElementById('footLegal')||{}).textContent || ''));
 
@@ -260,7 +260,13 @@ function makeFetch(realFetch){
     ['sources.html', [/HOME|原始地址/, /thesession\.org/, /mutopiaproject/, /CREDIT|致谢/, /MuseData/]],
     ['sources.html', [/开源项目/]],
     ['licenses.html', [/C1/, /署名|attribution/i, /下架|takedown/i, /48/, /CC BY-SA/i, /禁止用于大语言模型|LLM/]],
-    ['download.html', [/by source|按来源/i, /by usage|按使用方式/i, /VER = 'v1\.21'/, /meta\.zip/]],
+    ['licenses.html', [/内嵌歌词|Embedded lyrics/]],                 // F3 独立权利层
+    // v1.23：包入口统一到 zip 站 → 本页改为「总览 + 跳转」，断言随之改写（N4）
+    ['download.html', [/zip\.midicn\.com/, /用途包|usage pack/i, /维度包|dimension pack/i, /400\+/]],
+    ['download.html', [/VER = 'v1\.23'/, /meta\.zip|目录与索引|Catalogue/i]],
+    ['download.html', [/歌词|lyrics/i]],                              // F2 歌词不随包分发
+    // F2：歌词库仅站内展示 —— 页必须显著声明「仅研究/学习」且不提供下载
+    ['lyrics.html', [/歌词检索|Lyrics search/, /仅限研究|study use only|研究、教学与学习/, /独立于曲目的另一层权利对象|separate rights object/, /不主张著作权|claims no copyright/]],
   ]){
     try{
       let h;
@@ -340,7 +346,7 @@ function makeFetch(realFetch){
       musicnet:'https://zenodo.org/records/5120004',
     };
     const miss = Object.entries(SRC_URLS).filter(([id,u]) => !arch.includes("url:'" + u + "'"));
-    ok('19 个来源地址与真实采集来源一致', miss.length === 0,
+    ok('21 个来源地址与真实采集来源一致', miss.length === 0,
        miss.length ? '不符: ' + miss.map(([i])=>i).join(' ') : '');
     /* 已知错误 / 无关地址不得复现 */
     const FORBIDDEN = ['lucasnata','lucasnfe','www.ihchina.cn','EMOPIA/EMOPIA','jukedeck/nottingham',
@@ -357,7 +363,7 @@ function makeFetch(realFetch){
     /* 站内台账页（不依赖 GitHub 的自证入口）*/
     const pv = await assetText('provenance.html');
     const ncards = (pv.match(/class="panel pc"/g) || []).length;
-    ok('站内台账页存在且含 19 张来源卡', ncards === 19, ncards ? ncards + ' 张' : '（未找到）');
+    ok('站内台账页存在且含 21 张来源卡', ncards === 21, ncards ? ncards + ' 张' : '（未找到）');
     ok('台账页含三条规则与 180 天复核周期', /三条规则/.test(pv) && /180 天复核周期/.test(pv));
     ok('台账页给出整包校验值', /MD5/.test(pv) && /d26e22562e67eb7d37535e96cc5eebba/.test(pv));
     ok('来源页指向站内台账页', /PROV_PAGE/.test(sc) && /PROV_PAGE\s*=\s*'provenance\.html'/.test(arch));

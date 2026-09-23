@@ -3,8 +3,13 @@
 .git-abandoned/
 .git-broken/
 meta/
-data/
+# data/ 下多为构建产物（cat-*/facets-*/loc/search-lite 等），不入仓；
+# 但歌词分片是**静态内容且源文件不入仓**，必须在仓内提交，故显式放行。
+data/*
+!data/lyrics/
 *.zip
 _backup_*.html
 _check.py
 _c.js
+__pycache__/
+*.pyc
