@@ -38,6 +38,7 @@ jobs:
           cp sw.js site/ 2>/dev/null || true
           cp -r soundfont site/soundfont
           cp licenses.html site/ 2>/dev/null || true
+          cp soundfonts.html site/ 2>/dev/null || true
           cp sources.html site/ 2>/dev/null || true
           cp provenance.html site/ 2>/dev/null || true
           cp download.html site/ 2>/dev/null || true

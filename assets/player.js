@@ -38,15 +38,45 @@
 
   /* ── 采样音源路径的状态 ── */
   var ENG = 'soundfont/engine/';
-  var SF_URL_GZ = 'soundfont/GeneralUser-GS-slim.sf2.gz';  /* 10.6 MB（子集·首选） */
-  var SF_URL_RAW = 'soundfont/GeneralUser-GS-slim.sf2';    /* 11.5 MB（兜底·无 DecompressionStream 时） */
+  var SF_URL_GZ = 'soundfont/GeneralUser-GS.sf2.gz';   /* 29.2 MB（首选） */
+  var SF_URL_RAW = 'soundfont/GeneralUser-GS.sf2';     /* 32.3 MB（兜底·无 DecompressionStream 时） */
   var sf = null, sfNode = null, sfReady = false, sfLoading = false, sfFailed = false;
   var sfCurTotalTick = 0, sfPausedTick = null, sfEngine = 'none';
   var sfStage = '', sfError = '', sfTries = 0, sfLastTick = 0;
+  /* ── 音色库来源（用户可选）───────────────────────────────────────
+     { kind:'bundled' }                    内置 GeneralUser GS（我们托管）
+     { kind:'url', url, gz }               其它在线音色（须许可允许分发）
+     { kind:'local', name, size }          用户自选的本地 .sf2（存 Cache API，不上传） */
+  var SF_SRC_DEF = { kind: 'bundled' };
+  var sfSource = SF_SRC_DEF;
+  var SF_LS = 'midicn-sfont-src';            /* localStorage 记选择 */
+  var SF_LOCAL = 'midicn-sfont-local';       /* Cache API 存用户本地文件 */
+  var SF_LOCAL_KEY = '/__midicn_local_sf2__';
   var SF_CACHE = 'midicn-sfont';
   var sfAC = null;                     /* **原生** AudioContext —— FluidSynth 独立使用 */        /* 自己缓存音源，不依赖 SW 是否已接管页面 */
 
   function $(id) { return document.getElementById(id); }
+
+  /* ── 音色选择：读写 ───────────────────────────────────────────── */
+  function loadSfChoice() {
+    try {
+      var j = JSON.parse(global.localStorage.getItem(SF_LS) || 'null');
+      if (j && j.kind) sfSource = j;
+    } catch (e) { /* 隐私模式等 → 用默认 */ }
+  }
+  function saveSfChoice() {
+    safe(function () { global.localStorage.setItem(SF_LS, JSON.stringify(sfSource)); });
+  }
+  /* 关掉现有引擎，让下次播放用新音色重建 */
+  function resetEngine() {
+    sfReady = false; sfFailed = false; sfTries = 0; sfError = ''; sfStage = '';
+    sfCurTotalTick = 0; sfLastTick = 0; sfPausedTick = null;
+    sfEngine = 'none'; sfLoading = false;
+    safe(function () { sf && sf.close(); });
+    sf = null; sfNode = null;
+    safe(function () { sfAC && sfAC.state !== 'closed' && sfAC.close(); });
+    sfAC = null;
+  }
   function fmt(s) {
     s = Math.max(0, Math.round(s || 0));
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
@@ -73,18 +103,26 @@
     return await new Response(new Blob([buf]).stream().pipeThrough(st)).arrayBuffer();
   }
 
-  /* 取音源字节。
-     ① 先查我们自己的 Cache API —— **不依赖 SW 是否已接管页面**
-        （首次访问时 SW 尚未 controlling，只靠 SW 会让 28 MB 每访一次重下）
-     ② 下载时逐步报进度到 badge，让用户看得见在动
-     ③ 写回 Cache，下次秒开 */
+  /* 取音源字节。按来源分派：
+       · local   → 从 Cache API 读用户自选的本地 .sf2（裸 SF2，不解压）
+       · bundled / url → 先查我们自己的 Cache API，再下载（可 gz + 解压） */
   async function fetchSoundFont() {
+    if (sfSource.kind === 'local') {
+      var cl = await caches.open(SF_LOCAL);
+      var hit = await cl.match(SF_LOCAL_KEY);
+      if (!hit) throw new Error('本地音色文件已失效，请重新选择');
+      return await hit.arrayBuffer();
+    }
+
+    var gzUrl = sfSource.kind === 'url' ? sfSource.url : SF_URL_GZ;
+    var rawUrl = sfSource.kind === 'url' ? (sfSource.raw || sfSource.url) : SF_URL_RAW;
+    var wantGz = sfSource.kind === 'url' ? !!sfSource.gz : true;
+
     var cached = null;
     try {
       var c = await caches.open(SF_CACHE);
-      cached = await c.match(SF_URL_GZ) || await c.match(SF_URL_RAW);
-    } catch (e) { /* 无 Cache API（如隐私模式）→ 走网络 */ }
-
+      cached = await c.match(gzUrl) || await c.match(rawUrl);
+    } catch (e) { /* 无 Cache API（隐私模式）→ 走网络 */ }
     if (cached) {
       sfStage = 'decode';
       badge('音源解压…');
@@ -93,7 +131,14 @@
     }
 
     sfStage = 'download';
-    var res = await fetch(SF_URL_GZ, { cache: 'no-store' });
+    if (!wantGz) {
+      badge('音源下载中…');
+      var r0 = await fetch(rawUrl, { cache: 'no-store' });
+      if (!r0.ok) throw new Error('音源 HTTP ' + r0.status);
+      return await r0.arrayBuffer();
+    }
+
+    var res = await fetch(gzUrl, { cache: 'no-store' });
     if (!res.ok) throw new Error('音源 HTTP ' + res.status);
     var total = Number(res.headers.get('Content-Length')) || 0;
     var buf;
@@ -115,14 +160,14 @@
     }
     try {
       var c2 = await caches.open(SF_CACHE);
-      await c2.put(SF_URL_GZ, new Response(buf.slice(0), { headers: { 'Content-Type': 'application/gzip' } }));
+      await c2.put(gzUrl, new Response(buf.slice(0), { headers: { 'Content-Type': 'application/gzip' } }));
     } catch (e) { /* 缓存失败不影响播放 */ }
 
     sfStage = 'decode';
     badge('音源解压…');
     var out = await gunzip(buf);
     if (out) return out;
-    var rr = await fetch(SF_URL_RAW, { cache: 'force-cache' });
+    var rr = await fetch(rawUrl, { cache: 'force-cache' });
     if (!rr.ok) throw new Error('音源 HTTP ' + rr.status);
     return await rr.arrayBuffer();
   }
@@ -454,12 +499,122 @@
     safe(function () { Tone.Transport.seconds = f * curTotal; });
   }
 
+
+  /* ═══════════════════════════════════════════════════════════════════
+     音色库选择器（自动挂载在 #sfbadge 之后，无需页面改 HTML）
+     ═══════════════════════════════════════════════════════════════════ */
+  function mountPicker() {
+    var badge = $('sfbadge');
+    if (!badge || !badge.parentNode || $('sfpick')) return;
+
+    var wrap = document.createElement('span');
+    wrap.id = 'sfpick';
+    wrap.style.cssText = 'display:inline-flex;align-items:center;gap:6px';
+
+    var sel = document.createElement('select');
+    sel.id = 'sfsrc';
+    sel.title = '音色库（可自选）';
+    sel.style.cssText = 'background:transparent;color:inherit;border:1px solid currentColor;'
+      + 'border-radius:999px;padding:1px 6px;font:inherit;font-size:12px;opacity:.85;cursor:pointer';
+
+    var file = document.createElement('input');
+    file.type = 'file';
+    file.accept = '.sf2,.sf3,audio/x-soundfont';
+    file.style.display = 'none';
+
+    function render() {
+      sel.innerHTML = '';
+      sel.add(new Option('音色：内置 GeneralUser GS', 'bundled'));
+      if (sfSource.kind === 'local') {
+        var n = (sfSource.name || '本地音色');
+        sel.add(new Option('音色：本地 · ' + (n.length > 22 ? n.slice(0, 20) + '…' : n), 'local'));
+      }
+      sel.add(new Option('选择本地音色文件…', 'pick'));
+      sel.add(new Option('看有哪些可选音色 →', 'help'));
+      sel.value = sfSource.kind === 'local' ? 'local' : 'bundled';
+    }
+
+    sel.addEventListener('change', async function () {
+      var v = sel.value;
+      if (v === 'pick') { file.click(); render(); return; }
+      if (v === 'help') { global.open('soundfonts.html', '_blank'); render(); return; }
+      try {
+        await global.Player.setSoundFont({ kind: v });
+        status('已切换到' + (v === 'local' ? '本地音色' : '内置音色') + '，下次播放生效');
+      } catch (e) { status('切换失败：' + ((e && e.message) || e)); }
+      render();
+    });
+
+    file.addEventListener('change', async function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      status('正在载入本地音色：' + f.name + ' …');
+      try {
+        await global.Player.setSoundFont({ kind: 'file', file: f });
+        status('已使用本地音色「' + f.name + '」（' + (f.size / 1048576).toFixed(1) + ' MB），下次播放生效');
+      } catch (e) {
+        status('载入失败：' + ((e && e.message) || e));
+      }
+      file.value = '';
+      render();
+    });
+
+    wrap.appendChild(sel);
+    wrap.appendChild(file);
+    badge.parentNode.insertBefore(wrap, badge.nextSibling);
+    render();
+    global.Player._renderPicker = render;
+  }
+
+  loadSfChoice();
+
   global.Player = {
     init: function (opts) { hooks = opts || {}; },
     play: play, toggle: toggle, stop: stop, next: next, prev: prev, seek: seek,
     setVolume: function (v) { vol = v; applyVolume(); },
     setLoop: function (on) { looping = !!on; },
     isPlaying: function () { return playing; },
+    /* ── 音色库选择（供页面 UI 调用）────────────────────────────────
+       可选值：
+         Player.setSoundFont({kind:'bundled'})          内置（默认）
+         Player.setSoundFont({kind:'url', url, gz})     其它在线音色
+         Player.setSoundFont({kind:'file', file: File}) 用户本地 .sf2（存本机，不上传）
+       返回 Promise；失败时 reject 带原因。切换后会重建引擎，**下次播放生效**。 */
+    setSoundFont: async function (src) {
+      if (!src || !src.kind) throw new Error('缺少音色来源描述');
+      if (src.kind === 'file') {
+        var f = src.file;
+        if (!f) throw new Error('未选择文件');
+        var ab = await f.arrayBuffer();
+        var h = new Uint8Array(ab, 0, Math.min(12, ab.byteLength));
+        if (h[0] !== 0x52 || h[1] !== 0x49 || h[2] !== 0x46 || h[3] !== 0x46 ||          /* RIFF */
+            h[8] !== 0x73 || h[9] !== 0x66 || h[10] !== 0x62 || h[11] !== 0x6b) {         /* sfbk */
+          throw new Error('不是合法 SoundFont（需要 .sf2 / RIFF+sfbk 头）');
+        }
+        var c = await caches.open(SF_LOCAL);
+        await c.put(SF_LOCAL_KEY, new Response(ab));
+        sfSource = { kind: 'local', name: f.name, size: ab.byteLength };
+      } else if (src.kind === 'url' || src.kind === 'bundled') {
+        sfSource = src.kind === 'bundled' ? { kind: 'bundled' }
+                                          : { kind: 'url', url: src.url, raw: src.raw, gz: !!src.gz, name: src.name };
+      } else {
+        throw new Error('未知的音色来源类型：' + src.kind);
+      }
+      saveSfChoice();
+      resetEngine();
+      return sfSource;
+    },
+    /* 当前音色来源（含本地文件的名字/体积） */
+    soundFont: function () { return sfSource; },
+    /* 清除用户自选的本地音色（释放 Cache API 空间） */
+    /* 重新渲染选择器（切换来源后由内部调用；页面一般无需自己调） */
+    _renderPicker: null,
+    clearLocalSoundFont: async function () {
+      try { var c = await caches.open(SF_LOCAL); await c.delete(SF_LOCAL_KEY); } catch (e) {}
+      if (sfSource.kind === 'local') { sfSource = SF_SRC_DEF; saveSfChoice(); resetEngine(); }
+      if (global.Player._renderPicker) safe(global.Player._renderPicker);
+    },
+
     /* 诊断用：当前音源类型、就绪状态与**失败原因**
        —— 在控制台执行 `Player.engine()` 即可看到卡在哪一步 */
     engine: function () {
@@ -473,4 +628,10 @@
     },
     fmt: fmt
   };
+  /* 页面就绪后自动挂载选择器 */
+  safe(function () {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { safe(mountPicker); });
+    } else { safe(mountPicker); }
+  });
 })(window);

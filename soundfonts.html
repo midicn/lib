@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>音色库 · midicn-lib</title>
+<meta name="description" content="播放本库 MIDI 时可用的音色库（SoundFont）清单：内置 GeneralUser GS，以及可自取的 MIT / CC BY / 公有领域音色库，附许可说明与用法。">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/soundfonts.html">
+<link rel="alternate" hreflang="x-default" href="https://lib.midicn.com/soundfonts.html">
+<!-- SEO:BEGIN -->
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://lib.midicn.com/soundfonts.html">
+<link rel="alternate" hreflang="zh-CN" href="https://lib.midicn.com/soundfonts.html">
+<link rel="alternate" hreflang="x-default" href="https://lib.midicn.com/soundfonts.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="midicn-lib archive">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="音色库 · midicn-lib">
+<meta property="og:description" content="播放本库 MIDI 时可用的音色库（SoundFont）清单：内置 GeneralUser GS，以及可自取的 MIT / CC BY / 公有领域音色库，附许可说明与用法。">
+<meta property="og:url" content="https://lib.midicn.com/soundfonts.html">
+<meta property="og:image" content="https://lib.midicn.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="音色库 · midicn-lib">
+<meta name="twitter:description" content="播放本库 MIDI 时可用的音色库（SoundFont）清单：内置 GeneralUser GS，以及可自取的 MIT / CC BY / 公有领域音色库，附许可说明与用法。">
+<meta name="twitter:image" content="https://lib.midicn.com/assets/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070706'/%3E%3Crect x='14' y='26' width='5' height='15' rx='2.5' fill='%23E07A3F' opacity='.55'/%3E%3Crect x='23' y='18' width='5' height='31' rx='2.5' fill='%23E07A3F' opacity='.8'/%3E%3Crect x='32' y='29' width='5' height='12' rx='2.5' fill='%23E8C547'/%3E%3Cpath d='M43 16h5v22l-5 4z' fill='%23E8C547'/%3E%3Cellipse cx='41' cy='41' rx='7.5' ry='5.5' transform='rotate(-18 41 41)' fill='%23E8C547'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="assets/og-icon.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://lib.midicn.com/#website","url":"https://lib.midicn.com/","name":"midicn-lib archive","alternateName":"midicn-lib","inLanguage":"zh-CN","publisher":{"@id":"https://lib.midicn.com/#org"}},{"@type":"Organization","@id":"https://lib.midicn.com/#org","name":"midicn-lib","url":"https://lib.midicn.com/","sameAs":["https://github.com/midicn/midi-library"]}]}</script>
+<!-- SEO:END -->
+</head>
+<body>
+
+<main class="doc wide">
+  <p class="meta" data-zh="档案 · 播放音色" data-en="ARCHIVE · PLAYBACK SOUND">档案 · 播放音色</p>
+  <h1 data-zh="音色库" data-en="SoundFonts">音色库</h1>
+  <p class="lede" data-zh="本库的 MIDI 由浏览器实时合成播放，音色取决于使用的 SoundFont。你可以换用任何自己拥有的音色库 —— 音色文件只存在你自己的浏览器里，不会被上传。"
+     data-en="MIDI here is synthesized live in your browser; the timbre depends on the SoundFont used. You may switch to any sound bank you own — the file stays in your own browser and is never uploaded.">本库的 MIDI 由浏览器实时合成播放，音色取决于使用的 SoundFont。你可以换用任何自己拥有的音色库 —— 音色文件只存在你自己的浏览器里，不会被上传。</p>
+
+  <!-- ① 怎么换 -->
+  <div class="stitle"><h2 data-zh="怎么换音色" data-en="How to switch">怎么换音色</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <ol class="steps" style="display:grid;gap:var(--s3);margin:0;padding-left:1.2em">
+      <li data-zh="在任意播放器的角标旁，有一个「音色」下拉框。" data-en="Next to the player badge there is a “SoundFont” dropdown.">在任意播放器的角标旁，有一个「音色」下拉框。</li>
+      <li data-zh="选「选择本地音色文件…」，挑一个 .sf2 文件即可（本页下方有推荐的来源）。" data-en="Choose “Load a local SoundFont…”, then pick an .sf2 file (see the list below for sources).">选「选择本地音色文件…」，挑一个 .sf2 文件即可（本页下方有推荐的来源）。</li>
+      <li data-zh="选定后会存进浏览器缓存，下次自动沿用；换回内置音色只需在下拉框里选回第一项。" data-en="Your choice is cached in the browser and reused next time; pick the first entry to go back to the built-in bank.">选定后会存进浏览器缓存，下次自动沿用；换回内置音色只需在下拉框里选回第一项。</li>
+    </ol>
+  </div></div>
+  <p class="note" data-zh="提示：音色库越大，首次载入越慢（需要先下载到本机）。体积 ≥100 MB 的音色库建议先下载到本地，再通过上面的方式选择。"
+     data-en="Note: the larger the bank, the slower the first load. For banks ≥100 MB, download the file first and then select it locally.">提示：音色库越大，首次载入越慢（需要先下载到本机）。体积 ≥100 MB 的音色库建议先下载到本地，再通过上面的方式选择。</p>
+
+  <!-- ② 内置 -->
+  <div class="stitle"><h2 data-zh="内置音色库（默认）" data-en="Built-in (default)">内置音色库（默认）</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <div class="panel-hd" style="padding:0 0 var(--s3) 0">
+      <b style="font-size:var(--fs-16)">GeneralUser GS 2.0.3</b>
+      <span class="lic c1" data-zh="许可清晰" data-en="Licence clear">许可清晰</span>
+    </div>
+    <p data-zh="体积 29.8 MB（未压缩）· 由 S. Christian Collins 制作 · 1997–2025。本库随站分发的是**自备的本地副本** —— 作者许可明确要求「要放在自己网站上，请提供自己的本地副本」，我们正是这样做的。"
+       data-en="29.8 MB uncompressed · by S. Christian Collins, 1997–2025. We host our own local copy, which the author’s licence explicitly asks for instead of hot-linking his downloads.">体积 29.8 MB（未压缩）· 由 S. Christian Collins 制作 · 1997–2025。本库随站分发的是自备的本地副本 —— 作者许可明确要求「要放在自己网站上，请提供自己的本地副本」，我们正是这样做的。</p>
+    <details style="margin-top:var(--s3)">
+      <summary style="cursor:pointer" data-zh="作者许可原文的两点（含一项诚实声明）" data-en="Two points from the author’s licence (incl. an honest caveat)">作者许可原文的两点（含一项诚实声明）</summary>
+      <ul style="margin:var(--s3) 0 0;padding-left:1.2em;display:grid;gap:var(--s2)">
+        <li data-zh="允许「用于自己的音乐创作（含商业），以及在自己的软件项目里使用、修改音色库或其打包形式」。" data-en="Permits use in your own music (including commercial) and in your software projects, and modification of the bank or its packaging.">允许「用于自己的音乐创作（含商业），以及在自己的软件项目里使用、修改音色库或其打包形式」。</li>
+        <li data-zh="⚠️ 作者声明：部分采样取自网上其它「免费」音色库，他无法 100% 确认全部采样的来源（原文：I cannot be 100% sure where all of the samples originated）。若你用于商业软件，请自行评估。"
+            data-en="⚠️ The author states he cannot be 100% sure where all samples originated, as some came from other “free” banks online. Evaluate accordingly if you ship it in commercial software.">⚠️ 作者声明：部分采样取自网上其它「免费」音色库，他无法 100% 确认全部采样的来源。若你用于商业软件，请自行评估。</li>
+      </ul>
+    </details>
+  </div></div>
+
+  <!-- ③ 推荐自取 -->
+  <div class="stitle"><h2 data-zh="推荐自取的音色库（许可明确）" data-en="Recommended banks (clear licences)">推荐自取的音色库（许可明确）</h2></div>
+  <p class="meta" data-zh="下面这些音色库的许可**明确允许使用与再分发**，但我们不在站内分发（体积太大）。请到官方来源自取，再用上面的方式加载本地文件。"
+     data-en="The licences below clearly permit use and redistribution, but we do not host them here (size). Get them from the official source and load the local file.">下面这些音色库的许可**明确允许使用与再分发**，但我们不在站内分发（体积太大）。请到官方来源自取，再用上面的方式加载本地文件。</p>
+
+  <div class="panel pc" style="margin-top:var(--s4)"><div class="panel-hd"><b style="font-size:var(--fs-16)">FluidR3_GM</b><span class="lic c1">MIT</span><span style="margin-left:auto"></span><span class="meta">141 MB</span></div>
+    <div class="panel-bd"><p data-zh="最常被推荐的通用音色库之一，管弦乐与人声表现好于内置音色。MIT 许可，明确允许使用、修改、再分发。" data-en="One of the most recommended GM banks; stronger orchestral and choral sounds. MIT licence — use, modify and redistribute permitted.">最常被推荐的通用音色库之一，管弦乐与人声表现好于内置音色。MIT 许可，明确允许使用、修改、再分发。</p>
+    <dl class="dl"><dt data-zh="许可" data-en="LICENCE">许可</dt><dd>MIT © 2000–2008 Frank Wen</dd><dt data-zh="官方来源" data-en="SOURCE">官方来源</dt><dd><a href="https://musescore.org/en/handbook/3/soundfonts-and-sfz-files" target="_blank" rel="noopener">musescore.org（SoundFonts 列表页）</a></dd></dl></div></div>
+
+  <div class="panel pc" style="margin-top:var(--s4)"><div class="panel-hd"><b style="font-size:var(--fs-16)">MuseScore_General</b><span class="lic c1">MIT</span><span style="margin-left:auto"></span><span class="meta">208 MB (.sf2) / 35.9 MB (.sf3)</span></div>
+    <div class="panel-bd"><p data-zh="MuseScore 3/4 的默认音色库，基于 FluidR3 增强；许可为 MIT，其中部分采样本身是公有领域或 CC0。注意 .sf3 是压缩格式，本页播放器需要 .sf2。" data-en="MuseScore 3/4’s default bank, an enhanced FluidR3; MIT, with parts public domain or CC0. Note .sf3 is compressed — the player here needs .sf2.">MuseScore 3/4 的默认音色库，基于 FluidR3 增强；许可为 MIT，其中部分采样本身是公有领域或 CC0。注意 .sf3 是压缩格式，本页播放器需要 .sf2。</p>
+    <dl class="dl"><dt data-zh="许可" data-en="LICENCE">许可</dt><dd>MIT（部分采样 PD / CC0）© 2018–2020 S. Christian Collins</dd><dt data-zh="官方来源" data-en="SOURCE">官方来源</dt><dd><a href="https://musescore.org/en/handbook/3/soundfonts-and-sfz-files" target="_blank" rel="noopener">musescore.org</a></dd></dl></div></div>
+
+  <div class="panel pc" style="margin-top:var(--s4)"><div class="panel-hd"><b style="font-size:var(--fs-16)">Salamander Grand Piano</b><span class="lic c1">CC BY 3.0</span><span style="margin-left:auto"></span><span class="meta">80 MB – 1.9 GB</span></div>
+    <div class="panel-bd"><p data-zh="雅马哈 C5 三角钢琴，16 层力度采样。本库 96% 的曲目是钢琴曲，换用它会带来最明显的听感提升。有多个体积版本可选。" data-en="Yamaha C5 grand, 16 velocity layers. 96% of this library is piano, so this gives the biggest audible upgrade. Several size variants exist.">雅马哈 C5 三角钢琴，16 层力度采样。本库 96% 的曲目是钢琴曲，换用它会带来最明显的听感提升。有多个体积版本可选。</p>
+    <dl class="dl"><dt data-zh="许可" data-en="LICENCE">许可</dt><dd>CC BY 3.0 © Alexander Holm</dd><dt data-zh="官方来源" data-en="SOURCE">官方来源</dt><dd><a href="https://sfzinstruments.github.io/pianos/" target="_blank" rel="noopener">sfzinstruments.github.io/pianos</a></dd></dl></div></div>
+
+  <div class="panel pc" style="margin-top:var(--s4)"><div class="panel-hd"><b style="font-size:var(--fs-16)">Yamaha Disklavier Pro Grand Piano</b><span class="lic c1">CC BY 3.0</span><span style="margin-left:auto"></span><span class="meta">113 MB</span></div>
+    <div class="panel-bd"><p data-zh="121 个采样、5 层力度，sf2 格式可直接加载。FreePats 项目维护，来源记录完整。" data-en="121 samples, 5 velocity layers, .sf2 format ready to load. Maintained by the FreePats project with full provenance records.">121 个采样、5 层力度，sf2 格式可直接加载。FreePats 项目维护，来源记录完整。</p>
+    <dl class="dl"><dt data-zh="许可" data-en="LICENCE">许可</dt><dd>CC BY 3.0 © Roberto Gordo Saez</dd><dt data-zh="官方来源" data-en="SOURCE">官方来源</dt><dd><a href="https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html" target="_blank" rel="noopener">freepats.zenvoid.org</a></dd></dl></div></div>
+
+  <div class="panel pc" style="margin-top:var(--s4)"><div class="panel-hd"><b style="font-size:var(--fs-16)">The City Piano</b><span class="lic c1" data-zh="公有领域" data-en="Public domain">公有领域</span><span style="margin-left:auto"></span><span class="meta">696 MB</span></div>
+    <div class="panel-bd"><p data-zh="Baldwin 小型三角钢琴，4 层力度，公有领域 —— 没有任何使用限制，适合需要完全无约束的场景。" data-en="Baldwin baby grand, 4 velocity layers, public domain — no restrictions at all.">Baldwin 小型三角钢琴，4 层力度，公有领域 —— 没有任何使用限制，适合需要完全无约束的场景。</p>
+    <dl class="dl"><dt data-zh="许可" data-en="LICENCE">许可</dt><dd>Public Domain © Big Cat Instruments</dd><dt data-zh="官方来源" data-en="SOURCE">官方来源</dt><dd><a href="https://sfzinstruments.github.io/pianos/" target="_blank" rel="noopener">sfzinstruments.github.io/pianos</a></dd></dl></div></div>
+
+  <!-- ④ 说明 -->
+  <div class="stitle"><h2 data-zh="关于许可与隐私" data-en="Licence &amp; privacy">关于许可与隐私</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <ul style="display:grid;gap:var(--s3);margin:0;padding-left:1.2em">
+      <li data-zh="本页只列出许可**明确允许使用**的音色库。许可不明、或明确禁止再分发的音色库不会出现在这里 —— 与我们对待数据来源的标准一致。"
+          data-en="Only banks with licences that clearly permit use are listed — the same standard we apply to data sources.">本页只列出许可**明确允许使用**的音色库。许可不明、或明确禁止再分发的音色库不会出现在这里 —— 与我们对待数据来源的标准一致。</li>
+      <li data-zh="你选择的本地音色文件**只保存在你自己浏览器的缓存里**，不会上传到任何服务器。清除浏览器数据即可删除。"
+          data-en="A locally selected SoundFont is stored only in your own browser cache and is never uploaded. Clearing browser data removes it.">你选择的本地音色文件**只保存在你自己浏览器的缓存里**，不会上传到任何服务器。清除浏览器数据即可删除。</li>
+      <li data-zh="音色库的许可是**独立于本库**的：本库的 C1/C2/C3 档位说明的是 MIDI 数据本身，与你播放时用哪个音色库无关。"
+          data-en="SoundFont licences are independent of this library: our C1/C2/C3 tiers describe the MIDI data itself, not the bank you play it with.">音色库的许可是**独立于本库**的：本库的 C1/C2/C3 档位说明的是 MIDI 数据本身，与你播放时用哪个音色库无关。</li>
+    </ul>
+  </div></div>
+</main>
+
+<footer><div class="wrap">
+  <div class="fbar">
+    <b>midicn-lib</b><i>archive</i>
+    <nav class="fnav" aria-label="页脚导航">
+      <a href="https://lib.midicn.com/" data-zh="音乐库" data-en="Library">音乐库</a>
+      <a href="https://mid.midicn.com/" data-zh="维度浏览" data-en="Dimensions">维度浏览</a>
+      <a href="https://zip.midicn.com/" data-zh="包下载" data-en="Packs">包下载</a>
+      <a href="https://lib.midicn.com/sources.html" data-zh="数据来源" data-en="Sources">数据来源</a>
+      <a href="https://lib.midicn.com/lyrics.html" data-zh="歌词检索" data-en="Lyrics">歌词检索</a>
+      <a href="https://lib.midicn.com/soundfonts.html" class="on" data-zh="音色库" data-en="SoundFonts">音色库</a>
+      <a href="https://lib.midicn.com/licenses.html" data-zh="许可与法律" data-en="Licence">许可与法律</a>
+      <a href="https://github.com/midicn/midi-library" target="_blank" rel="noopener" data-zh="数据仓库" data-en="GitHub">数据仓库</a>
+    </nav>
+    <span class="flic" id="footLic" data-zh="代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可" data-en="Code MIT · metadata CC BY 4.0 · material per source">代码 MIT · 元数据 CC BY 4.0 · 素材依各来源许可</span>
+  </div>
+  <div class="fnote"><span id="footNote"></span><span id="footLegal" data-zh="数据版本 v1.23 · 133,667 首 · 21 个来源" data-en="Data v1.23 · 133,667 tracks · 21 sources">数据版本 v1.23 · 133,667 首 · 21 个来源</span></div>
+</div></footer>
+
+<script src="assets/archive.js" defer></script>
+<script src="assets/shell.js" defer></script>
+<script src="assets/shell.js"></script>
+</body>
+</html>
