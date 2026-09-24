@@ -380,6 +380,45 @@ function makeFetch(realFetch){
   /* 说明：公开内容卫生（内部路径/脚本名/未完成标记、中英混排）不在此重复实现——
      规则单一真源在 tools/audit_public.py，由 preflight 强制门执行。 */
 
+  /* 【15】播放引擎接线（守住三个已踩过的坑：方法名 / 调用顺序 / 音源资产） */
+  console.log('\n【15】播放引擎接线');
+  {
+    const dir = path.dirname(LOCAL);
+    const pjRaw = fs.readFileSync(path.join(dir, 'assets/player.js'), 'utf-8');
+    /* 剥掉注释再判：否则「说明里提到某个不存在的方法」会被误判为「代码里在调它」 */
+    const pj = pjRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    /* ① 方法名必须用 addSMFDataToPlayer —— js-synthesizer 1.13 **没有** playNewMIDI，
+          历史上正是调了个不存在的方法 + catch 吞异常，导致音源从未生效。 */
+    ok('用 addSMFDataToPlayer（非 playNewMIDI）',
+       /addSMFDataToPlayer/.test(pj) && !/playNewMIDI/.test(pj));
+    /* ② 两个 worklet 模块都要 addModule（只加载主线程脚本不够） */
+    ok('注册 libfluidsynth + worklet 两个模块',
+       /libfluidsynth[^'"]*\.js/.test(pj) && /js-synthesizer\.worklet[^'"]*\.js/.test(pj));
+    /* ③ init 收 sampleRate 数字；且必须先 createAudioNode */
+    ok('init(sampleRate) + createAudioNode 顺序正确',
+       /init\(AC\.sampleRate\)|\.sampleRate\)/.test(pj) && /createAudioNode/.test(pj));
+    /* ④ 质量与进度 API 在位 */
+    ok('含质量/进度 API（setInterpolation / retrievePlayerTotalTicks）',
+       /setInterpolation/.test(pj) && /retrievePlayerTotalTicks/.test(pj));
+    /* ⑤ 音源资产：.gz 能解成合法 SF2（RIFF + 'sfbk'） */
+    const zlib = require('zlib');
+    const gz = path.join(dir, 'soundfont/GeneralUser-GS.sf2.gz');
+    const raw = path.join(dir, 'soundfont/GeneralUser-GS.sf2');
+    ok('音源文件齐备（.sf2 + .gz）', fs.existsSync(gz) && fs.existsSync(raw),
+       fs.existsSync(gz) && fs.existsSync(raw) ? (fs.statSync(gz).size/1048576).toFixed(1) + ' MB(gz)'
+                                                : '缺失');
+    if (fs.existsSync(gz)){
+      try {
+        const buf = zlib.gunzipSync(fs.readFileSync(gz)).subarray(0, 12);
+        ok('gz 解出合法 SoundFont（RIFF/sfbk）',
+           buf.toString('latin1', 0, 4) === 'RIFF' && buf.toString('latin1', 8, 12) === 'sfbk');
+      } catch(e){ ok('gz 解出合法 SoundFont（RIFF/sfbk）', false, e.message); }
+    }
+    /* ⑥ SW 对音源做 cache-first（只下一次） */
+    const sw = fs.readFileSync(path.join(dir, 'sw.js'), 'utf-8');
+    ok('SW 对 .sf2/.sf2.gz 做 cache-first', /\.sf2/.test(sw) && /cache/i.test(sw));
+  }
+
   /* 【14】未收录源清单与目录同步（防止站点与 SOURCE-CATALOG.md 漂移） */
   console.log('\n【14】未收录源清单');
   {
@@ -390,7 +429,10 @@ function makeFetch(realFetch){
     ok('未收录源清单已填写（≥30 条）', n >= 30, n + ' 条');
     ok('每条都带分类标记 A/B/C/D', cats === n, cats + '/' + n);
     // 若本地存在目录文档，则核对数量一致（线上运行时跳过）
-    const catPath = path.resolve(path.dirname(LOCAL), '..', '..', 'docs', 'SOURCE-CATALOG.md');
+    /* 目录规范化后：文档真源在 lib/work/docs/（站点仓是 lib/site/）——
+       路径改动会让这条断言**静默不跑**，所以跳过时要显式打印出来。 */
+    const catPath = path.resolve(path.dirname(LOCAL), '..', 'work', 'docs', 'SOURCE-CATALOG.md');
+    if (!fs.existsSync(catPath)) console.log('    · 未找到 ' + catPath + '（公开克隆场景下正常，跳过目录比对）');
     if (fs.existsSync(catPath)){
       const doc = fs.readFileSync(catPath, 'utf-8');
       const dm = doc.match(/\|\s*未收录源\s*\|\s*(\d+)/);
