@@ -63,6 +63,10 @@
 
   /* 解 gzip（整块解压，比流式 pipe 更稳） */
   async function gunzip(buf) {
+    if (!buf) return null;
+    var head = new Uint8Array(buf, 0, Math.min(4, buf.byteLength));
+    /* 魔数不是 1f 8b → 服务器可能已解压（或传的是 .sf2），原样返回 */
+    if (!(head[0] === 0x1f && head[1] === 0x8b)) return buf;
     if (!global.DecompressionStream) return null;
     var st = new global.DecompressionStream('gzip');
     return await new Response(new Blob([buf]).stream().pipeThrough(st)).arrayBuffer();
@@ -83,9 +87,7 @@
     if (cached) {
       sfStage = 'decode';
       badge('音源解压…');
-      var cb = await cached.arrayBuffer();
-      var isGz = (cached.url || '').indexOf('.gz') >= 0;
-      var un = isGz ? await gunzip(cb) : cb;
+      var un = await gunzip(await cached.arrayBuffer());
       if (un) return un;
     }
 
