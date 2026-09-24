@@ -405,6 +405,16 @@ function makeFetch(realFetch){
     ok('用原生 AudioContext（非 Tone 包装对象）',
        /global\.AudioContext|global\.webkitAudioContext|new\s+AudioContext/.test(pj)
        && !/Tone\.getContext\(\)\.rawContext/.test(pj));
+    /* ④b 换曲必须先 resetPlayer —— 底层 add_mem 是「追加到播放列表」，
+          不重置会导致「页面标题变了但音乐不变」。 */
+    ok('换曲前 resetPlayer()（清空播放列表）',
+       /resetPlayer\(\)/.test(pj)
+       && pj.indexOf('resetPlayer()') < pj.indexOf('addSMFDataToPlayer('));
+    /* ④c 不得对返回 Promise 的 API 先 num() —— num(Promise) 恒为 null，
+          曾导致进度条永远不动。总 tick 必须在 playPlayer() 之后读。 */
+    ok('进度 API 按 Promise 处理（无 num() 误用）',
+       !/num\(\s*sf\.retrieve/.test(pj)
+       && pj.indexOf('retrievePlayerTotalTicks') > pj.indexOf('playPlayer()'));
     /* ⑤ 音源预热在取音频之前（并行；音频 404 也不放弃音源） */
     ok('音源预热与音频抓取并行',
        pj.indexOf('ensureSoundFont()') < pj.indexOf("fetch(track.f"));

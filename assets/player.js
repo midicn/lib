@@ -42,7 +42,7 @@
   var SF_URL_RAW = 'soundfont/GeneralUser-GS.sf2';     /* 32.3 MB（兜底） */
   var sf = null, sfNode = null, sfReady = false, sfLoading = false, sfFailed = false;
   var sfCurTotalTick = 0, sfPausedTick = null, sfEngine = 'none';
-  var sfStage = '', sfError = '', sfTries = 0;
+  var sfStage = '', sfError = '', sfTries = 0, sfLastTick = 0;
   var SF_CACHE = 'midicn-sfont';
   var sfAC = null;                     /* **原生** AudioContext —— FluidSynth 独立使用 */        /* 自己缓存音源，不依赖 SW 是否已接管页面 */
 
@@ -197,13 +197,19 @@
     setTimeout(function () { if (!sfReady) badge('合成音源'); }, 9000);
   }
 
-  /* 用采样音源播放：把原始 MIDI 交给 FluidSynth —— 乐器/鼓组/速度都由文件决定 */
+  /* 用采样音源播放：把原始 MIDI 交给 FluidSynth —— 乐器/鼓组/速度都由文件决定。
+     ⚠️ 必须先 resetPlayer()：底层 `fluid_player_add_mem` 是**往播放列表追加**，
+        若不清空，换曲只会往同一个播放器里再加一首，playPlayer() 仍从列表第一首播
+        （表现为「点了别的作品，页面标题变了但音乐不变」）。
+        resetPlayer() 会关闭并重建 player，等价于清空播放列表。 */
   async function playWithSoundFont(track, buf) {
+    await sf.resetPlayer();
     await sf.addSMFDataToPlayer(buf);
-    sfCurTotalTick = num(await sf.retrievePlayerTotalTicks()) || 0;
     sfPausedTick = null;
-    sf.seekPlayer(0);
     await sf.playPlayer();
+    /* 总 tick 必须在**开始播放后**读：FluidSynth 在 play 时才算出 total_ticks，
+       播放前读会得到 0（会导致进度条不动）。读不到也没关系 —— tick() 里会惰性补读。 */
+    sfCurTotalTick = num(await sf.retrievePlayerTotalTicks()) || 0;
     playing = true;
     sfEngine = 'soundfont';
     if (hooks.onState) safe(function () { hooks.onState(true); });
@@ -273,9 +279,19 @@
     uiTimer = setInterval(function () {
       if (!playing) return;
       if (sfEngine === 'soundfont' && sf && sfReady) {
-        var cur = safe(function () { return num(sf.retrievePlayerCurrentTick()); });
-        if (cur && cur.promise) cur.then(function (v) {
+        /* 惰性补读总 tick（首次播放后才会有效） */
+        if (!sfCurTotalTick) {
+          safe(function () {
+            var t = sf.retrievePlayerTotalTicks();
+            if (t && t.then) t.then(function (v) { sfCurTotalTick = num(v) || sfCurTotalTick; })['catch'](function () {});
+          });
+        }
+        /* ⚠️ retrievePlayerCurrentTick() 返回的是 **Promise**，
+           不能先 num() 再判 —— num(Promise) 恒为 null，会导致进度永远不动。 */
+        var cur = safe(function () { return sf.retrievePlayerCurrentTick(); });
+        if (cur && cur.then) cur.then(function (v) {
           var c = num(v) || 0;
+          sfLastTick = c;
           var pos = sfCurTotalTick ? (c / sfCurTotalTick) * curTotal : 0;
           if (hooks.onTime) safe(function () { hooks.onTime(pos, curTotal); });
           if (sfCurTotalTick && c >= sfCurTotalTick - 2) onEnded();
@@ -449,6 +465,9 @@
     engine: function () {
       return { kind: sfEngine, soundfontReady: sfReady, soundfontFailed: sfFailed,
                stage: sfStage, error: sfError, tries: sfTries,
+               /* 音频侧诊断：播放器当前曲目的总 tick 数与已播 tick。
+                  换曲后若 totalTick 不变，说明播放列表没被重置（换曲不生效）。 */
+               totalTick: sfCurTotalTick, curTick: sfLastTick, playing: playing,
                acState: sfAC ? sfAC.state : null,
                acNative: !!(sfAC && sfAC instanceof (global.AudioContext || global.webkitAudioContext)) };
     },
