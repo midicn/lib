@@ -42,6 +42,8 @@
   var SF_URL_RAW = 'soundfont/GeneralUser-GS.sf2';     /* 32.3 MB（兜底） */
   var sf = null, sfNode = null, sfReady = false, sfLoading = false, sfFailed = false;
   var sfCurTotalTick = 0, sfPausedTick = null, sfEngine = 'none';
+  var sfStage = '', sfError = '', sfTries = 0;
+  var SF_CACHE = 'midicn-sfont';        /* 自己缓存音源，不依赖 SW 是否已接管页面 */
 
   function $(id) { return document.getElementById(id); }
   function fmt(s) {
@@ -59,59 +61,127 @@
      路径 ① 采样音源（FluidSynth + SoundFont）
      ═══════════════════════════════════════════════════════════════════ */
 
-  /* 取音源字节：优先 gzip（省 3 MB）→ 用平台原生 DecompressionStream 解压；
-     不支持或失败则退回未压缩 .sf2。两者都由 SW 做 cache-first（只下一次）。 */
+  /* 解 gzip（整块解压，比流式 pipe 更稳） */
+  async function gunzip(buf) {
+    if (!global.DecompressionStream) return null;
+    var st = new global.DecompressionStream('gzip');
+    return await new Response(new Blob([buf]).stream().pipeThrough(st)).arrayBuffer();
+  }
+
+  /* 取音源字节。
+     ① 先查我们自己的 Cache API —— **不依赖 SW 是否已接管页面**
+        （首次访问时 SW 尚未 controlling，只靠 SW 会让 28 MB 每访一次重下）
+     ② 下载时逐步报进度到 badge，让用户看得见在动
+     ③ 写回 Cache，下次秒开 */
   async function fetchSoundFont() {
-    if (global.DecompressionStream) {
-      try {
-        var rg = await fetch(SF_URL_GZ, { cache: 'force-cache' });
-        if (rg.ok && rg.body) {
-          var stream = rg.body.pipeThrough(new global.DecompressionStream('gzip'));
-          return await new Response(stream).arrayBuffer();
-        }
-      } catch (e) { /* 落到未压缩 */ }
+    var cached = null;
+    try {
+      var c = await caches.open(SF_CACHE);
+      cached = await c.match(SF_URL_GZ) || await c.match(SF_URL_RAW);
+    } catch (e) { /* 无 Cache API（如隐私模式）→ 走网络 */ }
+
+    if (cached) {
+      sfStage = 'decode';
+      badge('音源解压…');
+      var cb = await cached.arrayBuffer();
+      var isGz = (cached.url || '').indexOf('.gz') >= 0;
+      var un = isGz ? await gunzip(cb) : cb;
+      if (un) return un;
     }
+
+    sfStage = 'download';
+    var res = await fetch(SF_URL_GZ, { cache: 'no-store' });
+    if (!res.ok) throw new Error('音源 HTTP ' + res.status);
+    var total = Number(res.headers.get('Content-Length')) || 0;
+    var buf;
+    if (res.body && res.body.getReader && total) {
+      var reader = res.body.getReader(), chunks = [], got = 0, last = 0;
+      for (;;) {
+        var r = await reader.read();
+        if (r.done) break;
+        chunks.push(r.value); got += r.value.length;
+        var pct = Math.floor(got / total * 100);
+        if (pct >= last + 5) { last = pct; badge('音源 ' + pct + '%'); }
+      }
+      buf = new Uint8Array(got); var off = 0;
+      for (var k = 0; k < chunks.length; k++) { buf.set(chunks[k], off); off += chunks[k].length; }
+      buf = buf.buffer;
+    } else {
+      badge('音源下载中…');
+      buf = await res.arrayBuffer();
+    }
+    try {
+      var c2 = await caches.open(SF_CACHE);
+      await c2.put(SF_URL_GZ, new Response(buf.slice(0), { headers: { 'Content-Type': 'application/gzip' } }));
+    } catch (e) { /* 缓存失败不影响播放 */ }
+
+    sfStage = 'decode';
+    badge('音源解压…');
+    var out = await gunzip(buf);
+    if (out) return out;
     var rr = await fetch(SF_URL_RAW, { cache: 'force-cache' });
-    if (!rr.ok) throw new Error('HTTP ' + rr.status);
+    if (!rr.ok) throw new Error('音源 HTTP ' + rr.status);
     return await rr.arrayBuffer();
   }
 
-  /* 后台加载采样音源（幂等；失败后不再重试，静默留在合成器路径） */
+  /* 后台加载采样音源。
+     · **失败不永久锁定**：允许重试（最多 3 次，每次由新的播放动作触发）
+     · 每步记录 sfStage —— 失败时把**阶段 + 原因**显示出来，便于定位
+       （否则只能看到「合成音源」，无法判断卡在哪一步） */
   async function ensureSoundFont() {
-    if (sfReady || sfLoading || sfFailed) return;
-    if (!global.Tone || !global.JSSynth) { sfFailed = true; return; }
+    if (sfReady || sfLoading) return;
+    if (sfTries >= 3) return;                    /* 连续失败 3 次后不再打扰 */
+    if (!global.Tone || !global.JSSynth) {
+      sfError = global.Tone ? 'JSSynth 未加载' : 'Tone.js 未加载';
+      sfTries++; reportFail(); return;
+    }
     sfLoading = true;
+    sfTries++;
     badge('音源加载中…');
     try {
       var AC = Tone.getContext().rawContext;
       if (!AC || !AC.audioWorklet) throw new Error('AudioWorklet 不可用');
 
       /* ① 两个 worklet 模块 —— 只加载主线程脚本是不够的 */
+      sfStage = 'module:fluidsynth';
       await AC.audioWorklet.addModule(ENG + 'libfluidsynth-2.3.0.js');
+      sfStage = 'module:worklet';
       await AC.audioWorklet.addModule(ENG + 'js-synthesizer.worklet.min.js');
 
-      /* ② init 收 sampleRate 数字；随后必须先 createAudioNode 才能用其它方法 */
+      /* ② createAudioNode 才是真正的初始化（本版 init 是空函数） */
+      sfStage = 'createNode';
       sf = new JSSynth.AudioWorkletNodeSynthesizer();
       sf.init(AC.sampleRate);
       sfNode = sf.createAudioNode(AC);
-      sfNode.connect(AC.destination);          /* 直连输出：不经低通/混响，保真优先 */
+      sfNode.connect(AC.destination);            /* 直连输出：不经低通/混响，保真优先 */
 
-      /* ③ 音源 + 质量设置 */
+      /* ③ 音源 */
+      sfStage = 'sfont';
       var sfBuf = await fetchSoundFont();
+      sfStage = 'loadSFont';
       await sf.loadSFont(sfBuf);
+
       safe(function () { sf.setInterpolation(4); });   /* 最高插值质量 */
       applyVolume();
 
-      sfReady = true;
+      sfReady = true; sfFailed = false; sfError = ''; sfStage = '';
       sfEngine = 'soundfont';
       badge('采样音源');
     } catch (e) {
       sfFailed = true;
       sf = null; sfNode = null;
-      badge('合成音源');
-      lastError = '音源加载失败（已留在合成器路径）：' + ((e && e.message) || e);
+      sfError = (e && e.message) || String(e);
+      reportFail();
     }
     sfLoading = false;
+  }
+
+  /* 失败时把原因短暂显示在角标上（用户不必开 DevTools 也能反馈），随后回到「合成音源」 */
+  function reportFail() {
+    var msg = '音源失败：' + (sfStage ? sfStage + ' · ' : '') + sfError;
+    badge(msg.slice(0, 46));
+    if (global.console && console.warn) console.warn('[player] ' + msg);
+    setTimeout(function () { if (!sfReady) badge('合成音源'); }, 9000);
   }
 
   /* 用采样音源播放：把原始 MIDI 交给 FluidSynth —— 乐器/鼓组/速度都由文件决定 */
@@ -357,9 +427,11 @@
     setVolume: function (v) { vol = v; applyVolume(); },
     setLoop: function (on) { looping = !!on; },
     isPlaying: function () { return playing; },
-    /* 诊断用：当前音源类型（'soundfont' | 'tone'）与就绪状态 */
+    /* 诊断用：当前音源类型、就绪状态与**失败原因**
+       —— 在控制台执行 `Player.engine()` 即可看到卡在哪一步 */
     engine: function () {
-      return { kind: sfEngine, soundfontReady: sfReady, soundfontFailed: sfFailed };
+      return { kind: sfEngine, soundfontReady: sfReady, soundfontFailed: sfFailed,
+               stage: sfStage, error: sfError, tries: sfTries };
     },
     fmt: fmt
   };
