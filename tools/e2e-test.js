@@ -397,7 +397,18 @@ function makeFetch(realFetch){
     /* ③ init 收 sampleRate 数字；且必须先 createAudioNode */
     ok('init(sampleRate) + createAudioNode 顺序正确',
        /init\(AC\.sampleRate\)|\.sampleRate\)/.test(pj) && /createAudioNode/.test(pj));
-    /* ④ 质量与进度 API 在位 */
+    /* ④ 必须用**原生** AudioContext —— Tone.js v14 的 getContext().rawContext
+          返回的是包装对象（非原生），它的 addModule 能转发成功，但
+          new AudioWorkletNode(它, ...) 会抛
+          "TypeError: parameter 1 is not of type 'BaseAudioContext'"。
+          这是线上「一直显示合成音源」的真正根因，必须锁住。 */
+    ok('用原生 AudioContext（非 Tone 包装对象）',
+       /global\.AudioContext|global\.webkitAudioContext|new\s+AudioContext/.test(pj)
+       && !/Tone\.getContext\(\)\.rawContext/.test(pj));
+    /* ⑤ 音源预热在取音频之前（并行；音频 404 也不放弃音源） */
+    ok('音源预热与音频抓取并行',
+       pj.indexOf('ensureSoundFont()') < pj.indexOf("fetch(track.f"));
+    /* ⑥ 质量与进度 API 在位 */
     ok('含质量/进度 API（setInterpolation / retrievePlayerTotalTicks）',
        /setInterpolation/.test(pj) && /retrievePlayerTotalTicks/.test(pj));
     /* ⑤ 音源资产：.gz 能解成合法 SF2（RIFF + 'sfbk'） */

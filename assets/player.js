@@ -43,7 +43,8 @@
   var sf = null, sfNode = null, sfReady = false, sfLoading = false, sfFailed = false;
   var sfCurTotalTick = 0, sfPausedTick = null, sfEngine = 'none';
   var sfStage = '', sfError = '', sfTries = 0;
-  var SF_CACHE = 'midicn-sfont';        /* 自己缓存音源，不依赖 SW 是否已接管页面 */
+  var SF_CACHE = 'midicn-sfont';
+  var sfAC = null;                     /* **原生** AudioContext —— FluidSynth 独立使用 */        /* 自己缓存音源，不依赖 SW 是否已接管页面 */
 
   function $(id) { return document.getElementById(id); }
   function fmt(s) {
@@ -141,8 +142,18 @@
     sfTries++;
     badge('音源加载中…');
     try {
-      var AC = Tone.getContext().rawContext;
-      if (!AC || !AC.audioWorklet) throw new Error('AudioWorklet 不可用');
+      /* ⚠️ 必须用**原生** AudioContext。
+         Tone.js v14 的 `Tone.getContext().rawContext` 返回的是**包装对象**（非原生）：
+         它的 `audioWorklet.addModule()` 能转发成功，但
+         `new AudioWorkletNode(它, ...)` 会因品牌校验失败抛
+         `TypeError: parameter 1 is not of type 'BaseAudioContext'`。
+         FluidSynth 本就不需要 Tone，自建原生上下文最稳，也天然满足「直连输出」。 */
+      var Ctor = global.AudioContext || global.webkitAudioContext;
+      if (!Ctor) throw new Error('浏览器不支持 AudioContext');
+      if (!sfAC || sfAC.state === 'closed') sfAC = new Ctor();
+      var AC = sfAC;
+      if (!AC.audioWorklet) throw new Error('AudioWorklet 不可用');
+      if (AC.state === 'suspended') safe(function () { AC.resume(); });
 
       /* ① 两个 worklet 模块 —— 只加载主线程脚本是不够的 */
       sfStage = 'module:fluidsynth';
@@ -181,7 +192,7 @@
   /* 失败时把原因短暂显示在角标上（用户不必开 DevTools 也能反馈），随后回到「合成音源」 */
   function reportFail() {
     var msg = '音源失败：' + (sfStage ? sfStage + ' · ' : '') + sfError;
-    badge(msg.slice(0, 46));
+    badge(msg.slice(0, 120));
     if (global.console && console.warn) console.warn('[player] ' + msg);
     setTimeout(function () { if (!sfReady) badge('合成音源'); }, 9000);
   }
@@ -304,6 +315,12 @@
     if (!initAudio()) { status('Tone.js 未加载'); return; }
     safe(function () { Tone.start(); });
     if (global.Tone && Tone.start && Tone.start().catch) safe(function () { Tone.start()['catch'](function () {}); });
+    /* 手势内恢复 FluidSynth 的独立上下文（自动播放策略要求） */
+    if (sfAC && sfAC.state === 'suspended') safe(function () { sfAC.resume(); });
+
+    /* 音源预热：放在取音频**之前**，与网络请求并行。
+       也让「音频抓取失败」不至于连带放弃音源加载。 */
+    if (!sfReady && !sfFailed) ensureSoundFont();
 
     try {
       status((track.t || track.id) + ' · 读取中');
@@ -359,8 +376,6 @@
       status((track.t || track.id) + ' · ' + fmt(curTotal));
       tick();
 
-      /* 首次播放即**后台**开始取音源：不打断当前播放，下次播放自动升级 */
-      if (!sfReady && !sfFailed) ensureSoundFont();
     } catch (e) {
       playing = false;
       if (hooks.onState) safe(function () { hooks.onState(false); });
@@ -433,7 +448,9 @@
        —— 在控制台执行 `Player.engine()` 即可看到卡在哪一步 */
     engine: function () {
       return { kind: sfEngine, soundfontReady: sfReady, soundfontFailed: sfFailed,
-               stage: sfStage, error: sfError, tries: sfTries };
+               stage: sfStage, error: sfError, tries: sfTries,
+               acState: sfAC ? sfAC.state : null,
+               acNative: !!(sfAC && sfAC instanceof (global.AudioContext || global.webkitAudioContext)) };
     },
     fmt: fmt
   };
