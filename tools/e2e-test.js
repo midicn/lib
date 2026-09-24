@@ -419,12 +419,19 @@ function makeFetch(realFetch){
     ok('音源预热与音频抓取并行',
        pj.indexOf('ensureSoundFont()') < pj.indexOf("fetch(track.f"));
     /* ⑥ 质量与进度 API 在位 */
+    /* 音源体积哨兵：子集化后 gz 应在 8–14 MB；骤增说明回退成了全量音源（29 MB），
+       骤减说明文件被截断。子集保留全部 287 个预置，音质与全量一致（采样字节已逐一比对）。 */
+    {
+      const gzPath = path.join(dir, 'soundfont/GeneralUser-GS-slim.sf2.gz');
+      const mb = fs.existsSync(gzPath) ? fs.statSync(gzPath).size / 1048576 : 0;
+      ok('音源体积在子集化区间（8–14 MB）', mb >= 8 && mb <= 14, mb.toFixed(1) + ' MB');
+    }
     ok('含质量/进度 API（setInterpolation / retrievePlayerTotalTicks）',
        /setInterpolation/.test(pj) && /retrievePlayerTotalTicks/.test(pj));
     /* ⑤ 音源资产：.gz 能解成合法 SF2（RIFF + 'sfbk'） */
     const zlib = require('zlib');
-    const gz = path.join(dir, 'soundfont/GeneralUser-GS.sf2.gz');
-    const raw = path.join(dir, 'soundfont/GeneralUser-GS.sf2');
+    const gz = path.join(dir, 'soundfont/GeneralUser-GS-slim.sf2.gz');
+    const raw = path.join(dir, 'soundfont/GeneralUser-GS-slim.sf2');
     ok('音源文件齐备（.sf2 + .gz）', fs.existsSync(gz) && fs.existsSync(raw),
        fs.existsSync(gz) && fs.existsSync(raw) ? (fs.statSync(gz).size/1048576).toFixed(1) + ' MB(gz)'
                                                 : '缺失');

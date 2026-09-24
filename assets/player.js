@@ -38,8 +38,8 @@
 
   /* ── 采样音源路径的状态 ── */
   var ENG = 'soundfont/engine/';
-  var SF_URL_GZ = 'soundfont/GeneralUser-GS.sf2.gz';   /* 29.2 MB（首选） */
-  var SF_URL_RAW = 'soundfont/GeneralUser-GS.sf2';     /* 32.3 MB（兜底） */
+  var SF_URL_GZ = 'soundfont/GeneralUser-GS-slim.sf2.gz';  /* 10.6 MB（子集·首选） */
+  var SF_URL_RAW = 'soundfont/GeneralUser-GS-slim.sf2';    /* 11.5 MB（兜底·无 DecompressionStream 时） */
   var sf = null, sfNode = null, sfReady = false, sfLoading = false, sfFailed = false;
   var sfCurTotalTick = 0, sfPausedTick = null, sfEngine = 'none';
   var sfStage = '', sfError = '', sfTries = 0, sfLastTick = 0;
