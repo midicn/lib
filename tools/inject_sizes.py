@@ -20,7 +20,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-REPO = os.environ.get('GITHUB_REPO', 'midicn/midi-lib')
+REPO = os.environ.get('GITHUB_REPO', 'midicn/midi-library')
 
 
 def fetch_release(tag: str, tries: int = 5, delay: int = 5):
