@@ -132,32 +132,23 @@
 
     sfStage = 'download';
     if (!wantGz) {
-      badge('音源下载中…');
-      var r0 = await fetch(rawUrl, { cache: 'no-store' });
-      if (!r0.ok) throw new Error('音源 HTTP ' + r0.status);
-      return await r0.arrayBuffer();
+      /* 未压缩的在线音色（音色站托管的 .sf2 就是这种）：
+         ⚠️ 以前这里**不写缓存** —— 每次重建引擎/刷新页面都要重下几 MB～几十 MB。
+         现在与 gz 路径一样：流式读 + 显示进度 + 写进 Cache API（下次秒开）。 */
+      var res0 = await fetch(rawUrl, { cache: 'no-store' });
+      if (!res0.ok) throw new Error('音源 HTTP ' + res0.status);
+      var ab0 = await readWithProgress(res0);
+      try {
+        var c0 = await caches.open(SF_CACHE);
+        await c0.put(rawUrl, new Response(ab0.slice(0),
+          { headers: { 'Content-Type': 'application/octet-stream' } }));
+      } catch (e) { /* 缓存失败不影响播放 */ }
+      return ab0;
     }
 
     var res = await fetch(gzUrl, { cache: 'no-store' });
     if (!res.ok) throw new Error('音源 HTTP ' + res.status);
-    var total = Number(res.headers.get('Content-Length')) || 0;
-    var buf;
-    if (res.body && res.body.getReader && total) {
-      var reader = res.body.getReader(), chunks = [], got = 0, last = 0;
-      for (;;) {
-        var r = await reader.read();
-        if (r.done) break;
-        chunks.push(r.value); got += r.value.length;
-        var pct = Math.floor(got / total * 100);
-        if (pct >= last + 5) { last = pct; badge('音源 ' + pct + '%'); }
-      }
-      buf = new Uint8Array(got); var off = 0;
-      for (var k = 0; k < chunks.length; k++) { buf.set(chunks[k], off); off += chunks[k].length; }
-      buf = buf.buffer;
-    } else {
-      badge('音源下载中…');
-      buf = await res.arrayBuffer();
-    }
+    var buf = await readWithProgress(res);
     try {
       var c2 = await caches.open(SF_CACHE);
       await c2.put(gzUrl, new Response(buf.slice(0), { headers: { 'Content-Type': 'application/gzip' } }));
@@ -170,6 +161,26 @@
     var rr = await fetch(rawUrl, { cache: 'force-cache' });
     if (!rr.ok) throw new Error('音源 HTTP ' + rr.status);
     return await rr.arrayBuffer();
+  }
+
+  /* 流式读取 + 百分比进度（拿不到 Content-Length 时退化为整块读） */
+  async function readWithProgress(res) {
+    var total = Number(res.headers.get('Content-Length')) || 0;
+    if (!(res.body && res.body.getReader && total)) {
+      badge('音源下载中…');
+      return await res.arrayBuffer();
+    }
+    var reader = res.body.getReader(), chunks = [], got = 0, last = 0;
+    for (;;) {
+      var r = await reader.read();
+      if (r.done) break;
+      chunks.push(r.value); got += r.value.length;
+      var pct = Math.floor(got / total * 100);
+      if (pct >= last + 5) { last = pct; badge('音源 ' + pct + '%'); }
+    }
+    var buf = new Uint8Array(got), off = 0;
+    for (var k = 0; k < chunks.length; k++) { buf.set(chunks[k], off); off += chunks[k].length; }
+    return buf.buffer;
   }
 
   /* 后台加载采样音源。
@@ -527,17 +538,24 @@
       sel.add(new Option('音色：内置 GeneralUser GS', 'bundled'));
       if (sfSource.kind === 'local') {
         var n = (sfSource.name || '本地音色');
-        sel.add(new Option('音色：本地 · ' + (n.length > 22 ? n.slice(0, 20) + '…' : n), 'local'));
+        sel.add(new Option('音色：本地 · ' + short(n), 'local'));
+      }
+      if (sfSource.kind === 'url') {
+        var m = (sfSource.name || '音色库音色');
+        sel.add(new Option('音色：音色库 · ' + short(m), 'current-url'));
       }
       sel.add(new Option('选择本地音色文件…', 'pick'));
-      sel.add(new Option('看有哪些可选音色 →', 'help'));
-      sel.value = sfSource.kind === 'local' ? 'local' : 'bundled';
+      sel.add(new Option('从音色库获取音色 →', 'gallery'));
+      sel.value = sfSource.kind === 'local' ? 'local'
+                : (sfSource.kind === 'url' ? 'current-url' : 'bundled');
     }
+    function short(s) { return s.length > 22 ? s.slice(0, 20) + '…' : s; }
 
     sel.addEventListener('change', async function () {
       var v = sel.value;
       if (v === 'pick') { file.click(); render(); return; }
-      if (v === 'help') { global.open('soundfonts.html', '_blank'); render(); return; }
+      if (v === 'gallery') { global.open(SF_GALLERY, '_blank'); render(); return; }
+      if (v === 'current-url') { render(); return; }          /* 已在使用中 */
       try {
         await global.Player.setSoundFont({ kind: v });
         status('已切换到' + (v === 'local' ? '本地音色' : '内置音色') + '，下次播放生效');
@@ -566,10 +584,80 @@
     global.Player._renderPicker = render;
   }
 
+  /* ═══════════════════════════════════════════════════════════════════
+     音色站深链（?sf=<uid> / ?sfurl=<url>）—— 「选音色即播」那条路
+     ───────────────────────────────────────────────────────────────────
+     音色站（sf.midicn.com）每条已托管的音色都给出
+        https://lib.midicn.com/?sf=<uid>
+     本函数据此从音色站台账取到该音色的**站点直链**，自动装进播放器。
+
+     ⚠️ 为什么必须走音色站的站点源、而不能用它的 Release 地址：
+        GitHub Release 资产**不带 `Access-Control-Allow-Origin`** → 浏览器 fetch 不到；
+        GitHub Pages（sf.midicn.com）带 `ACAO: *`，所以托管的 .sf2 由站点源提供。
+     ═══════════════════════════════════════════════════════════════════ */
+  var SF_GALLERY = 'https://sf.midicn.com/';
+  var SF_CATALOG = 'https://sf.midicn.com/data/hosted.json';
+  var pendingLink = null;
+
+  function readDeepLink() {
+    var q = safe(function () { return new global.URLSearchParams(global.location.search); });
+    if (!q) return;
+    var uid = q.get('sf');
+    var u = q.get('sfurl');
+    if (uid) pendingLink = { uid: uid };
+    else if (u) pendingLink = { url: u };
+  }
+
+  /* 拉音色站台账，取某个 uid 的托管信息 */
+  async function fetchCatalogEntry(uid) {
+    var res = await fetch(SF_CATALOG, { cache: 'no-store' });
+    if (!res.ok) throw new Error('音色台账 HTTP ' + res.status);
+    var doc = await res.json();
+    var it = (doc && doc.files && doc.files[uid]) || null;
+    if (!it) throw new Error('音色库里没有「' + uid + '」这一条（可能未托管）');
+    return it;
+  }
+
+  async function runDeepLink() {
+    var req = pendingLink;
+    if (!req) return null;
+    pendingLink = null;                                  /* 只处理一次 */
+    try {
+      if (req.uid) {
+        status('正在从音色库取音色…');
+        var it = await fetchCatalogEntry(req.uid);
+        var nm = it.name + (it.author ? '（' + it.author + '）' : '');
+        await global.Player.setSoundFont({
+          kind: 'url', url: it.url, raw: it.url, gz: false,
+          name: nm, bytes: it.bytes, license: it.license, fromSf: true, uid: req.uid
+        });
+        status('音色已装好：' + nm + ' · ' + (it.bytes / 1048576).toFixed(1) + ' MB · ' +
+               (it.license || '') + ' —— 点任意曲目即可试听');
+      } else if (req.url) {
+        if (!/^https:\/\//i.test(req.url)) throw new Error('只接受 https 音色地址');
+        if (!/\.sf2(\?|$)/i.test(req.url)) throw new Error('只接受 .sf2 地址（浏览器只吃 .sf2）');
+        status('正在载入外部音色…');
+        await global.Player.setSoundFont({ kind: 'url', url: req.url, raw: req.url, gz: false,
+                                           name: req.url.split('/').pop() });
+        status('已使用外部音色：' + req.url.split('/').pop() + ' —— 点任意曲目即可试听');
+      }
+    } catch (e) {
+      status('音色加载失败：' + ((e && e.message) || e));
+    }
+    if (global.Player && global.Player._renderPicker) safe(global.Player._renderPicker);
+    return sfSource;
+  }
+
+  readDeepLink();
+
   loadSfChoice();
 
   global.Player = {
-    init: function (opts) { hooks = opts || {}; },
+    init: function (opts) {
+      hooks = opts || {};
+      /* 深链要等 hooks（状态栏）就绪后再跑，否则提示无处可显 */
+      safe(function () { runDeepLink(); });
+    },
     play: play, toggle: toggle, stop: stop, next: next, prev: prev, seek: seek,
     setVolume: function (v) { vol = v; applyVolume(); },
     setLoop: function (on) { looping = !!on; },
@@ -596,7 +684,10 @@
         sfSource = { kind: 'local', name: f.name, size: ab.byteLength };
       } else if (src.kind === 'url' || src.kind === 'bundled') {
         sfSource = src.kind === 'bundled' ? { kind: 'bundled' }
-                                          : { kind: 'url', url: src.url, raw: src.raw, gz: !!src.gz, name: src.name };
+                                          : { kind: 'url', url: src.url, raw: src.raw, gz: !!src.gz,
+                                              name: src.name, bytes: src.bytes,
+                                              license: src.license, fromSf: !!src.fromSf,
+                                              uid: src.uid };
       } else {
         throw new Error('未知的音色来源类型：' + src.kind);
       }
@@ -606,6 +697,22 @@
     },
     /* 当前音色来源（含本地文件的名字/体积） */
     soundFont: function () { return sfSource; },
+    /* ── 音色站直连（页面 UI 与深链都可调）────────────────────────
+        Player.loadCatalogSoundFont('<uid>')  从 sf.midicn.com 台账取音色并装上
+        Player.catalogURL()                   音色站地址（用于「获取更多音色」入口）
+        Player.deepLink()                     当前 URL 是否带 ?sf= / ?sfurl=（返回描述或 null） */
+    loadCatalogSoundFont: async function (uid) {
+      var it = await fetchCatalogEntry(uid);
+      var nm = it.name + (it.author ? '（' + it.author + '）' : '');
+      await global.Player.setSoundFont({
+        kind: 'url', url: it.url, raw: it.url, gz: false,
+        name: nm, bytes: it.bytes, license: it.license, fromSf: true, uid: uid
+      });
+      if (global.Player._renderPicker) safe(global.Player._renderPicker);
+      return it;
+    },
+    catalogURL: function () { return SF_GALLERY; },
+    deepLink: function () { return pendingLink; },
     /* 清除用户自选的本地音色（释放 Cache API 空间） */
     /* 重新渲染选择器（切换来源后由内部调用；页面一般无需自己调） */
     _renderPicker: null,

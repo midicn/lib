@@ -1,9 +1,9 @@
-/* midicn-lib Service Worker · 缓存策略 v7
+/* midicn-lib Service Worker · 缓存策略 v8
    ├─ HTML 文档：network-first —— 保证总能拿到最新版页面代码（修 bug 后立即生效）
    ├─ 索引/分片/脚本/样式：stale-while-revalidate —— 秒开 + 后台自更新
    ├─ MIDI 音频：cache-first —— 听过就永久缓存
    └─ 音源 (sf2/sf2.gz)：cache-first —— 30MB 只下载一次，之后秒开                     */
-const V = 'midicn-v7';
+const V = 'midicn-v8';
 const CORE = ['./', './index.html', './manifest.json', './assets/style.css',
   './download.html', './sources.html', './licenses.html', './provenance.html',
   './vendor/Tone.js', './vendor/Midi.js', './soundfont/engine/js-synthesizer.min.js'];

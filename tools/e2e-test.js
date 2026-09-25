@@ -449,6 +449,88 @@ function makeFetch(realFetch){
     ok('SW 对 .sf2/.sf2.gz 做 cache-first', /\.sf2/.test(sw) && /cache/i.test(sw));
   }
 
+  /* 【16】音色站深链（?sf=<uid>）—— 「选音色即播」那条路
+     ─────────────────────────────────────────────────────────────────
+     锁住四件事：① 深链参数真的被解析 ② 走的是**音色站站点源**（有 CORS 才 fetch 得到）
+     ③ 在线音色会写进 Cache API（否则每次重建引擎都重下几十 MB）
+     ④ 「从音色库获取」入口指向 sf.midicn.com（不是本站旧音色页） */
+  console.log('\n【16】音色站深链');
+  {
+    const dir = path.dirname(LOCAL);
+    const pjRaw = fs.readFileSync(path.join(dir, 'assets/player.js'), 'utf-8');
+    const pj = pjRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    ok('解析 ?sf= 与 ?sfurl=', /get\('sf'\)/.test(pj) && /get\('sfurl'\)/.test(pj));
+    ok('深链在 init() 后触发（状态栏就绪才提示）',
+       /init: function[\s\S]{0,160}runDeepLink/.test(pj));
+    ok('音色站台账地址正确（sf 的托管清单）',
+       /sf\.midicn\.com\/data\/hosted\.json/.test(pj));
+    ok('只接受 https 且 .sf2 的外部地址（浏览器只吃 .sf2）',
+       /\/\^https:/.test(pj) && /test\(req\.url\)/.test(pj));
+    ok('外部地址做了协议与后缀两道校验',
+       /只接受 https 音色地址/.test(pj) && /只接受 \.sf2 地址/.test(pj));
+    /* ⚠️ 关键：不能指向 Release 资产（无 ACAO，浏览器 fetch 不到） */
+    ok('深链取的是站点源而非 Release 资产',
+       !/releases\/download/.test(pj) && /it\.url/.test(pj));
+    ok('在线音色（非 gz）也写 Cache API（不重复下载）',
+       /c0\.put\(rawUrl/.test(pj) || /caches\.open\(SF_CACHE\)[\s\S]{0,120}put\(rawUrl/.test(pj));
+    ok('「从音色库获取音色」入口指向 sf.midicn.com',
+       /SF_GALLERY\s*=\s*'https:\/\/sf\.midicn\.com\/'/.test(pj)
+       && !/open\('soundfonts\.html'/.test(pj));
+    ok('选择器会显示当前音色库音色（音色：音色库 · …）',
+       /音色：音色库/.test(pj));
+  }
+
+  /* 【17】深链**运行时**验证：真的用 `?sf=<uid>` 打开一次，看音色装没装上
+     ─────────────────────────────────────────────────────────────────
+     只做静态断言不够 —— 深链的价值就在「打开就能用」。这里再起一个 jsdom，
+     URL 带 `?sf=<uid>`，把音色站台账与 .sf2 都 stub 掉，断言：
+     ① 播放器的音色来源变成 url ② 名字来自台账 ③ 地址是**站点源**（不是 Release） */
+  console.log('\n【17】深链运行时（?sf=<uid> 真跑一次）');
+  {
+    const UID = 'fp-ethnic-bagpipe-bagpipe';
+    const SITE_URL = 'https://sf.midicn.com/files/bagpipe-6948bad4.sf2';
+    const SF2 = Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('sfbk'), Buffer.alloc(64)]);
+    const catalog = JSON.stringify({ site_base: 'https://sf.midicn.com/',
+      files: { [UID]: { file: 'bagpipe-6948bad4.sf2', bytes: 7133080, sha256: 'x',
+                        url: SITE_URL, release: 'https://github.com/…/bagpipe-6948bad4.sf2',
+                        name: 'Bagpipe', author: 'FreePats project', license: 'CC0' } } });
+
+    const vc2 = new VirtualConsole();
+    const err2 = [];
+    vc2.on('jsdomError', e => err2.push(String(e.message || e)));
+    const dom2 = new JSDOM(html, {
+      url: 'https://lib.midicn.com/?sf=' + encodeURIComponent(UID),
+      runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc2,
+      beforeParse(w){
+        stub(w);
+        const base = makeFetch(globalThis.fetch);
+        w.fetch = async (u, opt) => {
+          const url = String(u);
+          if (url.includes('sf.midicn.com/data/hosted.json')) return new Response(catalog, { status: 200 });
+          if (url === SITE_URL) return new Response(SF2, { status: 200 });
+          return base(u, opt);
+        };
+      }
+    });
+    const w2 = dom2.window;
+    for (let i = 0; i < 30; i++){                        /* 等深链跑完（要等 init 的 hooks）*/
+      const sf = w2.Player && w2.Player.soundFont && w2.Player.soundFont();
+      if (sf && sf.kind === 'url') break;
+      await wait(200);
+    }
+    const sf = (w2.Player && w2.Player.soundFont && w2.Player.soundFont()) || {};
+    ok('深链后音色来源变为 url', sf.kind === 'url', 'kind=' + (sf.kind || '—'));
+    ok('音色名取自音色站台账', /Bagpipe/.test(sf.name || ''), sf.name || '—');
+    ok('取的是站点源（有 CORS 才 fetch 得到）',
+       sf.url === SITE_URL, sf.url || '—');
+    ok('没有误指向 Release 资产', !/releases\/download/.test(sf.url || ''));
+    ok('运行无脚本异常', err2.length === 0, err2.slice(0, 2).join(' | '));
+    const sel = w2.document.getElementById('sfsrc');
+    ok('选择器已反映当前音色库音色',
+       !!sel && Array.from(sel.options).some(o => /Bagpipe|音色库/.test(o.text)), sel ? sel.value : '无选择器');
+    dom2.window.close();
+  }
+
   /* 【14】未收录源清单与目录同步（防止站点与 SOURCE-CATALOG.md 漂移） */
   console.log('\n【14】未收录源清单');
   {
