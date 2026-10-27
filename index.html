@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh" data-site="lib">
+<html lang="zh" data-site="lib" data-design="v6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>midicn-lib · 开放 MIDI 音乐库</title>
 <meta name="description" content="133,667 首开放许可 MIDI：古典钢琴、民谣、赞美诗、中国民歌等，覆盖 21 个来源、14 个分类，逐曲标注来源与许可。">
-<link rel="stylesheet" href="assets/core/midicn.bdf51406ff.css">
+<link rel="stylesheet" href="assets/core/midicn.67b49e760b.css">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -116,6 +116,8 @@
 /* 播放条 */
 #player{position:sticky;bottom:0;z-index:var(--z-play);background:var(--ink);
   border-top:1px solid var(--rule);padding-bottom:var(--sa-b)}
+/* 手机：播放条抬到底栏之上（--tabs-h 由 shell.css 定义） */
+@media(max-width:640px){#player{bottom:var(--tabs-h)}}
 .pw{max-width:var(--wrap);margin:0 auto;padding:var(--s2) clamp(var(--s4),3vw,var(--s6));
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
   gap:var(--s4);min-height:var(--play)}
@@ -188,6 +190,11 @@
 <link rel="apple-touch-icon" href="assets/og-icon.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://lib.midicn.com/#website","url":"https://lib.midicn.com/","name":"midicn-lib archive","alternateName":"midicn-lib","inLanguage":"zh-CN","publisher":{"@id":"https://lib.midicn.com/#org"}},{"@type":"Organization","@id":"https://lib.midicn.com/#org","name":"midicn-lib","url":"https://lib.midicn.com/","sameAs":["https://github.com/midicn/midi-library"]},{"@type":"Dataset","name":"midicn-lib · 开放许可 MIDI 数据集","description":"133,667 首开放许可 MIDI：古典钢琴、民谣、赞美诗、中国民歌等，覆盖 21 个来源、14 个分类，逐曲标注来源与许可。","url":"https://lib.midicn.com/","license":"https://lib.midicn.com/licenses.html","isAccessibleForFree":true,"creator":{"@id":"https://lib.midicn.com/#org"},"keywords":["MIDI","public domain","CC BY","CC0","sheet music","music dataset"],"distribution":[{"@type":"DataDownload","contentUrl":"https://github.com/midicn/midi-library/releases","encodingFormat":"application/zip"}]}]}</script>
 <!-- SEO:END -->
+<link rel="stylesheet" href="assets/core/v6-data.32a62fe518.css">
+<!--v6-font-->
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/p.d5b25648cc.woff2" crossorigin>
+<style>@font-face{font-family:"Smiley Sans";src:url("assets/fonts/p.d5b25648cc.woff2") format("woff2");font-display:swap}</style>
+<!--/v6-font-->
 </head>
 <body>
 
@@ -406,8 +413,9 @@ function applyLang(){
 $('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh'; store.set('midicn-lang', LANG); applyLang(); };
 const themeBtn = $('theme');
 function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
-setTheme(store.get('midicn-theme', null) || 'dark');
-themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+var savedTheme = store.get('midicn-theme', null);
+if (savedTheme === 'light' || savedTheme === 'dark') setTheme(savedTheme);
+themeBtn.onclick = ()=> setTheme((document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark');
 
 /* ═══ 启动 ═══ */
 (async function boot(){
@@ -841,6 +849,6 @@ $('rate').onchange = ()=>{};   /* 保留控件位；变速由后续版本接入 
 /* 启动：先按当前语言渲染外壳，再加载数据 */
 applyLang();
 </script>
-<script src="assets/core/shell.67a944dda2.js"></script>
+<script src="assets/core/shell.83698018a9.js"></script>
 </body>
 </html>
