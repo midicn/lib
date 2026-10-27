@@ -1,63 +1,50 @@
-/* midicn-lib Service Worker · 缓存策略 v8
-   ├─ HTML 文档：network-first —— 保证总能拿到最新版页面代码（修 bug 后立即生效）
-   ├─ 索引/分片/脚本/样式：stale-while-revalidate —— 秒开 + 后台自更新
-   ├─ MIDI 音频：cache-first —— 听过就永久缓存
-   └─ 音源 (sf2/sf2.gz)：cache-first —— 30MB 只下载一次，之后秒开                     */
-const V = 'midicn-v8';
-const CORE = ['./', './index.html', './manifest.json', './assets/style.css',
-  './download.html', './sources.html', './licenses.html', './provenance.html',
-  './vendor/Tone.js', './vendor/Midi.js', './soundfont/engine/js-synthesizer.min.js'];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+/* midicn core v0.7.0 —— 一份 SW，装进每个站的根目录
+   策略：HTML 网络优先（改了立刻能看到），资产缓存优先（切站不再重复下载）。
+   切站"像站内切换"靠的就是这条：目标页的 HTML 在指针按下时已经开始取。 */
+var VER = 'midicn-0.7.0';
+var PRECACHE = ["/", "/assets/core/icons/favicon.9e01bb7a2e.svg", "/assets/core/midicn.bdf51406ff.css", "/assets/core/shell.67a944dda2.js", "/manifest.json"];
+self.addEventListener('install', function (e) {
+  /* 逐个取、单个失败不牵连整体。
+     这里原来用 addAll(PRECACHE)：列表里只要有一个 404，整个 Promise 就 reject，
+     install 失败 → skipWaiting 不执行 → 这个站的离线与切站预热**全部静默失效**。
+     数据四站的 /manifest.webmanifest 就是这么死的（那个文件从来没被生成过）。
+     运行期容错，判据严格：kb/tools/_perf_smoke.py 会查 PRECACHE 里每一条是否真有产物。 */
+  e.waitUntil(caches.open(VER).then(function (c) {
+    return Promise.all(PRECACHE.map(function (u) {
+      return fetch(u).then(function (r) {
+        if (r && r.ok) c.put(u, r.clone());
+      }).catch(function () { /* 缺一个文件不该让整个 SW 装不上 */ });
+    }));
+  }).then(function () { return self.skipWaiting(); }));
 });
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k))))
-    .then(() => self.clients.claim()));
+self.addEventListener('activate', function (e) {
+  e.waitUntil(caches.keys().then(function (ks) {
+    return Promise.all(ks.filter(function (k) { return k !== VER; })
+                        .map(function (k) { return caches.delete(k); }));
+  }).then(function () { return self.clients.claim(); }));
 });
-self.addEventListener('fetch', e => {
-  const req = e.request;
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
-  const p = url.pathname;
-
-  /* ① HTML 文档：network-first（离线时回落缓存）—— 避免用户卡在旧版页面 */
-  if (req.mode === 'navigate' || p === '/' || p.endsWith('.html')) {
-    e.respondWith(
-      fetch(req).then(res => {
-        if (res && res.ok) caches.open(V).then(c => c.put(req, res.clone()));
+  var url = new URL(req.url);
+  if (url.origin !== location.origin) return;         /* 跨源（含其它子域）不接管 */
+  if (req.mode === 'navigate') {
+    /* stale-while-revalidate：先给缓存的那一版，同时后台取新的 */
+    e.respondWith(caches.match(req).then(function (hit) {
+      var net = fetch(req).then(function (res) {
+        if (res.ok) caches.open(VER).then(function (c) { c.put(req, res.clone()); });
         return res;
-      }).catch(() => caches.match(req).then(hit => hit || caches.match('./')))
-    );
-    return;
-  }
-
-  /* ② MIDI 音频文件：cache-first（听过就永久缓存） */
-  if (p.endsWith('.mid') || p.endsWith('.midi')) {
-    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res.ok) caches.open(V).then(c => c.put(req, res.clone()));
-      return res;
-    })));
-    return;
-  }
-
-  /* ②-b 音源文件：cache-first（30MB 只下载一次） */
-  if (p.endsWith('.sf2') || p.endsWith('.sf2.gz')) {
-    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res.ok) caches.open(V).then(c => c.put(req, res.clone()));
-      return res;
-    })));
-    return;
-  }
-
-  /* ③ 索引与分片 / 脚本 / 样式：stale-while-revalidate（先给缓存，后台更新） */
-  if (p.endsWith('.json') || p.endsWith('.js') || p.endsWith('.css')) {
-    e.respondWith(caches.match(req).then(hit => {
-      const net = fetch(req).then(res => { if (res.ok) caches.open(V).then(c => c.put(req, res.clone())); return res; })
-        .catch(() => hit);
+      });
       return hit || net;
     }));
     return;
+  }
+  if (url.pathname.indexOf('/assets/') === 0) {
+    e.respondWith(caches.match(req).then(function (hit) {
+      return hit || fetch(req).then(function (res) {
+        if (res.ok) caches.open(VER).then(function (c) { c.put(req, res.clone()); });
+        return res;
+      });
+    }));
   }
 });
