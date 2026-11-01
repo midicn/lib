@@ -51,6 +51,10 @@ jobs:
           # 注意 gen_shards.py 只写自己的 json，不会清空 data/，故 lyrics/ 会被保留。
           mkdir -p site/data
           cp -r data/lyrics site/data/lyrics 2>/dev/null || true
+          # Release 整包根目录带着 README.md / DATA-STRUCTURE.md —— 那是**数据仓**的说明，
+          # 解到站点根上就变成两个没有导航、没有 canonical 的重复页（搜索引擎会当内容抄）。
+          # 线上审计把 /README.md 判成泄漏，根因在这里，不在站点仓（本仓并没有这个文件）。
+          find site -maxdepth 1 -name '*.md' -delete
           ls site | head -6
           find site -name '*.mid' | wc -l
       - name: 写入 GitHub 上的真实包体积（不依赖用户端访问 API）
