@@ -1,17 +1,19 @@
-name: Deploy lib site
+name: Deploy frozen site
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
-  cancel-in-progress: true
-env:
-  RELEASE_TAG: v1.23
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,65 +21,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download & assemble from Release
-        run: |
-          mkdir -p site
-          for z in meta main piano-special study; do
-            curl -sL --retry 3 --retry-delay 5 -o $z.zip "https://github.com/midicn/midi-library/releases/download/$RELEASE_TAG/midicn-lib-$RELEASE_TAG-$z.zip"
-            unzip -q $z.zip -d site
-            rm $z.zip
-          done
-          mv site/midicn-lib-*/* site/
-          rmdir site/midicn-lib-*
-          cp detail.html site/ 2>/dev/null || true
-          cp index.html site/
-          cp -r vendor site/vendor
-          cp manifest.json site/ 2>/dev/null || true
-          cp sw.js site/ 2>/dev/null || true
-          cp -r soundfont site/soundfont
-          cp licenses.html site/ 2>/dev/null || true
-          cp soundfonts.html site/ 2>/dev/null || true
-          cp sources.html site/ 2>/dev/null || true
-          cp provenance.html site/ 2>/dev/null || true
-          cp download.html site/ 2>/dev/null || true
-          cp lyrics.html site/ 2>/dev/null || true
-          cp 404.html site/ 2>/dev/null || true
-          cp sitemap.xml site/ 2>/dev/null || true
-          cp robots.txt site/ 2>/dev/null || true
-          cp -r assets site/assets 2>/dev/null || true
-          # 歌词分片：源文件（midi_db/lyrics）不入任何仓，故分片**预先提交进本仓**并在此搬运。
-          # 注意 gen_shards.py 只写自己的 json，不会清空 data/，故 lyrics/ 会被保留。
-          mkdir -p site/data
-          cp -r data/lyrics site/data/lyrics 2>/dev/null || true
-          # Release 整包根目录带着 README.md / DATA-STRUCTURE.md —— 那是**数据仓**的说明，
-          # 解到站点根上就变成两个没有导航、没有 canonical 的重复页（搜索引擎会当内容抄）。
-          # 线上审计把 /README.md 判成泄漏，根因在这里，不在站点仓（本仓并没有这个文件）。
-          find site -maxdepth 1 -name '*.md' -delete
-          ls site | head -6
-          find site -name '*.mid' | wc -l
-      - name: 写入 GitHub 上的真实包体积（不依赖用户端访问 API）
-        run: |
-          cd site
-          python3 ../tools/inject_sizes.py download.html
-      - name: Generate shards (按需加载分片)
-        run: |
-          cd site
-          python3 ../tools/gen_shards.py
-          ls -la data | head -8
-          # 歌词分片是**预提交内容**（源文件 midi_db/lyrics 不入仓，无法在 CI 生成）→ 只断言存在
-          n=$(ls data/lyrics/s*.json 2>/dev/null | wc -l)
-          echo "歌词分片 $n 个 + index.json"
-          test -f data/lyrics/index.json || { echo "::error::data/lyrics/index.json 缺失：请本地运行 tools/gen_lyrics_shards.py 并提交"; exit 1; }
-          test "$n" -ge 1 || { echo "::error::歌词分片缺失：请本地运行 tools/gen_lyrics_shards.py 并提交"; exit 1; }
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          path: site
-      - name: Deploy to GitHub Pages
+          persist-credentials: false
+      - name: Reject a superseded batch
+        run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
+      - name: Assemble and verify frozen bytes
+        run: python3 tools/assemble_release.py --source . --output _artifact
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _artifact
+      - name: Check branch still owns this batch
+        run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
+      - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

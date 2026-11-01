@@ -1,0 +1,1 @@
+@layer components{#list{display:grid;gap:var(--s5);grid-template-columns:1fr;align-items:start}@media(min-width:1180px){#list{grid-template-columns:1fr 1fr}}@media(min-width:1180px){#excluded{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5)}#excluded>.panel{margin-bottom:0!important}}}

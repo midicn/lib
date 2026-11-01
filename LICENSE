@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 midicn-lib contributors
+Copyright (c) 2026 midicn contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,22 @@ SOFTWARE.
 
 ## Scope / 适用范围
 
-**MIT applies to code only** — the site (HTML/CSS/JS) and the build tooling (Python):
+**MIT applies to code only** — the site's styles, client scripts and page
+templates under `assets/`:
 
-- midicn/midi-lib-site : site pages, styles, client scripts, build scripts (tools/)
-- midicn/midi-lib      : build & packaging scripts
+- midicn/theo : site pages (HTML), styles (CSS), client scripts (JavaScript)
 
-**Metadata produced by this project** (catalog.json, indexes, category and source
-notes) is licensed under **CC BY 4.0** — attribution only:
+**The text content of every page** (headings, summaries, article bodies,
+diagram captions — both Chinese and English) is **original writing** licensed
+under **CC BY 4.0** — attribution only:
 
-    midicn-lib metadata © 2026 midicn-lib contributors, licensed CC BY 4.0
+    midicn 乐理与和声 © 2026 midicn contributors, licensed CC BY 4.0
     https://creativecommons.org/licenses/by/4.0/
 
-**MIDI material is NOT relicensed here.** Every track keeps the licence of its
-upstream source (see the sources page and the per-track `l` field in catalog.json).
-This project claims no rights over that material and cannot grant rights to it.
+The content source lives in [`midicn/music-theory`](https://github.com/midicn/music-theory);
+see its `LICENSE` for the full content-licence text.
+
+**Musical material is NOT relicensed here.** Every track referenced by a page
+keeps the licence of its upstream source (see the per-track `l` field in the
+[dataset](https://lib.midicn.com/)). This project claims no rights over that
+material and cannot grant rights to it.
