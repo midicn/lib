@@ -26,8 +26,11 @@ async function inlineAssets(html, htmlPath){
     try{ return await (await fetch(ORIGIN + rel)).text(); }catch(e){}
     return '';
   };
+  // 内核 CSS 是内容哈希名（midicn.<sha>.css），逻辑名不存在 —— 直接取页面里那一枚
+  const cm = html.match(/href="([^"]*assets\/core\/midicn\.[0-9a-f]+\.css)"/);
+  const cssRel = cm ? cm[1] : 'assets/core/midicn.css';
   const [arch, plr, css, shell] = await Promise.all([
-    grab('assets/archive.js'), grab('assets/player.js'), grab('assets/style.css'),
+    grab('assets/archive.js'), grab('assets/player.js'), grab(cssRel),
     grab('assets/shell.js')]);
   return html
     .replace(/<script[^>]*src="vendor\/[^"]+"[^>]*><\/script>/g, '')
@@ -39,7 +42,8 @@ async function inlineAssets(html, htmlPath){
     // 三站共享外壳脚本：必须内联，否则 jsdom 会去网络抓 → 假「脚本错误」
     .replace(/<script[^>]*src="assets\/shell\.js"[^>]*><\/script>/g,
       shell ? '<script>' + shell + '</script>' : '')
-    .replace(/<link[^>]*href="assets\/style\.css"[^>]*>/g,
+    // 样式表换成内联：断言里有几条要读 <style> 的文本，jsdom 默认不抓外链
+    .replace(/<link[^>]*href="[^"]*assets\/core\/midicn\.[0-9a-f]+\.css"[^>]*>/g,
       css ? '<style>' + css + '</style>' : '');
 }
 
@@ -53,7 +57,8 @@ async function assetText(rel){
   return '';
 }
 
-const PRE = ['data/summary.json','data/browse.json','data/loc.json','data/works.json','assets/style.css'];
+/* 样式表不在这里预读：内核 CSS 是哈希名，由 inlineAssets 直接从页面里那枚 <link> 取 */
+const PRE = ['data/summary.json','data/browse.json','data/loc.json','data/works.json'];
 const cacheData = {};
 async function preload(){
   const dir = LOCAL ? path.dirname(LOCAL) : null;
@@ -70,7 +75,6 @@ function makeFetch(realFetch){
     const url = String(u);
     const key = url.replace(/^.*?(data\/)/, '$1');
     if (cacheData[key]) return new Response(cacheData[key], { status:200 });
-    if (cacheData['assets/style.css'] && key === 'assets/style.css') return new Response(cacheData['assets/style.css'], { status:200 });
     /* 本地模式：**任何 data/ 文件都按需从磁盘读**，不要走网络。
        原先只预读了 summary/browse/loc，详情页要的分片（如 data/cat-piano-0.json）
        无处命中 → 落到 realFetch 去抓线上 → 网络一慢就失败（假回归的根因）。 */
@@ -205,21 +209,32 @@ function makeFetch(realFetch){
   ok('无嵌套滚动容器（无拖拉框）', !/overflow-y:\s*auto/.test(styleTxt) && !/overflow-y:\s*auto/.test(html));
   ok('采用墨·纸·朱砂令牌', /--vermilion/.test(html) || /--vermilion/.test(styleTxt));
   ok('衬线标题字体已定义', /--serif/.test(html) || /--serif/.test(styleTxt));
-  ok('触控尺寸采用 44px 令牌', /var\(--tap\)/.test(html) || /--tap:\s*44px/.test(html) || (cacheData['assets/style.css'] || '').includes('--tap:44px'));
-  ok('去苹果风：无模糊/光晕', !/backdrop-filter/.test(html) && !/backdrop-filter/.test(styleTxt));
+  ok('触控尺寸采用 44px 令牌', /var\(--tap\)/.test(html) || /--tap:\s*44px/.test(html) || /--tap:\s*44px/.test(styleTxt));
+  /* 「无模糊/光晕」这条已删：2026-10-30 那条视觉禁令撤了，效果按场景选用。
+     留着它，下次给顶栏加 backdrop 就会挂一条假回归。 */
 
-  /* 【6】导航与页脚 */
+  /* 【6】导航与页脚 —— 判据与知识站同一套（外壳由内核注入） */
   console.log('\n【6】导航与页脚');
-  const nav = [...d.querySelectorAll('.nav a')].map(a=>a.getAttribute('href'));
-  // v1.23：三站统一导航（六项，跨站用绝对 URL）——「详细校验」见【12】
-  ok('导航含姊妹站与关键页',
-     ['https://lib.midicn.com/', 'https://mid.midicn.com/', 'https://zip.midicn.com/']
-       .every(h => nav.some(a => a === h)) &&
-     ['sources.html', 'lyrics.html', 'licenses.html']
-       .every(h => nav.some(a => a.endsWith(h))),
-     nav.join(' '));
-  ok('页脚为紧凑两行（链接 + 声明）', !!d.querySelector('footer .fbar') && !!d.querySelector('footer .fnote'));
-  ok('页脚含许可声明', /许可|licence/i.test((d.getElementById('footLegal')||{}).textContent || ''));
+  const head = [...d.querySelectorAll('header .kb-switch a')].map(a => a.getAttribute('href'));
+  ok('顶栏是全站 9 枚切换器（.hbar 内 .kb-switch）',
+     !!d.querySelector('header.hbar .kb-switch') && head.length === 9, head.join(' '));
+  ok('顶栏含姊妹站',
+     ['https://lib.midicn.com/', 'https://mid.midicn.com/', 'https://zip.midicn.com/', 'https://sf.midicn.com/']
+       .every(h => head.some(a => a === h)));
+  const foot = [...d.querySelectorAll('footer .kb-switch a')].map(a => a.getAttribute('href'));
+  ok('页脚是全站 11 枚', foot.length === 11, foot.join(' '));
+  ok('页脚保留数据侧入口（来源 · 许可）',
+     ['https://lib.midicn.com/sources.html', 'https://lib.midicn.com/licenses.html']
+       .every(h => [...d.querySelectorAll('footer .footlinks a')].some(a => a.getAttribute('href') === h)));
+  ok('页脚为声明 + 元信息两行', !!d.querySelector('footer .footline') && !!d.querySelector('footer .footnote')
+     && !!d.querySelector('footer .footmeta'));
+  ok('页脚含许可声明', /许可|licence|权利/i.test((d.querySelector('footer .footnote')||{}).textContent || ''));
+  ok('语言胶囊排在明暗按钮之前（与知识站同序）',
+     (() => { const h = d.querySelector('header.hbar'); if (!h) return false;
+       const kids = [...h.children];
+       const i = t => kids.findIndex(k => t === 'lang' ? k.classList.contains('kb-lang')
+                                  : k.id === 'theme');
+       return i('lang') > 0 && i('lang') < i('theme'); })());
 
   /* 【7】运行时 */
   console.log('\n【7】运行时');
