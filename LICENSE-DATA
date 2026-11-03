@@ -1,12 +1,16 @@
 # 元数据许可 / Metadata licence
 
-本仓库中由本项目生成的**元数据**（`meta/catalog.json`、各类索引、分类与来源说明）
+本项目自有且有权授权的说明文字、分类设计与新增元数据贡献，除另有标注外，
 采用 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 许可。
+该许可仅覆盖本项目享有的权利，不将 `meta/catalog.json` 或任何混合索引中的
+上游记录、数据库、作品、歌词、编曲与演奏等第三方权利改授为 CC BY 4.0。
+已明确以 CC0 发布的自有贡献继续适用其原有声明。
 
     midicn-lib metadata © 2026 midicn-lib contributors, licensed CC BY 4.0
     https://creativecommons.org/licenses/by/4.0/
 
-你只需**署名**即可自由使用、修改与再分发（含商业用途），无其他限制。
+使用受上述 CC BY 4.0 覆盖的贡献时，应适当署名、提供许可链接并注明修改。
+其他权利及上游附加条款须另行核查；收录、档位或逐曲 `l` 字段不是清权证明。
 
 ## 上游 MIDI 素材 / Upstream MIDI material
 
