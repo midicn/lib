@@ -1,6 +1,6 @@
 # midicn · lib
 
-Frozen public site source, batch `midicn-1.8.1-controls-20261103`, private core `1.8.1`.
+Frozen public site source, batch `midicn-1.8.1-controls-final-20261103`, private core `1.8.1`.
 
 HTML and UI are built locally from the private core. This repository contains
 runtime files plus a small standard-library byte assembler. CI validates every
